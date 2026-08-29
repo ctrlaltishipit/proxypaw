@@ -1,0 +1,11 @@
+node_modules
+dist
+.vercel
+.DS_Store
+supabase/.temp
+*.local
+
+# Secrets — never commit. .env.example is the documented exception.
+.env
+.env.*
+!.env.example
