@@ -26,9 +26,9 @@ import {
   X,
   Send
 } from 'lucide-react';
+import CommunityList from './CommunityList';
 import { useTheme } from '../contexts/ThemeContext';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import GoogleMapView from './GoogleMapView';
 
 interface DashboardProps {
   userRole: 'owner' | 'walker' | 'renter';
@@ -1147,12 +1147,8 @@ export default function Dashboard({ userRole, onBackHome, onLogout, onSupportCli
 
               {/* Map Content */}
               <div className="flex-1 overflow-hidden">
-                <GoogleMapView 
+                <CommunityList
                   communities={mockCommunities}
-                  onCommunitySelect={(community) => {
-                    console.log('Selected community:', community);
-                    // You can add additional logic here
-                  }}
                   isLightMode={isLightMode}
                 />
               </div>

@@ -132,20 +132,13 @@ const h2: CSSProperties = {
 };
 
 interface LandingPageProps {
-  onLoginClick: () => void;
-  onVolunteersClick: () => void;
-  onBookingClick: () => void;
-  onAboutClick: () => void;
+  /** Opens the waitlist modal. `source` records which CTA was clicked. */
+  onJoin: (source: string) => void;
   onBlogClick: () => void;
-  isLoggedIn: boolean;
-  onDashboardClick: () => void;
-  onLogout: () => void;
+  onTourClick: () => void;
 }
 
-export default function LandingPage({
-  onLoginClick, onVolunteersClick, onBookingClick, onAboutClick, onBlogClick,
-  isLoggedIn, onDashboardClick, onLogout,
-}: LandingPageProps) {
+export default function LandingPage({ onJoin, onBlogClick, onTourClick }: LandingPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'capitalize' }}>
       <style>{`
@@ -179,6 +172,7 @@ export default function LandingPage({
               { label: 'how it works', go: () => scrollTo('how') },
               { label: 'services', go: () => scrollTo('services') },
               { label: 'pricing', go: () => scrollTo('pricing') },
+              { label: 'inside the app', go: onTourClick },
               { label: 'blog', go: () => scrollTo('blog') },
             ].map((item) => (
               <span
@@ -193,21 +187,21 @@ export default function LandingPage({
           </nav>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
             <button
-              onClick={isLoggedIn ? onLogout : onLoginClick}
+              onClick={() => onJoin('nav-login')}
               style={{ border: 'none', background: 'transparent', fontSize: 15, fontWeight: 500, color: C.ink, cursor: 'pointer', padding: '11px 16px' }}
             >
-              {isLoggedIn ? 'log out' : 'log in'}
+              log in
             </button>
             <button
               className="pp-dark-btn"
-              onClick={isLoggedIn ? onDashboardClick : onLoginClick}
+              onClick={() => onJoin('nav-get-started')}
               style={{
                 border: 'none', background: C.ink, color: C.cream2, fontFamily: sora,
                 fontWeight: 600, fontSize: 14.5, padding: '12px 22px',
                 borderRadius: 999, cursor: 'pointer', transition: '.25s',
               }}
             >
-              {isLoggedIn ? 'dashboard' : 'get started'}
+              get started
             </button>
           </div>
         </header>
@@ -241,7 +235,7 @@ export default function LandingPage({
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
               <button
                 className="pp-cta"
-                onClick={onVolunteersClick}
+                onClick={() => onJoin('hero-find-a-walker')}
                 style={{
                   border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
                   fontWeight: 600, fontSize: 16, padding: '17px 32px', borderRadius: 999,
@@ -252,7 +246,7 @@ export default function LandingPage({
               </button>
               <button
                 className="pp-ghost"
-                onClick={onBookingClick}
+                onClick={() => onJoin('hero-explore-boarding')}
                 style={{
                   border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
                   fontFamily: sora, fontWeight: 600, fontSize: 16, padding: '17px 32px',
@@ -397,7 +391,7 @@ export default function LandingPage({
               <div
                 key={s.title}
                 className="pp-service"
-                onClick={onBookingClick}
+                onClick={() => onJoin(`service-${s.title}`)}
                 style={{ position: 'relative', borderRadius: 32, overflow: 'hidden', cursor: 'pointer', minHeight: 420, transition: 'transform .35s' }}
               >
                 <img src={s.img} alt={s.alt} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -495,7 +489,7 @@ export default function LandingPage({
           </p>
           <button
             className="pp-cta"
-            onClick={isLoggedIn ? onDashboardClick : onLoginClick}
+            onClick={() => onJoin('closing-cta')}
             style={{
               border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
               fontWeight: 600, fontSize: 16.5, padding: '18px 40px', borderRadius: 999,
