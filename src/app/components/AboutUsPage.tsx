@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Home, HeartHandshake, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
+import { Home, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
 
 const C = {
   cream: '#f6f1e7',
@@ -100,12 +100,6 @@ const BELIEFS = [
     accent: C.gold,
     title: 'A community, not a marketplace.',
     body: "Proxypaw is also the place your community's pet life happens: see the pets in your towers, know which dog is friendly before you meet it in the lobby, follow where your own pet is on their walk in real time, and talk to the other owners around you. A stranger with a leash is a transaction. A neighbour with a leash is a relationship.",
-  },
-  {
-    Icon: HeartHandshake,
-    accent: C.orangeDark,
-    title: 'Trust is engineered, not assumed.',
-    body: "Every volunteer is ID-verified and background-checked before their first booking, and trained on our safety protocols, lobby leash rules, the hot-pavement test, emergency first steps. Every walk is GPS-tracked live. Every visit sends photos. Every booking is insured. The love is human; the safety is systematic.",
   },
 ];
 
@@ -286,14 +280,14 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             </Reveal>
 
             <Reveal delay={200}>
-              <figure style={{ margin: '36px 0 0', maxWidth: 460 }}>
+              <figure style={{ margin: '36px 0 0', maxWidth: 400 }}>
                 <img
                   src="/founder/pablo-leo-young.jpg"
                   alt="Pablo and Leo as kittens, cuddled together"
                   style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
                 />
                 <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
-                  Day one together: pablo and leo at 45 days old, already inseparable.
+                  The first days home: pablo and leo at 45 days old, fresh from the breeder and already inseparable.
                 </figcaption>
               </figure>
             </Reveal>
@@ -309,7 +303,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 14px' }}>
               Meet the boys who approve every feature.
             </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(24px, 3vw, 34px)', fontWeight: 400 }}>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(18px, 2.4vw, 28px)', fontWeight: 400 }}>
               Pablo and Leo, brothers, flatmates, and Proxypaw's first users. They grew up curled in
               the same cage, still groom each other daily, and take turns keeping the founder company.
               Nothing ships until it feels right for these two.
@@ -320,7 +314,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <img
               src="/founder/pablo-leo.jpg"
               alt="Pablo and Leo together on the balcony beside their bonsai"
-              style={{ width: '100%', borderRadius: 28, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 24px 60px rgba(74,52,24,.14)', marginBottom: 'clamp(16px, 2vw, 22px)' }}
+              style={{ width: '100%', height: 'clamp(200px, 28vw, 340px)', objectFit: 'cover', objectPosition: 'center 70%', borderRadius: 24, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
             />
           </Reveal>
 
