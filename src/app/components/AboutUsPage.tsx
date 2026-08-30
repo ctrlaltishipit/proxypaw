@@ -146,6 +146,28 @@ const VETTING = [
   },
 ];
 
+/** The founder's cats — Proxypaw's first and most demanding users. */
+const EVANGELISTS = [
+  {
+    name: 'pablo',
+    img: '/founder/pablo.jpg',
+    title: 'Chief Comfort Officer',
+    tagline: 'The lovable goof',
+    body: "Pablo has one superpower: he knows when you've had a bad day before you've said a word. He values his personal space, does his own thing — and then, the moment you're at your lowest, he appears. He's also Proxypaw's head of quality television: football matches, random videos, whatever's on — Pablo sits, watches, and judges silently.",
+    facts: ['Detects a rough day from two rooms away', 'Watches football like he has money on it', 'Respects personal space. Expects the same.'],
+    accent: '#e0662f',
+  },
+  {
+    name: 'leo',
+    img: '/founder/leo.jpg',
+    title: 'Head of Balcony Security',
+    tagline: 'The curious one',
+    body: "Leo runs a strict balcony patrol: birds are monitored (never caught — the record stands at zero), insects are personally inspected, and every new smell is investigated on arrival. He is also a certified shoulder cat — he climbs up, settles in, and stays there like it's his office. Of the two, he's the clingy one, and he'd take that as a compliment.",
+    facts: ['Career birds caught: 0. Enthusiasm: undented.', 'Full-time shoulder cat, no notice period', 'Inspects every insect. For science.'],
+    accent: '#3f6c51',
+  },
+];
+
 interface AboutUsPageProps {
   onHomeClick: () => void;
   onJoin: (source: string, intent?: 'owner' | 'walker') => void;
@@ -263,29 +285,73 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
               </div>
             </Reveal>
 
-            {/* Pablo & Leo — drop real photos at public/founder/pablo.jpg and
-                public/founder/leo.jpg and they replace these placeholders. */}
             <Reveal delay={200}>
-              <div style={{ display: 'flex', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
-                {[
-                  { name: 'Pablo', desc: 'Turkish Persian · sleeps on my head', src: '/founder/pablo.jpg', fallback: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=500&q=80&auto=format&fit=crop' },
-                  { name: 'Leo', desc: 'Doll-faced Persian · sleeps near my heart', src: '/founder/leo.jpg', fallback: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=500&q=80&auto=format&fit=crop' },
-                ].map((cat) => (
-                  <figure key={cat.name} style={{ margin: 0, background: 'rgba(253,249,240,.06)', border: '1px solid rgba(253,249,240,.14)', borderRadius: 22, overflow: 'hidden', width: 220, maxWidth: '100%' }}>
-                    <img
-                      src={cat.src}
-                      alt={`${cat.name}, the founder's Persian cat`}
-                      onError={(e) => { const t = e.currentTarget; if (t.src !== cat.fallback) t.src = cat.fallback; }}
-                      style={{ width: '100%', height: 170, objectFit: 'cover', display: 'block' }}
-                    />
-                    <figcaption style={{ padding: '12px 16px' }}>
-                      <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 15, color: C.cream2, display: 'block' }}>{cat.name}</span>
-                      <span style={{ fontSize: 12.5, color: C.muted2 }}>{cat.desc}</span>
-                    </figcaption>
-                  </figure>
-                ))}
-              </div>
+              <figure style={{ margin: '36px 0 0', maxWidth: 460 }}>
+                <img
+                  src="/founder/pablo-leo-young.jpg"
+                  alt="Pablo and Leo as kittens, cuddled together"
+                  style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
+                />
+                <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
+                  Day one together — pablo and leo at 45 days old, already inseparable.
+                </figcaption>
+              </figure>
             </Reveal>
+          </div>
+        </section>
+
+        {/* the evangelists */}
+        <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
+          <Reveal>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+              THE PROXYPAW EVANGELISTS
+            </div>
+            <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 14px' }}>
+              Meet the boys who approve every feature.
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(24px, 3vw, 34px)', fontWeight: 300 }}>
+              Pablo and Leo — brothers, flatmates, and Proxypaw's first users. They grew up curled in
+              the same cage, still groom each other daily, and take turns keeping the founder company.
+              Nothing ships until it feels right for these two.
+            </p>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <img
+              src="/founder/pablo-leo.jpg"
+              alt="Pablo and Leo together on the balcony beside their bonsai"
+              style={{ width: '100%', borderRadius: 28, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 24px 60px rgba(74,52,24,.14)', marginBottom: 'clamp(16px, 2vw, 22px)' }}
+            />
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 'clamp(14px, 1.8vw, 20px)' }}>
+            {EVANGELISTS.map((cat, i) => (
+              <Reveal key={cat.name} delay={i * 120}>
+                <article className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 26, overflow: 'hidden', height: '100%', boxSizing: 'border-box', transition: '.3s' }}>
+                  <img
+                    src={cat.img}
+                    alt={`${cat.name} the Persian cat`}
+                    style={{ width: '100%', height: 'clamp(240px, 30vw, 320px)', objectFit: 'cover', display: 'block' }}
+                  />
+                  <div style={{ padding: 'clamp(20px, 2.4vw, 26px)' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                      <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', color: C.ink }}>{cat.name}</span>
+                      <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 12.5, color: cat.accent, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{cat.title}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: C.muted2, marginBottom: 12, fontStyle: 'italic' }}>{cat.tagline}</div>
+                    <p style={{ fontSize: 14.5, lineHeight: 1.65, color: C.sub, margin: '0 0 16px', fontWeight: 300 }}>{cat.body}</p>
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                      {cat.facts.map((f) => (
+                        <li key={f} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 13.5, lineHeight: 1.5, color: C.muted, marginBottom: 7 }}>
+                          <span style={{ marginTop: 5 }}><PawSvg size={11} color={cat.accent} /></span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </section>
 
