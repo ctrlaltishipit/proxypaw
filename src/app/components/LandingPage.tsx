@@ -1,5 +1,5 @@
 /**
- * Landing page — built from the "Proxy Paw UI redesign" Claude Design artifact,
+ * Landing page, built from the "Proxy Paw UI redesign" Claude Design artifact,
  * with a motion-and-rhythm pass on top:
  *  - one consistent spacing scale (SECTION_PAD / uniform GRID_GAP)
  *  - pricing split into two buckets: walks & home visits, overnight boarding
@@ -9,7 +9,7 @@
  *    paw-trail divider between sections
  *  - real mobile breakpoints (nav, hero chips, pricing grids, full-width CTAs)
  *
- * Photos are stand-ins (the artifact's originals were blob: URLs) — swap in
+ * Photos are stand-ins (the artifact's originals were blob: URLs), swap in
  * IMAGES below.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -53,7 +53,7 @@ const C = {
 const sora = "'Sora', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
 
-/** One vertical rhythm for every section — the fix for uneven spacing. */
+/** One vertical rhythm for every section, the fix for uneven spacing. */
 const SECTION_PAD = 'clamp(52px, 7vw, 88px)';
 const SIDE_PAD = 'clamp(18px, 3vw, 28px)';
 const GRID_GAP = 'clamp(14px, 1.8vw, 20px)';

@@ -1,5 +1,5 @@
 /**
- * The Paw Journal — blog index + full-article reading view.
+ * The Paw Journal, blog index + full-article reading view.
  *
  * Articles live in data/articles.ts. Selecting a card swaps the index for the
  * article inline (no router yet), and the browser back affordance is a visible

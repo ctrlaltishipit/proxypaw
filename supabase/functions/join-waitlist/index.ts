@@ -1,5 +1,5 @@
 /**
- * join-waitlist — records a Proxypaw early-access signup and emails a confirmation.
+ * join-waitlist, records a Proxypaw early-access signup and emails a confirmation.
  *
  * Called straight from the signup form. There is no account and no JWT to
  * verify, so unlike buddyai's version this endpoint is public and has to do its
@@ -11,7 +11,7 @@
  *   WAITLIST_FROM    e.g. "Proxypaw <hello@proxypaw.com>"  (domain must be verified)
  *
  * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
- * Without RESEND_API_KEY the signup still saves — only the email is skipped.
+ * Without RESEND_API_KEY the signup still saves, only the email is skipped.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -28,7 +28,7 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** In-memory, per-instance. Not bulletproof across cold starts — enough to blunt a script. */
+/** In-memory, per-instance. Not bulletproof across cold starts, enough to blunt a script. */
 const hits = new Map<string, number[]>();
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 5;
@@ -52,17 +52,17 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
     : `You're on the Proxypaw waitlist, ${who}`;
 
   const walkerIntro = walker
-    ? `Thank you for registering as a Proxypaw volunteer. We will get back to you shortly — we're going ` +
+    ? `Thank you for registering as a Proxypaw volunteer. We will get back to you shortly, we're going ` +
       `through the information you sent and reviewing everything, including your note about your ` +
       `experience with pets. If you'd like to revise anything, just write to us through the feedback ` +
       `form that appears right after you register.\n\n` +
-      `What happens next: ID verification, a short conversation, our safety training — and then you ` +
+      `What happens next: ID verification, a short conversation, our safety training, and then you ` +
       `can start accepting walks, visits and boarding in your community, keeping 70% of every booking.\n\n`
     : `You've been added to the Proxypaw waitlist. We'll notify you shortly about your access.\n\n`;
   const text =
     `Hi ${who},\n\n` +
     walkerIntro +
-    `We're opening community by community, and yours — ${community} — is on our map. ` +
+    `We're opening community by community, and yours, ${community}, is on our map. ` +
     `The moment we have verified walkers and sitters in your towers, you'll be among the first in.\n\n` +
     `Proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own ` +
     `gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.\n\n` +
@@ -80,15 +80,15 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f1e7;">
 <tr><td align="center" style="padding:40px 20px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background:#fffdf8;border:1px solid #eee3cf;border-radius:16px;">
-<tr><td style="padding:40px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#2a2118;">
+<tr><td style="padding:40px 36px;font-family:-apple-system, BlinkMacSystemFont,'Segoe UI', Helvetica, Arial, sans-serif;color:#2a2118;">
 <div style="width:52px;height:52px;border-radius:16px;background:#e0662f;text-align:center;line-height:52px;font-size:26px;margin:0 0 24px;">&#128062;</div>
 <h1 style="margin:0 0 20px;font-size:25px;line-height:1.25;font-weight:700;color:#2a2118;">You're on the list.</h1>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Hi ${who},</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">${walker
-  ? "Thank you for registering as a Proxypaw volunteer. We will get back to you shortly &mdash; we're going through the information you sent and reviewing everything, including your note about your experience with pets. If you'd like to revise anything, just write to us through the feedback form that appears right after you register."
+  ? "Thank you for registering as a Proxypaw volunteer. We will get back to you shortly, we're going through the information you sent and reviewing everything, including your note about your experience with pets. If you'd like to revise anything, just write to us through the feedback form that appears right after you register."
   : "You've been added to the Proxypaw waitlist. We'll notify you shortly about your access."}</p>
-${walker ? `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">What happens next: ID verification, a short conversation, our safety training &mdash; and then you can start accepting walks, visits and boarding in your community, keeping <strong style="color:#2a2118;">70%</strong> of every booking.</p>` : ""}
-<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">We're opening community by community, and yours &mdash; <strong style="color:#2a2118;">${community}</strong> &mdash; is on our map. The moment we have verified walkers and sitters in your towers, you'll be among the first in.</p>
+${walker ? `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">What happens next: ID verification, a short conversation, our safety training, and then you can start accepting walks, visits and boarding in your community, keeping <strong style="color:#2a2118;">70%</strong> of every booking.</p>` : ""}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">We're opening community by community, and yours, <strong style="color:#2a2118;">${community}</strong>, is on our map. The moment we have verified walkers and sitters in your towers, you'll be among the first in.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">There's nothing else you need to do. We'll email you when your access is ready.</p>
 <p style="margin:0 0 28px;font-size:16px;line-height:1.65;color:#4a3f33;">Give your pet a scratch behind the ears from us.</p>
@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid request" }, 400);
   }
 
-  // Honeypot: a field hidden from humans. Anything filling it is a bot — return
+  // Honeypot: a field hidden from humans. Anything filling it is a bot, return
   // 200 so it can't tell it was caught.
   if ((body.website ?? "").trim() !== "") return json({ ok: true, emailed: false });
 

@@ -506,7 +506,7 @@ export default function SafetyTrainingModule({ onBack, userRole }: SafetyTrainin
                 ) : (
                   <p className={isLightMode ? 'text-gray-700' : 'text-gray-300'}>
                     You need {passingScore}% to pass. Please review the training modules and retake the quiz. 
-                    Don&apos;t worry—you can retake it as many times as needed.
+                    Don&apos;t worry, you can retake it as many times as needed.
                   </p>
                 )}
               </div>

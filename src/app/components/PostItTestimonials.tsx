@@ -100,7 +100,7 @@ export default function PostItTestimonials() {
             {/* Author */}
             <div className="mt-auto">
               <p className="text-gray-900 font-handwriting" style={{ fontFamily: "'Caveat', cursive" }}>
-                — {testimonial.author.toLowerCase()}
+, {testimonial.author.toLowerCase()}
               </p>
               <p className="text-gray-600 font-handwriting" style={{ fontFamily: "'Caveat', cursive" }}>
                 {testimonial.role.toLowerCase()}

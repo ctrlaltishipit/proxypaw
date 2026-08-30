@@ -1,5 +1,5 @@
 /**
- * AboutUsPage — vision, founder story, and why Proxypaw is deliberately small.
+ * AboutUsPage, vision, founder story, and why Proxypaw is deliberately small.
  *
  * The positioning here is the moat: city-wide platforms (PawSpace and the
  * like) offer nine services across five cities with contractor networks;
@@ -87,13 +87,13 @@ const BELIEFS = [
     Icon: Home,
     accent: C.orange,
     title: 'The safest place is their own home.',
-    body: "Kennels and facilities — however good — are strange rooms full of strange smells. Many pets stop eating there. Some fall sick from stress alone. So we flipped the model: the pet stays where every corner smells like family, and a verified neighbour comes to them. Fed in their own bowl, asleep in their own spot, they simply understand: my human is busy today, and someone kind has come.",
+    body: "Kennels and facilities, however good, are strange rooms full of strange smells. Many pets stop eating there. Some fall sick from stress alone. So we flipped the model: the pet stays where every corner smells like family, and a verified neighbour comes to them. Fed in their own bowl, asleep in their own spot, they simply understand: my human is busy today, and someone kind has come.",
   },
   {
     Icon: MapPin,
     accent: C.green,
     title: 'Depth in one place beats breadth everywhere.',
-    body: "City-wide platforms cover five cities and nine services with contractors who may live an hour away. We cover the communities of Gachibowli and the Financial District with neighbours who live minutes away — people you share a lift with, rated by people you know. We would rather be irreplaceable in fifty communities than forgettable in five cities.",
+    body: "City-wide platforms cover five cities and nine services with contractors who may live an hour away. We cover the communities of Gachibowli and the Financial District with neighbours who live minutes away, people you share a lift with, rated by people you know. We would rather be irreplaceable in fifty communities than forgettable in five cities.",
   },
   {
     Icon: Users,
@@ -105,24 +105,24 @@ const BELIEFS = [
     Icon: HeartHandshake,
     accent: C.orangeDark,
     title: 'Trust is engineered, not assumed.',
-    body: "Every volunteer is ID-verified and background-checked before their first booking, and trained on our safety protocols — lobby leash rules, the hot-pavement test, emergency first steps. Every walk is GPS-tracked live. Every visit sends photos. Every booking is insured. The love is human; the safety is systematic.",
+    body: "Every volunteer is ID-verified and background-checked before their first booking, and trained on our safety protocols, lobby leash rules, the hot-pavement test, emergency first steps. Every walk is GPS-tracked live. Every visit sends photos. Every booking is insured. The love is human; the safety is systematic.",
   },
 ];
 
 /** The vetting pipeline, modelled on what serious platforms (Rover, Wag)
- *  run — ID + face match, criminal-record screening, registry checks —
+ *  run, ID + face match, criminal-record screening, registry checks,
  *  translated to India: Aadhaar, police clearance, references, and our own
  *  pet-parent requirement on top. */
 const VETTING = [
   {
     Icon: PawPrint,
     title: 'Pet experience, or no entry',
-    body: "Our first filter isn't paperwork — it's love with mileage. Every applicant must be a pet parent or have genuinely cared for pets, and tells us their story in their own words. No pet experience, no exceptions.",
+    body: "Our first filter isn't paperwork: it's love with mileage. Every applicant must be a pet parent or have genuinely cared for pets, and tells us their story in their own words. No pet experience, no exceptions.",
   },
   {
     Icon: Fingerprint,
     title: 'Government ID + face match',
-    body: 'Aadhaar or another government ID, verified against the person in front of us — the same identity standard global platforms like Rover and Wag apply.',
+    body: 'Aadhaar or another government ID, verified against the person in front of us, the same identity standard global platforms like Rover and Wag apply.',
   },
   {
     Icon: FileSearch,
@@ -132,28 +132,28 @@ const VETTING = [
   {
     Icon: MessagesSquare,
     title: 'A real conversation',
-    body: "An in-person interview — because a form can't tell you how someone talks about animals. We can. We're pet parents too.",
+    body: "An in-person interview, because a form can't tell you how someone talks about animals. We can. We're pet parents too.",
   },
   {
     Icon: GraduationCap,
     title: 'Safety training, then a trial',
-    body: 'Lobby leash rules, the hot-pavement test, emergency first steps — then supervised trial bookings before they ever go solo.',
+    body: 'Lobby leash rules, the hot-pavement test, emergency first steps, then supervised trial bookings before they ever go solo.',
   },
   {
     Icon: Eye,
     title: 'Watched on every booking, forever',
-    body: 'Live GPS, photo updates, ratings from your own neighbours after every booking — and zero-tolerance removal for any mistreatment. Vetting never really ends.',
+    body: 'Live GPS, photo updates, ratings from your own neighbours after every booking, and zero-tolerance removal for any mistreatment. Vetting never really ends.',
   },
 ];
 
-/** The founder's cats — Proxypaw's first and most demanding users. */
+/** The founder's cats, Proxypaw's first and most demanding users. */
 const EVANGELISTS = [
   {
     name: 'pablo',
     img: '/founder/pablo.jpg',
     title: 'Chief Comfort Officer',
     tagline: 'The lovable goof',
-    body: "Pablo has one superpower: he knows when you've had a bad day before you've said a word. He values his personal space, does his own thing — and then, the moment you're at your lowest, he appears. He's also Proxypaw's head of quality television: football matches, random videos, whatever's on — Pablo sits, watches, and judges silently.",
+    body: "Pablo has one superpower: he knows when you've had a bad day before you've said a word. He values his personal space, does his own thing, and then, the moment you're at your lowest, he appears. He's also Proxypaw's head of quality television: football matches, random videos, whatever's on, Pablo sits, watches, and judges silently.",
     facts: ['Detects a rough day from two rooms away', 'Watches football like he has money on it', 'Respects personal space. Expects the same.'],
     accent: '#e0662f',
   },
@@ -162,7 +162,7 @@ const EVANGELISTS = [
     img: '/founder/leo.jpg',
     title: 'Head of Balcony Security',
     tagline: 'The curious one',
-    body: "Leo runs a strict balcony patrol: birds are monitored (never caught — the record stands at zero), insects are personally inspected, and every new smell is investigated on arrival. He is also a certified shoulder cat — he climbs up, settles in, and stays there like it's his office. Of the two, he's the clingy one, and he'd take that as a compliment.",
+    body: "Leo runs a strict balcony patrol: birds are monitored (never caught, the record stands at zero), insects are personally inspected, and every new smell is investigated on arrival. He is also a certified shoulder cat, he climbs up, settles in, and stays there like it's his office. Of the two, he's the clingy one, and he'd take that as a compliment.",
     facts: ['Career birds caught: 0. Enthusiasm: undented.', 'Full-time shoulder cat, no notice period', 'Inspects every insect. For science.'],
     accent: '#3f6c51',
   },
@@ -227,7 +227,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <p style={{ fontSize: 'clamp(16.5px, 1.7vw, 19px)', lineHeight: 1.7, color: C.sub, maxWidth: 720, margin: 0, fontWeight: 300 }}>
               Proxypaw exists for one moment: the moment you have to leave, and your pet has to stay.
               We believe that moment should never mean a cage, a strange facility, or a stranger.
-              It should mean a verified neighbour walking through a familiar door — so your pet
+              It should mean a verified neighbour walking through a familiar door, so your pet
               feels what we want every pet to feel: <em>my human is busy today, and someone kind has come.</em>
             </p>
           </Reveal>
@@ -247,30 +247,30 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <Reveal delay={120}>
               <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.darkSub, fontWeight: 300 }}>
                 <p style={{ margin: '0 0 18px' }}>
-                  My first pet found me. A street dog outside the Balaji temple — my parents named him
+                  My first pet found me. A street dog outside the Balaji temple, my parents named him
                   Balaji after it; I laughed and called him Baloo, and Baloo stuck. He was with us for six
                   years before his health gave out, and losing him taught me something I've carried since:
                   <em style={{ color: C.cream2 }}> what comes to you from nature, without you searching for it,
                   one day goes back to nature.</em> I told myself I wouldn't get another pet. Then my dad
-                  surprised me with Coco — a Shih Tzu with a heart bigger than her whole body. When I moved
+                  surprised me with Coco, a Shih Tzu with a heart bigger than her whole body. When I moved
                   away to study, she went back to grow up alongside her sisters and brothers, and today
                   she's a mother of two. I'm so happy for her.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
-                  Now there's Pablo and Leo — two Persian cats who've been with me since they were 45 days
+                  Now there's Pablo and Leo, two Persian cats who've been with me since they were 45 days
                   old. They grew up in the same cage, bonded so tightly I couldn't bear to separate them,
                   so I brought both home. Best decision I ever made: when I'm out, they have each other to
                   play with, argue with, and nap against. And every night, one sleeps on my head and the
                   other curls up near my heart. That kind of unconditional trust takes a pet time to give
-                  you — and once you've felt it, you understand what's really being handed over when an
+                  you, and once you've felt it, you understand what's really being handed over when an
                   owner gives someone their keys.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
-                  Whenever I had to leave the city, I was lucky — my parents live here and could come care
+                  Whenever I had to leave the city, I was lucky, my parents live here and could come care
                   for the boys. But I kept thinking about everyone who doesn't have that. There was no
                   service I would have trusted with Pablo and Leo. So I built the one I'd trust: a small
-                  set of people who handle pets with empathy and genuine affection — pet parents
-                  themselves, every one of them — verified, trained, and minutes from your door.
+                  set of people who handle pets with empathy and genuine affection, pet parents
+                  themselves, every one of them, verified, trained, and minutes from your door.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
                   Proxypaw will stay deliberately small and deliberately deep: walks &amp; home visits, and
@@ -293,7 +293,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                   style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
                 />
                 <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
-                  Day one together — pablo and leo at 45 days old, already inseparable.
+                  Day one together: pablo and leo at 45 days old, already inseparable.
                 </figcaption>
               </figure>
             </Reveal>
@@ -310,7 +310,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
               Meet the boys who approve every feature.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(24px, 3vw, 34px)', fontWeight: 300 }}>
-              Pablo and Leo — brothers, flatmates, and Proxypaw's first users. They grew up curled in
+              Pablo and Leo, brothers, flatmates, and Proxypaw's first users. They grew up curled in
               the same cage, still groom each other daily, and take turns keeping the founder company.
               Nothing ships until it feels right for these two.
             </p>
@@ -380,7 +380,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
           </div>
         </section>
 
-        {/* how we vet — BGV */}
+        {/* how we vet, BGV */}
         <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
           <Reveal>
             <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
@@ -391,7 +391,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 680, margin: '0 0 clamp(26px, 3.4vw, 40px)', fontWeight: 300 }}>
               Pets can't tell you how they were treated. If something goes wrong, they carry it
-              silently — and the trauma lives on long after. If everything goes right, they greet you
+              silently, and the trauma lives on long after. If everything goes right, they greet you
               at the door happier than you left them. That asymmetry is why our vetting is stricter
               than it "needs" to be: we verify like the pet's silence depends on us, because it does.
             </p>
@@ -426,11 +426,11 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                 </h2>
                 <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.sub, margin: '0 0 8px', fontWeight: 300 }}>
                   Every walk and every visit happens because a neighbour raised their hand. Volunteers
-                  register, verify their ID, complete our safety training — and then earn 70% of every
+                  register, verify their ID, complete our safety training, and then earn 70% of every
                   booking doing something they already love, minutes from their own front door.
                 </p>
                 <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: 0 }}>
-                  If you're the person whose day gets better when a dog walks into the lift — we're looking for you.
+                  If you're the person whose day gets better when a dog walks into the lift, we're looking for you.
                 </p>
               </div>
               <div className="pp-about-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

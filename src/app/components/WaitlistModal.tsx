@@ -1,12 +1,12 @@
 /**
- * WaitlistModal — the split-card signup from the Claude Design artifact.
+ * WaitlistModal, the split-card signup from the Claude Design artifact.
  *
  * Photo and testimonial on the left, form on the right. Submits to the
  * join-waitlist Edge Function, which saves the row and sends the confirmation
  * email. There is no account and no OTP: this is a waitlist, so asking someone
  * to verify a code before they're even in would cost signups for nothing.
  *
- * Email is collected alongside phone because the confirmation is an email —
+ * Email is collected alongside phone because the confirmation is an email,
  * a phone number alone can't be written to.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -81,7 +81,7 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
   if (state === 'sent') {
     return (
       <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 18, padding: '16px 20px', marginTop: 24, fontSize: 14, lineHeight: 1.55, color: '#5a6b3f' }}>
-        Thank you — we've received it and we read every message.
+        Thank you, we've received it and we read every message.
       </div>
     );
   }
@@ -93,8 +93,8 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
       </div>
       <p style={{ fontSize: 13, lineHeight: 1.55, color: C.muted2, margin: '0 0 12px' }}>
         {volunteer
-          ? 'If you want to correct or add to anything you just submitted — or share feedback about registering — write it here and we\u2019ll attach it to your application.'
-          : 'Features you\u2019d love, upgrades you\u2019d want, or a few words about why you\u2019re joining — we read everything, and the best notes shape what we build next.'}
+          ? 'If you want to correct or add to anything you just submitted, or share feedback about registering, write it here and we\u2019ll attach it to your application.'
+          : 'Features you\u2019d love, upgrades you\u2019d want, or a few words about why you\u2019re joining, we read everything, and the best notes shape what we build next.'}
       </p>
       <textarea
         className="pp-field"
@@ -109,7 +109,7 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
       />
       {state === 'error' && (
         <p role="alert" style={{ fontSize: 13, color: C.orangeDark, margin: '8px 0 0' }}>
-          Could not send — please try again.
+          Could not send, please try again.
         </p>
       )}
       <button
@@ -207,6 +207,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   return (
     <div
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+      className="pp-modal-overlay"
       style={{
         position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(42,33,24,.55)',
         backdropFilter: 'blur(4px)', display: 'grid', placeItems: 'center', padding: 20,
@@ -219,7 +220,15 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         .pp-field:focus { border-color:${C.orange} !important; box-shadow:0 0 0 3px rgba(224,102,47,.15); }
         .pp-submit:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 16px 34px rgba(224,102,47,.4); }
         .pp-x:hover { background:${C.band}; }
-        @media (max-width: 860px) { .pp-modal-photo { display:none !important; } }
+        @media (max-width: 860px) {
+          .pp-modal-photo { display:none !important; }
+          .pp-modal { grid-template-columns: 1fr !important; width: 100% !important; border-radius: 24px !important; }
+          .pp-modal-form { padding: 26px 20px 30px !important; justify-content: flex-start !important; }
+        }
+        @media (max-width: 480px) {
+          .pp-modal-overlay { padding: 10px !important; align-items: flex-start !important; }
+          .pp-modal-form { padding: 24px 16px 28px !important; }
+        }
         @media (prefers-reduced-motion: reduce) { .pp-modal { animation:none; } }
       `}</style>
 
@@ -268,7 +277,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         </div>
 
         {/* ---- right: form ---- */}
-        <div style={{ padding: 'clamp(28px, 4vw, 44px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div className="pp-modal-form" style={{ padding: 'clamp(28px, 4vw, 44px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 26 }}>
             <span style={{ width: 38, height: 38, borderRadius: 13, background: C.orange, display: 'grid', placeItems: 'center' }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff">
@@ -294,11 +303,11 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 {done.alreadyOnList
                   ? `We already have you down for ${community}. We'll notify you shortly about your access.`
                   : volunteer
-                    ? `Thank you for volunteering. We've sent a confirmation to ${email} — we'll reach out about onboarding, ID verification and safety training.`
+                    ? `Thank you for volunteering. We've sent a confirmation to ${email}, we'll reach out about onboarding, ID verification and safety training.`
                     : `We've added you to the Proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: '0 0 28px' }}>
-                We open community by community. {community} is on our map — you'll be among the first in.
+                We open community by community. {community} is on our map, you'll be among the first in.
               </p>
               <button
                 onClick={onClose}
@@ -334,17 +343,28 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 ))}
               </div>
 
+              {mode === 'signup' && (
+                <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 16, padding: '13px 16px', marginBottom: 20, fontSize: 12.5, lineHeight: 1.6, color: '#5a6b3f' }}>
+                  <strong style={{ fontFamily: sora, fontSize: 12.5 }}>A quick note:</strong> we're currently
+                  live only in Hyderabad, and we're focusing on gated communities for now. Pick your community
+                  from the list and sign up as an owner to get access, or register as a volunteer from that
+                  same community. Volunteers don't need to come from outside: if you live in Prestige High
+                  Fields and want to walk, care for, or foster a neighbour's pet for a day or two, you can
+                  volunteer, earn on every booking, and be part of the care. Your pet stays with someone from
+                  your own community, often a face you already know, so leaving them feels safe.
+                </div>
+              )}
               {volunteer && mode === 'signup' && (
                 <div style={{ marginBottom: 20 }}>
                   <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', color: C.ink }}>
                     Register as a Volunteer
                   </h2>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: C.sub, margin: '0 0 8px' }}>
-                    Walk dogs, visit cats, host sleepovers — and keep 70% of every booking.
+                    Walk dogs, visit cats, host sleepovers, and keep 70% of every booking.
                     We'll verify your ID at onboarding.
                   </p>
                   <p style={{ fontSize: 12.5, lineHeight: 1.5, color: C.orangeDark, margin: 0, fontWeight: 500 }}>
-                    One thing we ask of every volunteer: real experience with pets — you have (or have
+                    One thing we ask of every volunteer: real experience with pets, you have (or have
                     had) a pet, or you've genuinely cared for one. Pets can't tell their humans how they
                     were treated, so we only take people who already understand them.
                   </p>
@@ -357,7 +377,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   </h2>
                   <p style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, margin: '0 0 22px' }}>
                     Proxypaw is opening one community at a time. There are no accounts to log into
-                    yet — join the waitlist and we'll email you the moment your towers go live.
+                    yet, join the waitlist and we'll email you the moment your towers go live.
                   </p>
                   <button
                     onClick={() => setMode('signup')}
@@ -402,7 +422,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                         style={{ ...field, borderRadius: 18, minHeight: 110, resize: 'vertical', lineHeight: 1.55 }}
                         value={coverLetter}
                         onChange={(e) => setCoverLetter(e.target.value.slice(0, 1600))}
-                        placeholder="One short paragraph (~200 words): your experience with pets — your own, or ones you've cared for — and why you'd like to volunteer."
+                        placeholder="One short paragraph (~200 words): your experience with pets, your own, or ones you've cared for, and why you'd like to volunteer."
                         required
                       />
                       <p style={{ fontSize: 12, color: C.muted2, margin: '6px 2px 0', lineHeight: 1.5, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
@@ -433,7 +453,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     </select>
                   </div>
 
-                  {/* Honeypot — hidden from people, catches bots. */}
+                  {/* Honeypot, hidden from people, catches bots. */}
                   <input type="text" name="website" value={website} tabIndex={-1} autoComplete="off"
                     aria-hidden="true" onChange={(e) => setWebsite(e.target.value)}
                     style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />

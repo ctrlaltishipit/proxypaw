@@ -1,5 +1,5 @@
 /**
- * CommunityList — replaces the old GoogleMapView.
+ * CommunityList, replaces the old GoogleMapView.
  *
  * The Maps embed needed a public API key that shipped to every visitor and had
  * to be referrer-locked to avoid billing abuse. Coverage is a fixed list of

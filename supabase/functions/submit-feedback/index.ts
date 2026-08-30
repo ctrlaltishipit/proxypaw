@@ -1,5 +1,5 @@
 /**
- * submit-feedback — stores feedback from the form shown after registration.
+ * submit-feedback, stores feedback from the form shown after registration.
  *
  * Owners send app/feature feedback and testimonials; volunteers send
  * registration feedback or revisions to their submitted information.

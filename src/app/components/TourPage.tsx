@@ -1,5 +1,5 @@
 /**
- * TourPage — "Inside the app".
+ * TourPage, "Inside the app".
  *
  * Real screenshots of the built Proxypaw app (captured from the running
  * screens, not mocked), one section per area, so someone deciding whether to
@@ -68,10 +68,10 @@ const SECTIONS: Section[] = [
     Icon: Users,
     accent: '#3f6c51',
     title: 'Neighbours, not strangers.',
-    body: 'Browse verified walkers and sitters who live in your towers. Every profile shows their Aadhaar-verified badge, community rating, completed walks and the buildings they cover — so the person holding the leash is someone your neighbours already trust.',
+    body: 'Browse verified walkers and sitters who live in your towers. Every profile shows their Aadhaar-verified badge, community rating, completed walks and the buildings they cover, so the person holding the leash is someone your neighbours already trust.',
     points: [
       'Aadhaar-checked, background-verified, community-rated',
-      'Filter by tower, timing and service — walks, visits, boarding',
+      'Filter by tower, timing and service, walks, visits, boarding',
       'See real reviews from pet parents in your own community',
     ],
     shot: '/shots/volunteers.png',
@@ -83,10 +83,10 @@ const SECTIONS: Section[] = [
     Icon: CalendarCheck,
     accent: '#f0b429',
     title: 'Pick a day. Pick a time. Done.',
-    body: "Choose a duration from 30 minutes to 2 hours, pick your slot, and your walker gets your pet's quirks, route notes and vet details automatically. Repeat bookings take one tap — because Tuesday's 7 AM walk is always Tuesday's 7 AM walk.",
+    body: "Choose a duration from 30 minutes to 2 hours, pick your slot, and your walker gets your pet's quirks, route notes and vet details automatically. Repeat bookings take one tap, because Tuesday's 7 AM walk is always Tuesday's 7 AM walk.",
     points: [
       'Walks from ₹149, cat home visits ₹129, boarding from ₹549',
-      "Your pet's profile travels with every booking — quirks included",
+      "Your pet's profile travels with every booking, quirks included",
       'Reschedule or cancel without a phone call',
     ],
     shot: '/shots/booking.png',
@@ -98,11 +98,11 @@ const SECTIONS: Section[] = [
     Icon: Wallet,
     accent: '#e0662f',
     title: 'Checkout that takes seconds, not forms.',
-    body: 'Pay by UPI like everything else in your life. Fair, flat pricing with no surge and no tips awkwardness — and walkers keep 70% of every booking, so good people stay on the platform.',
+    body: 'Pay by UPI like everything else in your life. Fair, flat pricing with no surge and no tips awkwardness, and walkers keep 70% of every booking, so good people stay on the platform.',
     points: [
       'UPI, cards and net banking',
       'Every booking insured and receipted',
-      'Paw points credited instantly — 25 per booking',
+      'Paw points credited instantly, 25 per booking',
     ],
     shot: '/shots/payment.png',
     alt: 'The payment screen with UPI checkout and booking summary',
@@ -117,7 +117,7 @@ const SECTIONS: Section[] = [
     points: [
       'Live GPS tracking on every walk',
       'Photo updates from visits and sleepovers',
-      'Complete history — rebook any past booking in one tap',
+      'Complete history, rebook any past booking in one tap',
     ],
     shot: '/shots/bookings.png',
     alt: 'Bookings screen with live status and booking history',
@@ -128,7 +128,7 @@ const SECTIONS: Section[] = [
     Icon: Cat,
     accent: '#f0b429',
     title: "Meet the pets you share a lift with.",
-    body: "Every pet in your community, tower by tower: who's friendly with dogs, who's shy, whose birthday it is. Owner details stay masked until you're a verified member — community, with privacy done properly.",
+    body: "Every pet in your community, tower by tower: who's friendly with dogs, who's shy, whose birthday it is. Owner details stay masked until you're a verified member, community, with privacy done properly.",
     points: [
       'Tower-by-tower pet directory',
       'Personal details masked until verification',
@@ -251,7 +251,7 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
             See what you're joining.
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 300 }}>
-            These are real screens from the Proxypaw app — the one your community gets when the doors open. A walk through, before you walk in.
+            These are real screens from the Proxypaw app, the one your community gets when the doors open. A walk through, before you walk in.
           </p>
         </Reveal>
       </section>

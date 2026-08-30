@@ -93,7 +93,7 @@ export default function HomePage({ onLoginClick, isLoggedIn, onDashboardClick, o
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             join our community-powered platform where ai matches pets with perfect companions. 
-            walk, care, and connect—all while earning rewards.
+            walk, care, and connect, all while earning rewards.
           </motion.p>
 
           <motion.div 
@@ -139,7 +139,7 @@ export default function HomePage({ onLoginClick, isLoggedIn, onDashboardClick, o
           >
             <h2 className={`mb-6 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>a thoughtful initiative</h2>
             <p className={`max-w-2xl mx-auto ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
-              proxypaw isn&apos;t just a service—it&apos;s a movement. we believe every pet deserves 
+              proxypaw isn&apos;t just a service, it&apos;s a movement. we believe every pet deserves 
               enriching experiences, and every community member should have the opportunity to 
               connect through responsible pet care.
             </p>

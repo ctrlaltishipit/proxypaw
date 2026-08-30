@@ -1,9 +1,9 @@
 /**
- * Gated communities Proxypaw covers — Financial District, Gachibowli,
+ * Gated communities Proxypaw covers, Financial District, Gachibowli,
  * Kokapet, Nanakramguda, Narsingi, Kondapur and Nallagandla.
  *
  * Used by the signup form's Community picker. "Other" must stay last: never
- * block a signup because someone's tower isn't listed yet — their answer tells
+ * block a signup because someone's tower isn't listed yet, their answer tells
  * us where to expand next.
  */
 
@@ -102,7 +102,7 @@ export const COMMUNITIES: string[] = [
   'Janapriya Nile Valley',
 
   // Always last.
-  'Other — not listed yet',
+  'Other, not listed yet',
 ];
 
-export const OTHER_COMMUNITY = 'Other — not listed yet';
+export const OTHER_COMMUNITY = 'Other, not listed yet';
