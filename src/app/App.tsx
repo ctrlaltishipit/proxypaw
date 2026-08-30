@@ -44,7 +44,7 @@ function ScrollManager() {
 function Home({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: "Proxypaw — Your Neighbours. Your Pets' Best Friends.",
+    title: "proxypaw — Your Neighbours. Your Pets' Best Friends.",
     description: 'Verified neighbours for dog walks, cat home visits and overnight boarding, inside your gated community in Hyderabad. From ₹149.',
     path: '/',
   });
@@ -61,7 +61,7 @@ function Home({ onJoin }: { onJoin: JoinFn }) {
 function About({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: 'About Proxypaw — every pet deserves a safe space',
+    title: 'About proxypaw — every pet deserves a safe space',
     description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every Proxypaw volunteer.",
     path: '/about',
   });
@@ -71,7 +71,7 @@ function About({ onJoin }: { onJoin: JoinFn }) {
 function Tour({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: 'Inside the Proxypaw app',
+    title: 'Inside the proxypaw app',
     description: 'Real screens from the Proxypaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
     path: '/tour',
   });
@@ -87,7 +87,7 @@ function Blog({ onJoin }: { onJoin: JoinFn }) {
     article
       ? { title: `${article.title} — The Paw Journal`, description: article.dek, path: `/blog/${article.slug}` }
       : {
-          title: 'The Paw Journal — care guides from Proxypaw',
+          title: 'The Paw Journal — care guides from proxypaw',
           description: 'Short, practical pet-care reads for flat-dwellers: grooming, feeding, safety, walking and play, for dogs and cats alike.',
           path: '/blog',
         },

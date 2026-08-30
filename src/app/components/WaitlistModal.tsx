@@ -287,7 +287,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
               </svg>
             </span>
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>Proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>proxypaw</span>
           </div>
 
           {done ? (
