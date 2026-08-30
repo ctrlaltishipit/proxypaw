@@ -1,0 +1,58 @@
+/* Temporary brand-energy overlay for app screenshots only (not shipped).
+   Maps the app screens' grey Tailwind palette onto proxypaw's system. */
+body { background: #f6f1e7 !important; }
+.bg-white { background: #fffdf8 !important; }
+.bg-gray-50 { background: #f6f1e7 !important; }
+.bg-gray-100, .bg-gray-200 { background: #f1eadb !important; }
+div.bg-gray-900, div.bg-black, span.bg-gray-900, span.bg-black { background: #2a2118 !important; }
+button.bg-gray-900, button.bg-black, a.bg-gray-900, a.bg-black { background: #e0662f !important; border-radius: 999px !important; }
+.text-gray-900, .text-black { color: #2a2118 !important; }
+.text-gray-700, .text-gray-600 { color: #6f5f4b !important; }
+.text-gray-500, .text-gray-400 { color: #8b7a63 !important; }
+.border-gray-100, .border-gray-200, .border-gray-300, .border { border-color: #eee3cf !important; }
+.bg-green-100 { background: #eef0e4 !important; }
+.text-green-600, .text-green-700 { color: #3f6c51 !important; }
+.bg-green-500, .bg-green-600 { background: #3f6c51 !important; }
+.bg-blue-500, .bg-blue-600, .bg-indigo-500 { background: #3f6c51 !important; }
+.bg-yellow-400, .bg-amber-400 { background: #f0b429 !important; }
+.text-yellow-500, .text-amber-500 { color: #c9a227 !important; }
+.bg-red-500 { background: #c24e1d !important; }
+.rounded-lg, .rounded-xl { border-radius: 16px !important; }
+.rounded-2xl { border-radius: 20px !important; }
+.shadow, .shadow-sm, .shadow-md { box-shadow: 0 6px 18px rgba(74,52,24,.08) !important; }
+input, select, textarea { background: #f6f1e7 !important; border-color: #d9cbb2 !important; border-radius: 14px !important; }
+/* progress bars and accents */
+.bg-gray-900.h-2, .bg-black.h-2, [class*="progress"] > div { background: #e0662f !important; }
+/* subtle warm ground instead of stark white page headers */
+header.bg-white, .sticky.bg-white { background: #fdf9f0 !important; }
+
+/* --- round 2, from the visual review --- */
+/* gradients (payment page ground, dashboard headers) -> flat warm cream */
+[class*="bg-gradient"] { background: #f6f1e7 !important; }
+/* the widest grey family used by these screens */
+[class*="bg-gray-950"], [class*="bg-gray-900"], [class*="bg-black"] { background: #2a2118 !important; }
+[class*="bg-gray-800"], [class*="bg-gray-700"] { background: #3f6c51 !important; }
+[class*="bg-gray-600"], [class*="bg-gray-400"], [class*="bg-gray-300"] { background: #d9cbb2 !important; }
+/* every button that was dark or grey becomes the brand CTA */
+button[class*="bg-gray-9"], button[class*="bg-black"], button[class*="bg-gradient"] { background: #e0662f !important; color: #fff !important; border-radius: 999px !important; }
+button:disabled { background: #e9ddc8 !important; color: #a08e73 !important; }
+/* outline ghost buttons pick up the brand */
+button[class*="border"] { border-color: #e0662f !important; color: #c24e1d !important; border-radius: 999px !important; }
+button[class*="border"][class*="bg-gray-9"], button[class*="border"][class*="bg-black"] { color: #fff !important; }
+/* progress fills: any short dark bar -> orange on a sand track */
+[class*="h-2"][class*="bg-gray"], [class*="h-2"][class*="bg-black"], [class*="h-3"][class*="bg-gray"], [class*="h-1.5"][class*="bg-gray"] { background: #e0662f !important; }
+[class*="h-2"][class*="bg-gray-2"], [class*="h-2"][class*="bg-gray-1"] { background: #f1eadb !important; }
+/* pill badges (top rated, tiers): gold with ink text */
+span[class*="rounded-full"][class*="bg-gray-9"], span[class*="rounded-full"][class*="bg-black"], div[class*="rounded-full"][class*="bg-gray-9"] { background: #f0b429 !important; color: #2a2118 !important; }
+/* small icon chips go orange for warmth */
+div[class*="w-8"][class*="bg-gray-9"], div[class*="w-10"][class*="bg-gray-9"], div[class*="w-8"][class*="bg-black"], div[class*="w-10"][class*="bg-black"], div[class*="w-12"][class*="bg-gray-9"] { background: #e0662f !important; }
+
+/* --- round 3 --- */
+/* marketing screenshots show the ENABLED state: disabled still gets full CTA colour */
+button:disabled { background: #e0662f !important; color: #fff !important; opacity: 1 !important; }
+/* progress track must be visible against cream cards */
+[class*="h-2"][class*="bg-gray-2"], [class*="h-2"][class*="bg-gray-1"], [class*="h-1.5"][class*="bg-gray-2"] { background: #e9ddc8 !important; }
+/* card gradients: a touch warmer than the page so cards read as cards */
+[class*="bg-gradient"] { background: #fdf6ec !important; }
+/* small dark icon chips -> forest green (padding-constrained so big panels stay ink) */
+div[class*="p-2"][class*="bg-gray-9"], div[class*="p-3"][class*="bg-gray-9"], div[class*="p-2"][class*="bg-black"], div[class*="p-2.5"][class*="bg-gray-9"] { background: #3f6c51 !important; }

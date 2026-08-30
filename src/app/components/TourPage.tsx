@@ -253,73 +253,70 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             See what you're joining.
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 400 }}>
-            These are real screens from the Proxypaw app, the one your community gets when the doors open. A walk through, before you walk in.
+            Real screens from the Proxypaw app, the one your community gets when the doors open. Keep scrolling: each screen stacks over the last.
           </p>
         </Reveal>
       </section>
 
-      {/* sections */}
-      <div style={{ ...shell, padding: '30px 28px 40px', display: 'flex', flexDirection: 'column', gap: 'clamp(70px, 9vw, 130px)' }}>
-        {SECTIONS.map((s, i) => {
-          const flip = i % 2 === 1;
+      {/* sections: sticky stacked cards — each new card slides over the last */}
+      <div style={{ ...shell, padding: `10px ${'{'}0{'}'} 40px`, position: 'relative' }}>
+        {SECTIONS.map((sec, i) => {
+          const tints = ['#fffdf8', '#f7f3e6', '#fdf6ec'];
           return (
             <section
-              key={s.id}
-              id={s.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))',
-                gap: 'clamp(28px, 4.5vw, 64px)',
-                alignItems: 'center',
-              }}
+              key={sec.id}
+              id={sec.id}
+              style={{ position: 'sticky', top: 'clamp(64px, 8vh, 88px)', zIndex: i + 1, padding: '0 clamp(14px, 2.5vw, 28px)', marginBottom: 'clamp(28px, 4vh, 44px)' }}
             >
-              <Reveal>
-                <div style={{ order: flip ? 2 : 1 }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 999, padding: '7px 16px 7px 8px', marginBottom: 20 }}>
-                    <span style={{ width: 28, height: 28, borderRadius: 999, background: s.accent, display: 'grid', placeItems: 'center' }}>
-                      <s.Icon size={15} color="#fff" />
+              <div
+                className="pp-stack-card"
+                style={{
+                  background: tints[i % tints.length],
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 26,
+                  boxShadow: '0 -14px 40px rgba(74,52,24,.10), 0 18px 44px rgba(74,52,24,.10)',
+                  padding: 'clamp(20px, 2.8vw, 36px)',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
+                  gap: 'clamp(20px, 3vw, 44px)',
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#f6f1e7', border: `1px solid ${C.cardBorder}`, borderRadius: 999, padding: '6px 14px 6px 7px', marginBottom: 16 }}>
+                    <span style={{ width: 26, height: 26, borderRadius: 999, background: sec.accent, display: 'grid', placeItems: 'center' }}>
+                      <sec.Icon size={14} color="#fff" />
                     </span>
-                    <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 12.5, letterSpacing: '0.1em', color: C.muted }}>
-                      {s.eyebrow}
+                    <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 11.5, letterSpacing: '0.1em', color: C.muted }}>
+                      {sec.eyebrow}
                     </span>
+                    <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 11.5, color: C.muted2 }}>· {i + 1}/{SECTIONS.length}</span>
                   </div>
-                  <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3vw, 38px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 16px' }}>
-                    {s.title}
+                  <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(23px, 2.6vw, 32px)', letterSpacing: '-0.01em', lineHeight: 1.15, margin: '0 0 12px' }}>
+                    {sec.title}
                   </h2>
-                  <p style={{ fontSize: 16.5, lineHeight: 1.7, color: C.sub, margin: '0 0 22px', fontWeight: 400 }}>
-                    {s.body}
+                  <p style={{ fontSize: 15.5, lineHeight: 1.65, color: C.sub, margin: '0 0 16px', fontWeight: 400 }}>
+                    {sec.body}
                   </p>
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                    {s.points.map((p) => (
-                      <li key={p} style={{ display: 'flex', gap: 11, alignItems: 'flex-start', fontSize: 15, lineHeight: 1.6, color: C.sub, marginBottom: 10 }}>
-                        <span style={{ width: 7, height: 7, borderRadius: 999, background: s.accent, marginTop: 8, flexShrink: 0 }} />
-                        {p}
+                    {sec.points.map((pt) => (
+                      <li key={pt} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.55, color: C.sub, marginBottom: 8 }}>
+                        <span style={{ width: 7, height: 7, borderRadius: 999, background: sec.accent, marginTop: 7, flexShrink: 0 }} />
+                        {pt}
                       </li>
                     ))}
                   </ul>
                 </div>
-              </Reveal>
 
-              <Reveal delay={120}>
-                <div
-                  className="pp-shot"
-                  style={{
-                    order: flip ? 1 : 2,
-                    borderRadius: 24,
-                    overflow: 'hidden',
-                    border: `1px solid ${C.cardBorder}`,
-                    boxShadow: '0 30px 70px rgba(74,52,24,.16)',
-                    background: C.card,
-                  }}
-                >
+                <div style={{ borderRadius: 18, overflow: 'hidden', border: `1px solid ${C.cardBorder}`, boxShadow: '0 16px 40px rgba(74,52,24,.12)', background: '#fffdf8' }}>
                   <img
-                    src={s.shot}
-                    alt={s.alt}
+                    src={sec.shot}
+                    alt={sec.alt}
                     loading="lazy"
-                    style={{ display: 'block', width: '100%', height: 'auto' }}
+                    style={{ display: 'block', width: '100%', aspectRatio: '1280 / 800', objectFit: 'cover', objectPosition: 'top' }}
                   />
                 </div>
-              </Reveal>
+              </div>
             </section>
           );
         })}
