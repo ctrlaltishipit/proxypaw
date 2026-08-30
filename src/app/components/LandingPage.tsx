@@ -801,6 +801,12 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         </section>
 
 
+
+        <NextStop
+          label="Peek inside the app"
+          sub="Real screens from the product your community gets"
+          onClick={onTourClick}
+        />
       </div>
     </div>
   );

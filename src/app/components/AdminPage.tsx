@@ -83,6 +83,15 @@ export default function AdminPage() {
     })();
   }, [session]);
 
+  async function googleSignIn() {
+    setError('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/admin` },
+    });
+    if (error) setError(error.message);
+  }
+
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -122,8 +131,18 @@ export default function AdminPage() {
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 24, padding: 'clamp(26px, 4vw, 40px)', width: 'min(420px, 100%)', boxSizing: 'border-box' }}>
           <div style={{ fontFamily: heading, fontWeight: 600, fontSize: 22, marginBottom: 6 }}>Founder sign-in</div>
           <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, margin: '0 0 20px' }}>
-            This page is private. Enter the admin email and we'll send a sign-in link to that inbox.
+            This page is private. Sign in with the admin account to open the dashboard.
           </p>
+          <button
+            onClick={googleSignIn}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: `1.5px solid #d9cbb2`, background: '#fff', color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 15, padding: '13px 0', borderRadius: 999, cursor: 'pointer', marginBottom: 16 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.1 3.7-8.6z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-6-2.2-6.9-5.2H1.2v3C3.1 21.2 7.2 24 12 24z"/><path fill="#FBBC05" d="M5.1 14.2c-.3-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2v-3H1.2C.4 8.4 0 10.1 0 12s.4 3.6 1.2 5.2l3.9-3z"/><path fill="#EA4335" d="M12 4.7c1.8 0 3 .8 3.7 1.4l2.8-2.7C16.5 1.3 14.1 0 12 0 7.2 0 3.1 2.8 1.2 6.8l3.9 3c.9-3 3.7-5.1 6.9-5.1z"/></svg>
+            Sign in with Google
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 14px', color: C.muted2, fontSize: 12 }}>
+            <span style={{ flex: 1, height: 1, background: C.border }} />or use a sign-in link<span style={{ flex: 1, height: 1, background: C.border }} />
+          </div>
           {sent ? (
             <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 14, padding: '14px 16px', fontSize: 14, color: '#5a6b3f', lineHeight: 1.55 }}>
               Link sent. Open the email on this device and tap the link; it brings you straight back here, signed in.
@@ -175,9 +194,14 @@ export default function AdminPage() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 22 }}>
           <div style={{ fontFamily: heading, fontWeight: 600, fontSize: 24 }}>🐾 Waitlist dashboard</div>
-          <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #d9cbb2', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
-            Sign out
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <a href="/" style={{ textDecoration: 'none', border: 'none', background: C.orange, color: '#fff', fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
+              ← Back to proxypaw.com
+            </a>
+            <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #d9cbb2', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
+              Sign out
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>

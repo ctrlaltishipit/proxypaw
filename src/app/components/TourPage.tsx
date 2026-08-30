@@ -349,6 +349,12 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       </section>
 
 
+      <NextStop
+        label="Meet the founder, and the boys"
+        sub="Why Proxypaw exists, plus Pablo and Leo"
+        onClick={onAboutClick}
+      />
+
     </div>
   );
 }

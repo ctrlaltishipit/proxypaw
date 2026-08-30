@@ -458,6 +458,12 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
         </section>
 
 
+        <NextStop
+          label="Want to read more? Check out our blogs"
+          sub="The Paw Journal: practical care guides for flat pets"
+          onClick={onBlogClick}
+        />
+
       </div>
     </div>
   );

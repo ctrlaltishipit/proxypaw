@@ -6,6 +6,7 @@
  * email address on purpose: neither exists yet. Links to page sections work
  * from any page (App routes home first, then scrolls).
  */
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 const C = {
@@ -29,6 +30,16 @@ export interface FooterNav {
 }
 
 export default function SiteFooter({ nav }: { nav: FooterNav }) {
+  // Show the dashboard shortcut only in a browser that has signed in at
+  // /admin before. Purely a convenience: the dashboard's data is gated
+  // server-side by email regardless.
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    try {
+      setHasSession(Object.keys(localStorage).some((k) => k.startsWith('sb-') && k.endsWith('-auth-token')));
+    } catch { /* storage unavailable */ }
+  }, []);
+
   const link: CSSProperties = {
     fontSize: 13.5, color: C.muted2, cursor: 'pointer', transition: 'color .2s',
     background: 'none', border: 'none', padding: 0, textAlign: 'left', fontFamily: 'inherit',
@@ -125,7 +136,12 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
         {/* small print */}
         <div className="ppf-bottom" style={{ borderTop: '1px solid rgba(253,249,240,.12)', marginTop: 'clamp(24px, 3vw, 34px)', padding: '16px 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ fontSize: 12, color: C.dim }}>© 2026 proxypaw · made with love in gachibowli</span>
-          <span style={{ fontSize: 12, color: C.dim }}>walks · boarding · community</span>
+          <span style={{ fontSize: 12, color: C.dim, display: 'flex', gap: 12, alignItems: 'center' }}>
+            walks · boarding · community
+            {hasSession && (
+              <a href="/admin" style={{ color: C.gold, textDecoration: 'none', fontWeight: 700 }}>founder dashboard</a>
+            )}
+          </span>
         </div>
       </div>
     </footer>
