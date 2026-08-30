@@ -287,7 +287,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                   style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
                 />
                 <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
-                  The first days home: pablo and leo at 45 days old, fresh from the breeder and already inseparable.
+                  From their very first days home with us: pablo holding leo, brand new to the house and already inseparable.
                 </figcaption>
               </figure>
             </Reveal>
@@ -314,7 +314,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <img
               src="/founder/pablo-leo.jpg"
               alt="Pablo and Leo together on the balcony beside their bonsai"
-              style={{ width: '100%', height: 'clamp(200px, 28vw, 340px)', objectFit: 'cover', objectPosition: 'center 70%', borderRadius: 24, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
+              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
             />
           </Reveal>
 
@@ -325,7 +325,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                   <img
                     src={cat.img}
                     alt={`${cat.name} the Persian cat`}
-                    style={{ width: '100%', height: 'clamp(200px, 25vw, 260px)', objectFit: 'cover', display: 'block' }}
+                    style={{ width: '100%', aspectRatio: '1 / 1', height: 'auto', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
                   />
                   <div style={{ padding: 'clamp(20px, 2.4vw, 26px)' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>

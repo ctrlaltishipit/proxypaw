@@ -5,7 +5,6 @@
  * article inline (no router yet), and the browser back affordance is a visible
  * "all guides" link instead.
  */
-import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { ARTICLES, type Article } from '../data/articles';
@@ -47,14 +46,14 @@ function PawMark({ size, radius }: { size: number; radius: number }) {
 interface BlogPageProps {
   onHomeClick: () => void;
   onGetStarted: () => void;
+  /** Article slug from the URL; undefined renders the index. */
+  slug?: string;
+  onOpenArticle: (slug: string) => void;
+  onBackToIndex: () => void;
 }
 
-export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
-  const [current, setCurrent] = useState<Article | null>(null);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, [current]);
+export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticle, onBackToIndex }: BlogPageProps) {
+  const current = slug ? ARTICLES.find((a) => a.slug === slug) ?? null : null;
 
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'capitalize' }}>
@@ -88,7 +87,7 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
         </header>
 
         {current ? (
-          <ArticleView article={current} onBack={() => setCurrent(null)} onGetStarted={onGetStarted} />
+          <ArticleView article={current} onBack={onBackToIndex} onGetStarted={onGetStarted} />
         ) : (
           <>
             <section style={{ ...shell, padding: '30px 28px 0' }}>
@@ -109,7 +108,7 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
                   <article
                     key={a.slug}
                     className="pp-post"
-                    onClick={() => setCurrent(a)}
+                    onClick={() => onOpenArticle(a.slug)}
                     style={{
                       background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 28,
                       overflow: 'hidden', cursor: 'pointer', transition: '.3s',
