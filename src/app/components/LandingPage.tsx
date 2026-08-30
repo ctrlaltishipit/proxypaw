@@ -282,12 +282,13 @@ const bucketHead: CSSProperties = {
 
 interface LandingPageProps {
   /** Opens the waitlist modal. `source` records which CTA was clicked. */
-  onJoin: (source: string) => void;
+  onJoin: (source: string, intent?: 'owner' | 'walker') => void;
   onBlogClick: () => void;
   onTourClick: () => void;
+  onAboutClick: () => void;
 }
 
-export default function LandingPage({ onJoin, onBlogClick, onTourClick }: LandingPageProps) {
+export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutClick }: LandingPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'capitalize' }}>
       <style>{`
@@ -361,6 +362,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick }: Landin
               { label: 'services', go: () => scrollTo('services') },
               { label: 'pricing', go: () => scrollTo('pricing') },
               { label: 'inside the app', go: onTourClick },
+              { label: 'about', go: onAboutClick },
               { label: 'blog', go: () => scrollTo('blog') },
             ].map((item) => (
               <span
@@ -438,7 +440,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick }: Landin
               </button>
               <button
                 className="pp-ghost"
-                onClick={() => onJoin('hero-explore-boarding')}
+                onClick={() => onJoin('hero-register-volunteer', 'walker')}
                 style={{
                   border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
                   fontFamily: sora, fontWeight: 600, fontSize: 16, padding: '16px 30px',
@@ -446,9 +448,9 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick }: Landin
                   display: 'flex', alignItems: 'center', gap: 9,
                 }}
               >
-                explore boarding
+                register as a volunteer
                 <span style={{ background: C.green, color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, letterSpacing: '0.04em' }}>
-                  new
+                  earn 70%
                 </span>
               </button>
             </div>
@@ -748,7 +750,9 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick }: Landin
               <PawMark size={28} radius={9} />
               <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 16 }}>proxypaw</span>
             </div>
-            <div style={{ fontSize: 13.5, color: C.muted2 }}>
+            <div style={{ fontSize: 13.5, color: C.muted2, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span className="pp-nav" onClick={onAboutClick} style={{ cursor: 'pointer', transition: 'color .2s' }}>about us</span>
+              <span>&middot;</span>
               made with love in gachibowli &middot; walks &middot; boarding &middot; community
             </div>
           </div>

@@ -12,10 +12,11 @@ import { useState } from 'react';
 import LandingPage from './components/LandingPage';
 import BlogPage from './components/BlogPage';
 import TourPage from './components/TourPage';
+import AboutUsPage from './components/AboutUsPage';
 import WaitlistModal from './components/WaitlistModal';
 import { ThemeProvider } from './contexts/ThemeContext';
 
-type Page = 'home' | 'blog' | 'tour';
+type Page = 'home' | 'blog' | 'tour' | 'about';
 
 export default function App() {
   const [page, setPage] = useState<Page>('home');
@@ -41,6 +42,7 @@ export default function App() {
             onJoin={openWaitlist}
             onBlogClick={() => go('blog')}
             onTourClick={() => go('tour')}
+            onAboutClick={() => go('about')}
           />
         )}
 
@@ -48,6 +50,13 @@ export default function App() {
           <BlogPage
             onHomeClick={() => go('home')}
             onGetStarted={() => openWaitlist('blog')}
+          />
+        )}
+
+        {page === 'about' && (
+          <AboutUsPage
+            onHomeClick={() => go('home')}
+            onJoin={openWaitlist}
           />
         )}
 

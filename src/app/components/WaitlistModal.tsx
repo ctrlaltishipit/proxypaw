@@ -32,6 +32,14 @@ const sora = "'Sora', system-ui, sans-serif";
 const HERO_IMG =
   'https://images.unsplash.com/photo-1552053831-71594a27632d?w=900&q=80&auto=format&fit=crop';
 
+const ID_PROOFS = [
+  { value: 'aadhaar', label: 'Aadhaar Card' },
+  { value: 'pan', label: 'PAN Card' },
+  { value: 'driving-licence', label: 'Driving Licence' },
+  { value: 'passport', label: 'Passport' },
+  { value: 'voter-id', label: 'Voter ID' },
+];
+
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL ?? 'https://tiodckftpybxwbekxske.supabase.co'}/functions/v1/join-waitlist`;
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
@@ -52,6 +60,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [community, setCommunity] = useState(COMMUNITIES[0]);
+  const [idProof, setIdProof] = useState(ID_PROOFS[0].value);
   const [website, setWebsite] = useState(''); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -79,6 +88,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   }, [open]);
 
   if (!open) return null;
+  const volunteer = intent === 'walker';
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -91,7 +101,10 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
           'Content-Type': 'application/json',
           ...(ANON ? { Authorization: `Bearer ${ANON}`, apikey: ANON } : {}),
         },
-        body: JSON.stringify({ name, phone, email, community, role: intent, source, website }),
+        body: JSON.stringify({
+          name, phone, email, community, role: intent, source, website,
+          ...(intent === 'walker' ? { id_proof: idProof } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -199,12 +212,16 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 <Check size={26} color="#fff" strokeWidth={3} />
               </div>
               <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 27, letterSpacing: '-0.02em', margin: '0 0 12px', color: C.ink }}>
-                {done.alreadyOnList ? "You're already on the list." : "You're on the list."}
+                {done.alreadyOnList
+                  ? "You're already on the list."
+                  : volunteer ? "You're registered." : "You're on the list."}
               </h2>
               <p style={{ fontSize: 15.5, lineHeight: 1.65, color: C.sub, margin: '0 0 10px' }}>
                 {done.alreadyOnList
                   ? `We already have you down for ${community}. We'll notify you shortly about your access.`
-                  : `We've added you to the Proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
+                  : volunteer
+                    ? `Thank you for volunteering. We've sent a confirmation to ${email} — we'll reach out about onboarding, ID verification and safety training.`
+                    : `We've added you to the Proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: '0 0 28px' }}>
                 We open community by community. {community} is on our map — you'll be among the first in.
@@ -241,6 +258,17 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 ))}
               </div>
 
+              {volunteer && mode === 'signup' && (
+                <div style={{ marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', color: C.ink }}>
+                    Register as a Volunteer
+                  </h2>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: C.sub, margin: 0 }}>
+                    Walk dogs, visit cats, host sleepovers — and keep 70% of every booking.
+                    We'll verify your ID at onboarding.
+                  </p>
+                </div>
+              )}
               {mode === 'login' ? (
                 <div style={{ padding: '8px 0 4px' }}>
                   <h2 style={{ fontFamily: sora, fontWeight: 700, fontSize: 20, margin: '0 0 10px', color: C.ink }}>
@@ -264,7 +292,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               ) : (
                 <form onSubmit={submit} noValidate>
                   <div style={{ marginBottom: 16 }}>
-                    <label style={label} htmlFor="pp-name">Your Name</label>
+                    <label style={label} htmlFor="pp-name">{volunteer ? 'Your Name (as per ID proof)' : 'Your Name'}</label>
                     <input id="pp-name" className="pp-field" style={field} value={name}
                       onChange={(e) => setName(e.target.value)} placeholder="e.g. Ananya"
                       autoComplete="name" required />
@@ -283,6 +311,19 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       onChange={(e) => setEmail(e.target.value)} placeholder="ananya@example.com"
                       type="email" autoComplete="email" required />
                   </div>
+
+                  {volunteer && (
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={label} htmlFor="pp-idproof">ID Proof</label>
+                      <select id="pp-idproof" className="pp-field" style={{ ...field, appearance: 'none', cursor: 'pointer' }}
+                        value={idProof} onChange={(e) => setIdProof(e.target.value)} required>
+                        {ID_PROOFS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <p style={{ fontSize: 12, color: C.muted2, margin: '7px 2px 0', lineHeight: 1.5 }}>
+                        Pick the document you'll bring to onboarding. We never collect ID numbers or photos online.
+                      </p>
+                    </div>
+                  )}
 
                   <div style={{ marginBottom: 22 }}>
                     <label style={label} htmlFor="pp-community">Your Community</label>
@@ -317,13 +358,14 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     }}
                   >
                     {busy && <Loader2 size={18} className="pp-spin" style={{ animation: 'spin 1s linear infinite' }} />}
-                    {busy ? 'Joining…' : 'Join Your Community'}
+                    {busy ? 'Joining…' : volunteer ? 'Register as a Volunteer' : 'Join Your Community'}
                   </button>
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
                   <p style={{ fontSize: 13, lineHeight: 1.6, color: C.muted2, textAlign: 'center', margin: '18px 0 0' }}>
-                    We'll email you when your community goes live. By continuing you accept the
-                    community walker code of conduct.
+                    {volunteer
+                      ? "We'll email you about onboarding. By continuing you accept the community walker code of conduct."
+                      : "We'll email you when your community goes live. By continuing you accept the community walker code of conduct."}
                   </p>
                 </form>
               )}

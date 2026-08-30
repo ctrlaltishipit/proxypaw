@@ -44,13 +44,21 @@ function rateLimited(ip: string): boolean {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function welcomeEmail(name: string, community: string): { subject: string; html: string; text: string } {
+function welcomeEmail(name: string, community: string, role: string): { subject: string; html: string; text: string } {
   const who = name || "there";
-  const subject = `You're on the Proxypaw waitlist, ${who}`;
+  const walker = role === "walker";
+  const subject = walker
+    ? `You're registered as a Proxypaw volunteer, ${who}`
+    : `You're on the Proxypaw waitlist, ${who}`;
 
+  const walkerIntro = walker
+    ? `Thank you for registering as a Proxypaw volunteer. We'll notify you shortly about your onboarding — ` +
+      `it includes a quick ID verification and our safety training, and then you can start accepting ` +
+      `walks, visits and boarding in your community. Volunteers keep 70% of every booking.\n\n`
+    : `You've been added to the Proxypaw waitlist. We'll notify you shortly about your access.\n\n`;
   const text =
     `Hi ${who},\n\n` +
-    `You've been added to the Proxypaw waitlist. We'll notify you shortly about your access.\n\n` +
+    walkerIntro +
     `We're opening community by community, and yours — ${community} — is on our map. ` +
     `The moment we have verified walkers and sitters in your towers, you'll be among the first in.\n\n` +
     `Proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own ` +
@@ -73,7 +81,9 @@ function welcomeEmail(name: string, community: string): { subject: string; html:
 <div style="width:52px;height:52px;border-radius:16px;background:#e0662f;text-align:center;line-height:52px;font-size:26px;margin:0 0 24px;">&#128062;</div>
 <h1 style="margin:0 0 20px;font-size:25px;line-height:1.25;font-weight:700;color:#2a2118;">You're on the list.</h1>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Hi ${who},</p>
-<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">You've been added to the Proxypaw waitlist. We'll notify you shortly about your access.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">${walker
+  ? "Thank you for registering as a Proxypaw volunteer. We'll notify you shortly about your onboarding — a quick ID verification, our safety training, and you can start accepting walks, visits and boarding in your community. Volunteers keep <strong style='color:#2a2118;'>70%</strong> of every booking."
+  : "You've been added to the Proxypaw waitlist. We'll notify you shortly about your access."}</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">We're opening community by community, and yours &mdash; <strong style="color:#2a2118;">${community}</strong> &mdash; is on our map. The moment we have verified walkers and sitters in your towers, you'll be among the first in.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">There's nothing else you need to do. We'll email you when your access is ready.</p>
@@ -111,6 +121,8 @@ Deno.serve(async (req: Request) => {
   const phone = (body.phone ?? "").trim().slice(0, 24);
   const community = (body.community ?? "").trim().slice(0, 120);
   const role = body.role === "walker" ? "walker" : "owner";
+  const ID_PROOFS = ["aadhaar", "pan", "driving-licence", "passport", "voter-id"];
+  const idProof = ID_PROOFS.includes(body.id_proof ?? "") ? body.id_proof! : null;
 
   if (!name) return json({ error: "Please tell us your name." }, 400);
   if (!EMAIL_RE.test(email)) return json({ error: "That email doesn't look right." }, 400);
@@ -132,7 +144,7 @@ Deno.serve(async (req: Request) => {
   const { error: upsertErr } = await admin
     .from("waitlist")
     .upsert(
-      { name, email, phone, community, role, source: body.source ?? null },
+      { name, email, phone, community, role, id_proof: idProof, source: body.source ?? null },
       { onConflict: "email" },
     );
   if (upsertErr) {
@@ -150,7 +162,7 @@ Deno.serve(async (req: Request) => {
   let emailed = false;
 
   if (resendKey) {
-    const { subject, html, text } = welcomeEmail(name.split(" ")[0], community);
+    const { subject, html, text } = welcomeEmail(name.split(" ")[0], community, role);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
