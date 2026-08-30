@@ -103,7 +103,7 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
         placeholder={volunteer ? 'e.g. My phone number should be… / I also wanted to mention…' : 'e.g. It would be great if the app could…'}
         style={{
           width: '100%', boxSizing: 'border-box', padding: '13px 16px', borderRadius: 16,
-          border: `1px solid ${C.btnBorder}`, background: C.cream, fontSize: 14, color: C.ink,
+          border: `1px solid ${C.btnBorder}`, background: C.cream, fontSize: 16, color: C.ink,
           outline: 'none', fontFamily: 'inherit', minHeight: 84, resize: 'vertical', lineHeight: 1.55,
         }}
       />
@@ -200,7 +200,8 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   const field: React.CSSProperties = {
     width: '100%', padding: '14px 18px', borderRadius: 999,
     border: `1px solid ${C.btnBorder}`, background: C.cream,
-    fontSize: 15, color: C.ink, outline: 'none', fontFamily: 'inherit',
+    // 16px minimum: below that, iOS Safari zooms the whole page on focus.
+    fontSize: 16, color: C.ink, outline: 'none', fontFamily: 'inherit',
     boxSizing: 'border-box',
   };
 
@@ -396,21 +397,21 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     <label style={label} htmlFor="pp-name">{volunteer ? 'Your Name (as per ID proof)' : 'Your Name'}</label>
                     <input id="pp-name" className="pp-field" style={field} value={name}
                       onChange={(e) => setName(e.target.value)} placeholder="e.g. Ananya"
-                      autoComplete="name" required />
+                      autoComplete="name" enterKeyHint="next" required />
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
                     <label style={label} htmlFor="pp-phone">Phone Number</label>
                     <input id="pp-phone" className="pp-field" style={field} value={phone}
                       onChange={(e) => setPhone(e.target.value)} placeholder="+91 98••• •••••"
-                      type="tel" autoComplete="tel" required />
+                      type="tel" inputMode="tel" autoComplete="tel" enterKeyHint="next" required />
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
                     <label style={label} htmlFor="pp-email">Email</label>
                     <input id="pp-email" className="pp-field" style={field} value={email}
                       onChange={(e) => setEmail(e.target.value)} placeholder="ananya@example.com"
-                      type="email" autoComplete="email" required />
+                      type="email" inputMode="email" autoComplete="email" enterKeyHint="next" required />
                   </div>
 
                   {volunteer && (
