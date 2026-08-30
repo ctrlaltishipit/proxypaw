@@ -27,7 +27,7 @@ const C = {
   btnBorder: '#d9cbb2',
   green: '#3f6c51',
 };
-const sora = "'Sora', system-ui, sans-serif";
+const sora = "'Fredoka', system-ui, sans-serif";
 
 const HERO_IMG =
   'https://images.unsplash.com/photo-1552053831-71594a27632d?w=900&q=80&auto=format&fit=crop';
@@ -88,7 +88,7 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
 
   return (
     <div style={{ borderTop: `1px solid ${C.btnBorder}`, marginTop: 26, paddingTop: 22 }}>
-      <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 15, color: C.ink, marginBottom: 5 }}>
+      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 15, color: C.ink, marginBottom: 5 }}>
         {volunteer ? 'Anything to add or revise?' : 'Tell us what you think'}
       </div>
       <p style={{ fontSize: 13, lineHeight: 1.55, color: C.muted2, margin: '0 0 12px' }}>
@@ -270,7 +270,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
           <blockquote
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, margin: 0, padding: 34,
-              fontFamily: sora, fontWeight: 700, fontSize: 22, lineHeight: 1.35, color: '#fff',
+              fontFamily: sora, fontWeight: 600, fontSize: 22, lineHeight: 1.35, color: '#fff',
             }}
           >
             “Biscuit gets three walks a week, and Whiskers never misses her 7 PM dinner visit.”
@@ -287,7 +287,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
               </svg>
             </span>
-            <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 21, letterSpacing: '-0.02em', color: C.ink }}>Proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>Proxypaw</span>
           </div>
 
           {done ? (
@@ -295,7 +295,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               <div style={{ width: 52, height: 52, borderRadius: 999, background: C.green, display: 'grid', placeItems: 'center', marginBottom: 20 }}>
                 <Check size={26} color="#fff" strokeWidth={3} />
               </div>
-              <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 27, letterSpacing: '-0.02em', margin: '0 0 12px', color: C.ink }}>
+              <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 27, letterSpacing: '-0.008em', margin: '0 0 12px', color: C.ink }}>
                 {done.alreadyOnList
                   ? "You're already on the list."
                   : volunteer ? "You're registered." : "You're on the list."}
@@ -357,7 +357,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               )}
               {volunteer && mode === 'signup' && (
                 <div style={{ marginBottom: 20 }}>
-                  <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', color: C.ink }}>
+                  <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 22, letterSpacing: '-0.008em', margin: '0 0 6px', color: C.ink }}>
                     Register as a Volunteer
                   </h2>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: C.sub, margin: '0 0 8px' }}>
@@ -373,7 +373,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               )}
               {mode === 'login' ? (
                 <div style={{ padding: '8px 0 4px' }}>
-                  <h2 style={{ fontFamily: sora, fontWeight: 700, fontSize: 20, margin: '0 0 10px', color: C.ink }}>
+                  <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 20, margin: '0 0 10px', color: C.ink }}>
                     We're not open just yet.
                   </h2>
                   <p style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, margin: '0 0 22px' }}>
@@ -471,7 +471,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     className="pp-submit"
                     style={{
                       width: '100%', border: 'none', background: C.orange, color: '#fff',
-                      fontFamily: sora, fontWeight: 700, fontSize: 16.5, padding: '17px 32px',
+                      fontFamily: sora, fontWeight: 600, fontSize: 16.5, padding: '17px 32px',
                       borderRadius: 999, cursor: busy ? 'wait' : 'pointer',
                       boxShadow: '0 12px 28px rgba(224,102,47,.3)', transition: '.25s',
                       opacity: busy ? 0.75 : 1,

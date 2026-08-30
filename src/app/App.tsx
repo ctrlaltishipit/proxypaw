@@ -14,6 +14,7 @@ import BlogPage from './components/BlogPage';
 import TourPage from './components/TourPage';
 import AboutUsPage from './components/AboutUsPage';
 import WaitlistModal from './components/WaitlistModal';
+import SiteFooter, { type FooterNav } from './components/SiteFooter';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 type Page = 'home' | 'blog' | 'tour' | 'about';
@@ -32,6 +33,22 @@ export default function App() {
   const go = (p: Page) => {
     setPage(p);
     window.scrollTo({ top: 0 });
+  };
+
+  /** Footer links to landing sections work from any page: route home, then scroll. */
+  const toSection = (id: string) => {
+    setPage('home');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+  };
+
+  const footerNav: FooterNav = {
+    toSection,
+    toTour: () => go('tour'),
+    toBlog: () => go('blog'),
+    toAbout: () => go('about'),
+    onJoin: openWaitlist,
   };
 
   return (
@@ -66,6 +83,8 @@ export default function App() {
             onJoin={openWaitlist}
           />
         )}
+
+        <SiteFooter nav={footerNav} />
 
         <WaitlistModal
           open={waitlist.open}

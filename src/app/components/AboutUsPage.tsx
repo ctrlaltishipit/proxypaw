@@ -30,7 +30,7 @@ const C = {
   peach: '#f9e7da',
   darkSub: '#c9b799',
 };
-const sora = "'Sora', system-ui, sans-serif";
+const sora = "'Fredoka', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1080, margin: '0 auto' };
 const SIDE_PAD = 'clamp(18px, 3vw, 28px)';
 
@@ -196,7 +196,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
         <header style={{ ...shell, maxWidth: 1200, padding: `18px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
           <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
             <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 21, letterSpacing: '-0.02em' }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
           </div>
           <button
             className="pp-dark-btn"
@@ -217,14 +217,14 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <PawSvg size={28} color={C.orange} style={{ opacity: 0.1 }} />
           </span>
           <Reveal>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
               OUR VISION
             </div>
-            <h1 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(32px, 4.6vw, 56px)', letterSpacing: '-0.035em', lineHeight: 1.08, margin: '0 0 22px', maxWidth: 820 }}>
+            <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(32px, 4.6vw, 56px)', letterSpacing: '-0.012em', lineHeight: 1.08, margin: '0 0 22px', maxWidth: 820 }}>
               Every pet deserves a safe space.<br />
               <span style={{ color: C.orange }}>Ours is their own home.</span>
             </h1>
-            <p style={{ fontSize: 'clamp(16.5px, 1.7vw, 19px)', lineHeight: 1.7, color: C.sub, maxWidth: 720, margin: 0, fontWeight: 300 }}>
+            <p style={{ fontSize: 'clamp(16.5px, 1.7vw, 19px)', lineHeight: 1.7, color: C.sub, maxWidth: 720, margin: 0, fontWeight: 400 }}>
               Proxypaw exists for one moment: the moment you have to leave, and your pet has to stay.
               We believe that moment should never mean a cage, a strange facility, or a stranger.
               It should mean a verified neighbour walking through a familiar door, so your pet
@@ -237,15 +237,15 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
         <section style={{ background: C.ink, color: C.cream2 }}>
           <div style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD}` }}>
             <Reveal>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: C.gold, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: C.gold, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
                 WHY WE BUILT THIS
               </div>
-              <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 26px', maxWidth: 680 }}>
+              <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 26px', maxWidth: 680 }}>
                 A note from the founder
               </h2>
             </Reveal>
             <Reveal delay={120}>
-              <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.darkSub, fontWeight: 300 }}>
+              <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.darkSub, fontWeight: 400 }}>
                 <p style={{ margin: '0 0 18px' }}>
                   My first pet found me. A street dog outside the Balaji temple, my parents named him
                   Balaji after it; I laughed and called him Baloo, and Baloo stuck. He was with us for six
@@ -303,13 +303,13 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
         {/* the evangelists */}
         <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
           <Reveal>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
               THE PROXYPAW EVANGELISTS
             </div>
-            <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 14px' }}>
+            <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 14px' }}>
               Meet the boys who approve every feature.
             </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(24px, 3vw, 34px)', fontWeight: 300 }}>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(24px, 3vw, 34px)', fontWeight: 400 }}>
               Pablo and Leo, brothers, flatmates, and Proxypaw's first users. They grew up curled in
               the same cage, still groom each other daily, and take turns keeping the founder company.
               Nothing ships until it feels right for these two.
@@ -331,15 +331,15 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                   <img
                     src={cat.img}
                     alt={`${cat.name} the Persian cat`}
-                    style={{ width: '100%', height: 'clamp(240px, 30vw, 320px)', objectFit: 'cover', display: 'block' }}
+                    style={{ width: '100%', height: 'clamp(200px, 25vw, 260px)', objectFit: 'cover', display: 'block' }}
                   />
                   <div style={{ padding: 'clamp(20px, 2.4vw, 26px)' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                      <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', color: C.ink }}>{cat.name}</span>
-                      <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 12.5, color: cat.accent, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{cat.title}</span>
+                      <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 22, letterSpacing: '-0.008em', color: C.ink }}>{cat.name}</span>
+                      <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 12.5, color: cat.accent, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{cat.title}</span>
                     </div>
                     <div style={{ fontSize: 13, color: C.muted2, marginBottom: 12, fontStyle: 'italic' }}>{cat.tagline}</div>
-                    <p style={{ fontSize: 14.5, lineHeight: 1.65, color: C.sub, margin: '0 0 16px', fontWeight: 300 }}>{cat.body}</p>
+                    <p style={{ fontSize: 14.5, lineHeight: 1.65, color: C.sub, margin: '0 0 16px', fontWeight: 400 }}>{cat.body}</p>
                     <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                       {cat.facts.map((f) => (
                         <li key={f} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 13.5, lineHeight: 1.5, color: C.muted, marginBottom: 7 }}>
@@ -358,22 +358,22 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
         {/* what we believe */}
         <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
           <Reveal>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
               WHAT WE BELIEVE
             </div>
-            <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 clamp(26px, 3.4vw, 40px)' }}>
+            <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 clamp(26px, 3.4vw, 40px)' }}>
               Less, done properly.
             </h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 'clamp(14px, 1.8vw, 20px)' }}>
             {BELIEFS.map((b, i) => (
               <Reveal key={b.title} delay={i * 100}>
-                <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 24, padding: 'clamp(24px, 2.6vw, 30px)', height: '100%', boxSizing: 'border-box', transition: '.3s' }}>
+                <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 'clamp(18px, 2.2vw, 26px)', height: '100%', boxSizing: 'border-box', transition: '.3s' }}>
                   <span style={{ width: 40, height: 40, borderRadius: 13, background: b.accent, display: 'grid', placeItems: 'center', marginBottom: 18 }}>
                     <b.Icon size={19} color="#fff" />
                   </span>
-                  <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 18.5, lineHeight: 1.3, marginBottom: 10 }}>{b.title}</div>
-                  <div style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, fontWeight: 300 }}>{b.body}</div>
+                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 18.5, lineHeight: 1.3, marginBottom: 10 }}>{b.title}</div>
+                  <div style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, fontWeight: 400 }}>{b.body}</div>
                 </div>
               </Reveal>
             ))}
@@ -383,13 +383,13 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
         {/* how we vet, BGV */}
         <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
           <Reveal>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
               BACKGROUND VERIFICATION
             </div>
-            <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 16px', maxWidth: 640 }}>
+            <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 16px', maxWidth: 640 }}>
               Six gates before anyone holds a leash.
             </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 680, margin: '0 0 clamp(26px, 3.4vw, 40px)', fontWeight: 300 }}>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 680, margin: '0 0 clamp(26px, 3.4vw, 40px)', fontWeight: 400 }}>
               Pets can't tell you how they were treated. If something goes wrong, they carry it
               silently, and the trauma lives on long after. If everything goes right, they greet you
               at the door happier than you left them. That asymmetry is why our vetting is stricter
@@ -399,16 +399,16 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'clamp(14px, 1.8vw, 20px)' }}>
             {VETTING.map((v, i) => (
               <Reveal key={v.title} delay={i * 80}>
-                <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 22, padding: 'clamp(20px, 2.4vw, 26px)', height: '100%', boxSizing: 'border-box', transition: '.3s', display: 'flex', gap: 16 }}>
+                <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: 'clamp(16px, 2vw, 22px)', height: '100%', boxSizing: 'border-box', transition: '.3s', display: 'flex', gap: 16 }}>
                   <span style={{ width: 40, height: 40, borderRadius: 13, background: i === 0 ? C.orange : C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                     <v.Icon size={19} color="#fff" />
                   </span>
                   <div>
-                    <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 16, lineHeight: 1.3, marginBottom: 7 }}>
+                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 16, lineHeight: 1.3, marginBottom: 7 }}>
                       <span style={{ color: C.muted2, fontSize: 12.5, fontWeight: 600, marginRight: 7 }}>0{i + 1}</span>
                       {v.title}
                     </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.6, color: C.sub, fontWeight: 300 }}>{v.body}</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.6, color: C.sub, fontWeight: 400 }}>{v.body}</div>
                   </div>
                 </div>
               </Reveal>
@@ -421,10 +421,10 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
           <Reveal>
             <div style={{ background: C.greenPale, border: `1px solid ${C.bandBorder}`, borderRadius: 28, padding: 'clamp(26px, 3.6vw, 44px)', display: 'flex', gap: 'clamp(20px, 3vw, 40px)', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 380px' }}>
-                <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(22px, 2.6vw, 30px)', letterSpacing: '-0.025em', margin: '0 0 12px' }}>
+                <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(22px, 2.6vw, 30px)', letterSpacing: '-0.01em', margin: '0 0 12px' }}>
                   The other half of Proxypaw: our volunteers.
                 </h2>
-                <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.sub, margin: '0 0 8px', fontWeight: 300 }}>
+                <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.sub, margin: '0 0 8px', fontWeight: 400 }}>
                   Every walk and every visit happens because a neighbour raised their hand. Volunteers
                   register, verify their ID, complete our safety training, and then earn 70% of every
                   booking doing something they already love, minutes from their own front door.
@@ -461,18 +461,7 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
           </Reveal>
         </section>
 
-        {/* footer */}
-        <footer style={{ borderTop: `1px solid ${C.bandBorder}` }}>
-          <div style={{ ...shell, maxWidth: 1200, padding: `28px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <PawMark size={28} radius={9} />
-              <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 16 }}>proxypaw</span>
-            </div>
-            <div style={{ fontSize: 13.5, color: C.muted2 }}>
-              made with love in gachibowli · walks · boarding · community
-            </div>
-          </div>
-        </footer>
+
       </div>
     </div>
   );

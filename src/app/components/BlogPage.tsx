@@ -27,7 +27,7 @@ const C = {
   green: '#3f6c51',
 };
 
-const sora = "'Sora', system-ui, sans-serif";
+const sora = "'Fredoka', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
 
 function PawMark({ size, radius }: { size: number; radius: number }) {
@@ -72,7 +72,7 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
         <header style={{ ...shell, padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
           <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
             <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 21, letterSpacing: '-0.02em' }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
           </div>
           <button
             className="pp-dark-btn"
@@ -95,10 +95,10 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
               <div style={{ fontSize: 14, fontWeight: 600, color: C.orange, letterSpacing: '0.12em', marginBottom: 14 }}>
                 THE PAW JOURNAL
               </div>
-              <h1 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(34px, 4.6vw, 58px)', letterSpacing: '-0.03em', lineHeight: 1.05, margin: '0 0 18px' }}>
+              <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 4.6vw, 58px)', letterSpacing: '-0.01em', lineHeight: 1.05, margin: '0 0 18px' }}>
                 care guides from the pack
               </h1>
-              <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 48px', fontWeight: 300, textTransform: 'none' }}>
+              <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 48px', fontWeight: 400, textTransform: 'none' }}>
                 Short, practical reads from the proxypaw care team: grooming, feeding, safety and play, for dogs and cats alike.
               </p>
             </section>
@@ -116,12 +116,12 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
                       display: 'flex', flexDirection: 'column',
                     }}
                   >
-                    <div style={{ width: '100%', height: 250, backgroundImage: `url("${a.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
+                    <div style={{ width: '100%', height: 200, backgroundImage: `url("${a.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
                     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'inline-flex', alignSelf: 'flex-start', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 14 }}>
+                      <div style={{ display: 'inline-flex', alignSelf: 'flex-start', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 14 }}>
                         {a.tag}
                       </div>
-                      <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
+                      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
                       <div style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.55, textTransform: 'none', marginBottom: 18 }}>{a.dek}</div>
                       <div className="pp-read" style={{ marginTop: 'auto', fontSize: 13.5, color: C.muted2, transition: 'color .25s' }}>
                         {a.read} &middot; read &rarr;
@@ -134,17 +134,7 @@ export default function BlogPage({ onHomeClick, onGetStarted }: BlogPageProps) {
           </>
         )}
 
-        <footer style={{ borderTop: `1px solid ${C.bandBorder}` }}>
-          <div style={{ ...shell, padding: '34px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <PawMark size={28} radius={9} />
-              <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 16 }}>proxypaw</span>
-            </div>
-            <div style={{ fontSize: 13.5, color: C.muted2 }}>
-              made with love in gachibowli &middot; walks &middot; boarding &middot; community
-            </div>
-          </div>
-        </footer>
+
       </div>
     </div>
   );
@@ -165,10 +155,10 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
         <ArrowLeft size={16} /> all guides
       </button>
 
-      <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 12, fontWeight: 700, padding: '5px 13px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 18, textTransform: 'capitalize' }}>
+      <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 12, fontWeight: 600, padding: '5px 13px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 18, textTransform: 'capitalize' }}>
         {article.tag}
       </div>
-      <h1 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(30px, 4vw, 46px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 14px', textTransform: 'capitalize' }}>
+      <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(30px, 4vw, 46px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 14px', textTransform: 'capitalize' }}>
         {article.title}
       </h1>
       <div style={{ fontSize: 14, color: C.muted2, marginBottom: 30 }}>
@@ -184,7 +174,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
       {article.body.map((b, i) => {
         if (b.type === 'h') {
           return (
-            <h2 key={i} style={{ fontFamily: sora, fontWeight: 700, fontSize: 23, letterSpacing: '-0.02em', margin: '38px 0 14px', lineHeight: 1.25 }}>
+            <h2 key={i} style={{ fontFamily: sora, fontWeight: 600, fontSize: 23, letterSpacing: '-0.008em', margin: '38px 0 14px', lineHeight: 1.25 }}>
               {b.text}
             </h2>
           );
@@ -208,7 +198,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
                 fontSize: 15.5, lineHeight: 1.65, color: C.sub,
               }}
             >
-              <span style={{ fontFamily: sora, fontWeight: 700, color: C.ink, display: 'block', marginBottom: 6 }}>
+              <span style={{ fontFamily: sora, fontWeight: 600, color: C.ink, display: 'block', marginBottom: 6 }}>
                 🐾 On Proxypaw
               </span>
               {b.text}
@@ -221,7 +211,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
       })}
 
       <div style={{ marginTop: 48, paddingTop: 34, borderTop: `1px solid ${C.bandBorder}`, textAlign: 'center' }}>
-        <p style={{ fontFamily: sora, fontWeight: 700, fontSize: 19, margin: '0 0 16px', color: C.ink }}>
+        <p style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, margin: '0 0 16px', color: C.ink }}>
           Ready when your pets are.
         </p>
         <button

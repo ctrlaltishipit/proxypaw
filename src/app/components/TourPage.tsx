@@ -31,7 +31,7 @@ const C = {
   greenPale: '#eef0e4',
   gold: '#f0b429',
 };
-const sora = "'Sora', system-ui, sans-serif";
+const sora = "'Fredoka', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1140, margin: '0 auto' };
 
 interface Section {
@@ -226,7 +226,7 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
       <header style={{ ...shell, padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
         <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
           <PawMark size={38} radius={13} />
-          <span style={{ fontFamily: sora, fontWeight: 800, fontSize: 21, letterSpacing: '-0.02em' }}>proxypaw</span>
+          <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
         </div>
         <button
           className="pp-dark-btn"
@@ -247,10 +247,10 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
           <div style={{ fontSize: 14, fontWeight: 600, color: C.orange, letterSpacing: '0.12em', marginBottom: 14 }}>
             INSIDE THE APP
           </div>
-          <h1 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(34px, 4.8vw, 60px)', letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 auto 18px', maxWidth: 760 }}>
+          <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 4.8vw, 60px)', letterSpacing: '-0.012em', lineHeight: 1.05, margin: '0 auto 18px', maxWidth: 760 }}>
             See what you're joining.
           </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 300 }}>
+          <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 400 }}>
             These are real screens from the Proxypaw app, the one your community gets when the doors open. A walk through, before you walk in.
           </p>
         </Reveal>
@@ -277,14 +277,14 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
                     <span style={{ width: 28, height: 28, borderRadius: 999, background: s.accent, display: 'grid', placeItems: 'center' }}>
                       <s.Icon size={15} color="#fff" />
                     </span>
-                    <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 12.5, letterSpacing: '0.1em', color: C.muted }}>
+                    <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 12.5, letterSpacing: '0.1em', color: C.muted }}>
                       {s.eyebrow}
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3vw, 38px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 16px' }}>
+                  <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3vw, 38px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 16px' }}>
                     {s.title}
                   </h2>
-                  <p style={{ fontSize: 16.5, lineHeight: 1.7, color: C.sub, margin: '0 0 22px', fontWeight: 300 }}>
+                  <p style={{ fontSize: 16.5, lineHeight: 1.7, color: C.sub, margin: '0 0 22px', fontWeight: 400 }}>
                     {s.body}
                   </p>
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
@@ -326,10 +326,10 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
       {/* closing CTA */}
       <section style={{ ...shell, padding: '90px 28px 100px', textAlign: 'center' }}>
         <Reveal>
-          <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(28px, 3.8vw, 48px)', letterSpacing: '-0.03em', margin: '0 0 14px' }}>
+          <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(28px, 3.8vw, 48px)', letterSpacing: '-0.01em', margin: '0 0 14px' }}>
             Your community could be next.
           </h2>
-          <p style={{ fontSize: 16.5, color: C.muted, margin: '0 0 30px', fontWeight: 300 }}>
+          <p style={{ fontSize: 16.5, color: C.muted, margin: '0 0 30px', fontWeight: 400 }}>
             We open tower by tower. Join the waitlist and you're first in line when yours goes live.
           </p>
           <button
@@ -346,18 +346,7 @@ export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
         </Reveal>
       </section>
 
-      {/* footer */}
-      <footer style={{ borderTop: `1px solid ${C.bandBorder}` }}>
-        <div style={{ ...shell, padding: '34px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <PawMark size={28} radius={9} />
-            <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 16 }}>proxypaw</span>
-          </div>
-          <div style={{ fontSize: 13.5, color: C.muted2 }}>
-            made with love in gachibowli · walks · boarding · community
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }
