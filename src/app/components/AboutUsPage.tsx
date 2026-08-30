@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Home, HeartHandshake, MapPin, Users } from 'lucide-react';
+import { Home, HeartHandshake, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
 
 const C = {
   cream: '#f6f1e7',
@@ -109,6 +109,43 @@ const BELIEFS = [
   },
 ];
 
+/** The vetting pipeline, modelled on what serious platforms (Rover, Wag)
+ *  run — ID + face match, criminal-record screening, registry checks —
+ *  translated to India: Aadhaar, police clearance, references, and our own
+ *  pet-parent requirement on top. */
+const VETTING = [
+  {
+    Icon: PawPrint,
+    title: 'Pet experience, or no entry',
+    body: "Our first filter isn't paperwork — it's love with mileage. Every applicant must be a pet parent or have genuinely cared for pets, and tells us their story in their own words. No pet experience, no exceptions.",
+  },
+  {
+    Icon: Fingerprint,
+    title: 'Government ID + face match',
+    body: 'Aadhaar or another government ID, verified against the person in front of us — the same identity standard global platforms like Rover and Wag apply.',
+  },
+  {
+    Icon: FileSearch,
+    title: 'Background & police verification',
+    body: 'A criminal-record check and police clearance certificate before a single booking, plus reference checks with people who know them.',
+  },
+  {
+    Icon: MessagesSquare,
+    title: 'A real conversation',
+    body: "An in-person interview — because a form can't tell you how someone talks about animals. We can. We're pet parents too.",
+  },
+  {
+    Icon: GraduationCap,
+    title: 'Safety training, then a trial',
+    body: 'Lobby leash rules, the hot-pavement test, emergency first steps — then supervised trial bookings before they ever go solo.',
+  },
+  {
+    Icon: Eye,
+    title: 'Watched on every booking, forever',
+    body: 'Live GPS, photo updates, ratings from your own neighbours after every booking — and zero-tolerance removal for any mistreatment. Vetting never really ends.',
+  },
+];
+
 interface AboutUsPageProps {
   onHomeClick: () => void;
   onJoin: (source: string, intent?: 'owner' | 'walker') => void;
@@ -188,30 +225,65 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
             <Reveal delay={120}>
               <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.darkSub, fontWeight: 300 }}>
                 <p style={{ margin: '0 0 18px' }}>
-                  Proxypaw started with a question I kept hearing in my own community: <em style={{ color: C.cream2 }}>"Who
-                  do I trust with them when I can't be there?"</em> Not everyone has family in the city.
-                  Not every friend can drop everything for a 7 AM walk or a week of cat visits. And the
-                  alternative — leaving your pet somewhere unfamiliar — often means a pet that won't eat,
-                  won't settle, and sometimes falls sick from stress alone.
+                  My first pet found me. A street dog outside the Balaji temple — my parents named him
+                  Balaji after it; I laughed and called him Baloo, and Baloo stuck. He was with us for six
+                  years before his health gave out, and losing him taught me something I've carried since:
+                  <em style={{ color: C.cream2 }}> what comes to you from nature, without you searching for it,
+                  one day goes back to nature.</em> I told myself I wouldn't get another pet. Then my dad
+                  surprised me with Coco — a Shih Tzu with a heart bigger than her whole body. When I moved
+                  away to study, she went back to grow up alongside her sisters and brothers, and today
+                  she's a mother of two. I'm so happy for her.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
-                  But the answer was already living around us. Our gated communities are full of people who
-                  love animals — students, retirees, working professionals who would happily walk a dog on
-                  their evening loop or spend twenty minutes with a cat on their floor. What was missing
-                  wasn't kindness. It was the bridge: verification, training, tracking, insurance — the
-                  structure that lets a pet parent hand over their keys and actually relax.
+                  Now there's Pablo and Leo — two Persian cats who've been with me since they were 45 days
+                  old. They grew up in the same cage, bonded so tightly I couldn't bear to separate them,
+                  so I brought both home. Best decision I ever made: when I'm out, they have each other to
+                  play with, argue with, and nap against. And every night, one sleeps on my head and the
+                  other curls up near my heart. That kind of unconditional trust takes a pet time to give
+                  you — and once you've felt it, you understand what's really being handed over when an
+                  owner gives someone their keys.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
-                  So that's what I'm building. One person, one community at a time — deliberately small,
-                  deliberately deep. Proxypaw won't do nine services in five cities. It will do two things —
-                  walks &amp; home visits, and cage-free boarding in the pet's own home — inside the
-                  communities where both the pets and their people live. Because the safest hands for your
-                  pet were always the ones a few floors away.
+                  Whenever I had to leave the city, I was lucky — my parents live here and could come care
+                  for the boys. But I kept thinking about everyone who doesn't have that. There was no
+                  service I would have trusted with Pablo and Leo. So I built the one I'd trust: a small
+                  set of people who handle pets with empathy and genuine affection — pet parents
+                  themselves, every one of them — verified, trained, and minutes from your door.
+                </p>
+                <p style={{ margin: '0 0 18px' }}>
+                  Proxypaw will stay deliberately small and deliberately deep: walks &amp; home visits, and
+                  cage-free boarding in the pet's own home, inside the communities where both the pets and
+                  their people live. Because the safest hands for your pet were always the ones a few
+                  floors away.
                 </p>
                 <p style={{ margin: 0, fontFamily: sora, fontWeight: 600, color: C.cream2 }}>
                   Deekshitha<br />
-                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted2 }}>Founder, Proxypaw · Gachibowli, Hyderabad</span>
+                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted2 }}>Founder, Proxypaw · cat mum to Pablo &amp; Leo · Gachibowli, Hyderabad</span>
                 </p>
+              </div>
+            </Reveal>
+
+            {/* Pablo & Leo — drop real photos at public/founder/pablo.jpg and
+                public/founder/leo.jpg and they replace these placeholders. */}
+            <Reveal delay={200}>
+              <div style={{ display: 'flex', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
+                {[
+                  { name: 'Pablo', desc: 'Turkish Persian · sleeps on my head', src: '/founder/pablo.jpg', fallback: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=500&q=80&auto=format&fit=crop' },
+                  { name: 'Leo', desc: 'Doll-faced Persian · sleeps near my heart', src: '/founder/leo.jpg', fallback: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=500&q=80&auto=format&fit=crop' },
+                ].map((cat) => (
+                  <figure key={cat.name} style={{ margin: 0, background: 'rgba(253,249,240,.06)', border: '1px solid rgba(253,249,240,.14)', borderRadius: 22, overflow: 'hidden', width: 220, maxWidth: '100%' }}>
+                    <img
+                      src={cat.src}
+                      alt={`${cat.name}, the founder's Persian cat`}
+                      onError={(e) => { const t = e.currentTarget; if (t.src !== cat.fallback) t.src = cat.fallback; }}
+                      style={{ width: '100%', height: 170, objectFit: 'cover', display: 'block' }}
+                    />
+                    <figcaption style={{ padding: '12px 16px' }}>
+                      <span style={{ fontFamily: sora, fontWeight: 700, fontSize: 15, color: C.cream2, display: 'block' }}>{cat.name}</span>
+                      <span style={{ fontSize: 12.5, color: C.muted2 }}>{cat.desc}</span>
+                    </figcaption>
+                  </figure>
+                ))}
               </div>
             </Reveal>
           </div>
@@ -236,6 +308,42 @@ export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
                   </span>
                   <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 18.5, lineHeight: 1.3, marginBottom: 10 }}>{b.title}</div>
                   <div style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, fontWeight: 300 }}>{b.body}</div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* how we vet — BGV */}
+        <section style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD} 0` }}>
+          <Reveal>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+              BACKGROUND VERIFICATION
+            </div>
+            <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: '0 0 16px', maxWidth: 640 }}>
+              Six gates before anyone holds a leash.
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 680, margin: '0 0 clamp(26px, 3.4vw, 40px)', fontWeight: 300 }}>
+              Pets can't tell you how they were treated. If something goes wrong, they carry it
+              silently — and the trauma lives on long after. If everything goes right, they greet you
+              at the door happier than you left them. That asymmetry is why our vetting is stricter
+              than it "needs" to be: we verify like the pet's silence depends on us, because it does.
+            </p>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'clamp(14px, 1.8vw, 20px)' }}>
+            {VETTING.map((v, i) => (
+              <Reveal key={v.title} delay={i * 80}>
+                <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 22, padding: 'clamp(20px, 2.4vw, 26px)', height: '100%', boxSizing: 'border-box', transition: '.3s', display: 'flex', gap: 16 }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 13, background: i === 0 ? C.orange : C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <v.Icon size={19} color="#fff" />
+                  </span>
+                  <div>
+                    <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 16, lineHeight: 1.3, marginBottom: 7 }}>
+                      <span style={{ color: C.muted2, fontSize: 12.5, fontWeight: 600, marginRight: 7 }}>0{i + 1}</span>
+                      {v.title}
+                    </div>
+                    <div style={{ fontSize: 14, lineHeight: 1.6, color: C.sub, fontWeight: 300 }}>{v.body}</div>
+                  </div>
                 </div>
               </Reveal>
             ))}

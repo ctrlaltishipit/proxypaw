@@ -40,7 +40,9 @@ const ID_PROOFS = [
   { value: 'voter-id', label: 'Voter ID' },
 ];
 
-const FN_URL = `${import.meta.env.VITE_SUPABASE_URL ?? 'https://tiodckftpybxwbekxske.supabase.co'}/functions/v1/join-waitlist`;
+const SB_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://tiodckftpybxwbekxske.supabase.co';
+const FN_URL = `${SB_URL}/functions/v1/join-waitlist`;
+const FEEDBACK_URL = `${SB_URL}/functions/v1/submit-feedback`;
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
 type Mode = 'signup' | 'login';
@@ -54,6 +56,77 @@ interface WaitlistModalProps {
   intent?: 'owner' | 'walker';
 }
 
+
+/** Shown on the success screen. Role-aware: volunteers can flag revisions to
+ *  their registration; owners send app feedback, feature asks, testimonials. */
+function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: boolean; source: string }) {
+  const [message, setMessage] = useState('');
+  const [state, setState] = useState<'idle' | 'busy' | 'sent' | 'error'>('idle');
+
+  async function send() {
+    if (message.trim().length < 3) return;
+    setState('busy');
+    try {
+      const res = await fetch(FEEDBACK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, role: volunteer ? 'walker' : 'owner', message, source }),
+      });
+      setState(res.ok ? 'sent' : 'error');
+    } catch {
+      setState('error');
+    }
+  }
+
+  if (state === 'sent') {
+    return (
+      <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 18, padding: '16px 20px', marginTop: 24, fontSize: 14, lineHeight: 1.55, color: '#5a6b3f' }}>
+        Thank you — we've received it and we read every message.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ borderTop: `1px solid ${C.btnBorder}`, marginTop: 26, paddingTop: 22 }}>
+      <div style={{ fontFamily: sora, fontWeight: 700, fontSize: 15, color: C.ink, marginBottom: 5 }}>
+        {volunteer ? 'Anything to add or revise?' : 'Tell us what you think'}
+      </div>
+      <p style={{ fontSize: 13, lineHeight: 1.55, color: C.muted2, margin: '0 0 12px' }}>
+        {volunteer
+          ? 'If you want to correct or add to anything you just submitted — or share feedback about registering — write it here and we\u2019ll attach it to your application.'
+          : 'Features you\u2019d love, upgrades you\u2019d want, or a few words about why you\u2019re joining — we read everything, and the best notes shape what we build next.'}
+      </p>
+      <textarea
+        className="pp-field"
+        value={message}
+        onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
+        placeholder={volunteer ? 'e.g. My phone number should be… / I also wanted to mention…' : 'e.g. It would be great if the app could…'}
+        style={{
+          width: '100%', boxSizing: 'border-box', padding: '13px 16px', borderRadius: 16,
+          border: `1px solid ${C.btnBorder}`, background: C.cream, fontSize: 14, color: C.ink,
+          outline: 'none', fontFamily: 'inherit', minHeight: 84, resize: 'vertical', lineHeight: 1.55,
+        }}
+      />
+      {state === 'error' && (
+        <p role="alert" style={{ fontSize: 13, color: C.orangeDark, margin: '8px 0 0' }}>
+          Could not send — please try again.
+        </p>
+      )}
+      <button
+        onClick={send}
+        disabled={state === 'busy' || message.trim().length < 3}
+        style={{
+          marginTop: 12, border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
+          fontFamily: sora, fontWeight: 600, fontSize: 14, padding: '11px 24px', borderRadius: 999,
+          cursor: 'pointer', opacity: state === 'busy' || message.trim().length < 3 ? 0.55 : 1,
+        }}
+      >
+        {state === 'busy' ? 'Sending…' : 'Send feedback'}
+      </button>
+    </div>
+  );
+}
+
 export default function WaitlistModal({ open, onClose, source = 'site', intent = 'owner' }: WaitlistModalProps) {
   const [mode, setMode] = useState<Mode>('signup');
   const [name, setName] = useState('');
@@ -61,6 +134,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   const [email, setEmail] = useState('');
   const [community, setCommunity] = useState(COMMUNITIES[0]);
   const [idProof, setIdProof] = useState(ID_PROOFS[0].value);
+  const [coverLetter, setCoverLetter] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -103,7 +177,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         },
         body: JSON.stringify({
           name, phone, email, community, role: intent, source, website,
-          ...(intent === 'walker' ? { id_proof: idProof } : {}),
+          ...(intent === 'walker' ? { id_proof: idProof, cover_letter: coverLetter } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -235,6 +309,8 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               >
                 Back to the site
               </button>
+
+              <FeedbackForm email={email} volunteer={volunteer} source={source} />
             </div>
           ) : (
             <>
@@ -263,9 +339,14 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   <h2 style={{ fontFamily: sora, fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', color: C.ink }}>
                     Register as a Volunteer
                   </h2>
-                  <p style={{ fontSize: 14, lineHeight: 1.55, color: C.sub, margin: 0 }}>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: C.sub, margin: '0 0 8px' }}>
                     Walk dogs, visit cats, host sleepovers — and keep 70% of every booking.
                     We'll verify your ID at onboarding.
+                  </p>
+                  <p style={{ fontSize: 12.5, lineHeight: 1.5, color: C.orangeDark, margin: 0, fontWeight: 500 }}>
+                    One thing we ask of every volunteer: real experience with pets — you have (or have
+                    had) a pet, or you've genuinely cared for one. Pets can't tell their humans how they
+                    were treated, so we only take people who already understand them.
                   </p>
                 </div>
               )}
@@ -311,6 +392,25 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       onChange={(e) => setEmail(e.target.value)} placeholder="ananya@example.com"
                       type="email" autoComplete="email" required />
                   </div>
+
+                  {volunteer && (
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={label} htmlFor="pp-cover">Why do you want to volunteer?</label>
+                      <textarea
+                        id="pp-cover"
+                        className="pp-field"
+                        style={{ ...field, borderRadius: 18, minHeight: 110, resize: 'vertical', lineHeight: 1.55 }}
+                        value={coverLetter}
+                        onChange={(e) => setCoverLetter(e.target.value.slice(0, 1600))}
+                        placeholder="One short paragraph (~200 words): your experience with pets — your own, or ones you've cared for — and why you'd like to volunteer."
+                        required
+                      />
+                      <p style={{ fontSize: 12, color: C.muted2, margin: '6px 2px 0', lineHeight: 1.5, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                        <span>Tip: tap the mic on your phone keyboard to dictate this.</span>
+                        <span>{coverLetter.trim() ? coverLetter.trim().split(/\s+/).length : 0}/200 words</span>
+                      </p>
+                    </div>
+                  )}
 
                   {volunteer && (
                     <div style={{ marginBottom: 16 }}>

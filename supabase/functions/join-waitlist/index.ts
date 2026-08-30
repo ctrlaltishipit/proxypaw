@@ -52,9 +52,12 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
     : `You're on the Proxypaw waitlist, ${who}`;
 
   const walkerIntro = walker
-    ? `Thank you for registering as a Proxypaw volunteer. We'll notify you shortly about your onboarding — ` +
-      `it includes a quick ID verification and our safety training, and then you can start accepting ` +
-      `walks, visits and boarding in your community. Volunteers keep 70% of every booking.\n\n`
+    ? `Thank you for registering as a Proxypaw volunteer. We will get back to you shortly — we're going ` +
+      `through the information you sent and reviewing everything, including your note about your ` +
+      `experience with pets. If you'd like to revise anything, just write to us through the feedback ` +
+      `form that appears right after you register.\n\n` +
+      `What happens next: ID verification, a short conversation, our safety training — and then you ` +
+      `can start accepting walks, visits and boarding in your community, keeping 70% of every booking.\n\n`
     : `You've been added to the Proxypaw waitlist. We'll notify you shortly about your access.\n\n`;
   const text =
     `Hi ${who},\n\n` +
@@ -82,8 +85,9 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
 <h1 style="margin:0 0 20px;font-size:25px;line-height:1.25;font-weight:700;color:#2a2118;">You're on the list.</h1>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Hi ${who},</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">${walker
-  ? "Thank you for registering as a Proxypaw volunteer. We'll notify you shortly about your onboarding — a quick ID verification, our safety training, and you can start accepting walks, visits and boarding in your community. Volunteers keep <strong style='color:#2a2118;'>70%</strong> of every booking."
+  ? "Thank you for registering as a Proxypaw volunteer. We will get back to you shortly &mdash; we're going through the information you sent and reviewing everything, including your note about your experience with pets. If you'd like to revise anything, just write to us through the feedback form that appears right after you register."
   : "You've been added to the Proxypaw waitlist. We'll notify you shortly about your access."}</p>
+${walker ? `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">What happens next: ID verification, a short conversation, our safety training &mdash; and then you can start accepting walks, visits and boarding in your community, keeping <strong style="color:#2a2118;">70%</strong> of every booking.</p>` : ""}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">We're opening community by community, and yours &mdash; <strong style="color:#2a2118;">${community}</strong> &mdash; is on our map. The moment we have verified walkers and sitters in your towers, you'll be among the first in.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">There's nothing else you need to do. We'll email you when your access is ready.</p>
@@ -123,11 +127,15 @@ Deno.serve(async (req: Request) => {
   const role = body.role === "walker" ? "walker" : "owner";
   const ID_PROOFS = ["aadhaar", "pan", "driving-licence", "passport", "voter-id"];
   const idProof = ID_PROOFS.includes(body.id_proof ?? "") ? body.id_proof! : null;
+  const coverLetter = (body.cover_letter ?? "").trim().slice(0, 1600) || null;
 
   if (!name) return json({ error: "Please tell us your name." }, 400);
   if (!EMAIL_RE.test(email)) return json({ error: "That email doesn't look right." }, 400);
   if (phone.replace(/\D/g, "").length < 10) return json({ error: "Please enter a valid phone number." }, 400);
   if (!community) return json({ error: "Please pick your community." }, 400);
+  if (role === "walker" && (!coverLetter || coverLetter.length < 40)) {
+    return json({ error: "Please tell us a bit more about your experience with pets." }, 400);
+  }
 
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -144,7 +152,7 @@ Deno.serve(async (req: Request) => {
   const { error: upsertErr } = await admin
     .from("waitlist")
     .upsert(
-      { name, email, phone, community, role, id_proof: idProof, source: body.source ?? null },
+      { name, email, phone, community, role, id_proof: idProof, cover_letter: coverLetter, source: body.source ?? null },
       { onConflict: "email" },
     );
   if (upsertErr) {
