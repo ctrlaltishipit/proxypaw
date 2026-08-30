@@ -1,5 +1,5 @@
 /**
- * Proxypaw public site — waitlist phase, now with real URLs.
+ * proxypaw public site — waitlist phase, now with real URLs.
  *
  * Routes: / /about /tour /blog /blog/:slug, plus /admin — the founder's
  * private dashboard (never linked from the site, noindex, robots-disallowed,
@@ -62,7 +62,7 @@ function About({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
     title: 'About proxypaw — every pet deserves a safe space',
-    description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every Proxypaw volunteer.",
+    description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every proxypaw volunteer.",
     path: '/about',
   });
   return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} onBlogClick={() => navigate('/blog')} />;
@@ -72,7 +72,7 @@ function Tour({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
     title: 'Inside the proxypaw app',
-    description: 'Real screens from the Proxypaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
+    description: 'Real screens from the proxypaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
     path: '/tour',
   });
   return <TourPage onHomeClick={() => navigate('/')} onJoin={onJoin} onAboutClick={() => navigate('/about')} />;

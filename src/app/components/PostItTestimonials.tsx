@@ -29,7 +29,7 @@ const testimonials: Testimonial[] = [
   },
   {
     id: 3,
-    text: "Borrowed 'Buster the Beagle' for a quiet afternoon. My apartment felt less lonely & Buster got great snuggles! Thank you Proxypaw.",
+    text: "Borrowed 'Buster the Beagle' for a quiet afternoon. My apartment felt less lonely & Buster got great snuggles! Thank you proxypaw.",
     author: "Kavya Reddy",
     role: "Renter",
     rating: 5,

@@ -206,7 +206,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
               }}
             >
               <span style={{ fontFamily: sora, fontWeight: 600, color: C.ink, display: 'block', marginBottom: 6 }}>
-                🐾 On Proxypaw
+                🐾 On proxypaw
               </span>
               {b.text}
             </aside>

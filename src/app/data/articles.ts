@@ -1,7 +1,7 @@
 /**
  * The Paw Journal, full articles.
  *
- * Original content written for Proxypaw, grounded in published veterinary
+ * Original content written for proxypaw, grounded in published veterinary
  * guidance (AKC, American Humane, ASPCA, Preventive Vet, and practice blogs)
  * but rewritten for our audience: flat-dwellers in Gachibowli's gated
  * communities. Nothing here is copied text.
@@ -10,7 +10,7 @@
  *   h, section heading
  *   p, paragraph
  *   list, bullet list
- *   tip, highlighted Proxypaw callout
+ *   tip, highlighted proxypaw callout
  */
 
 export interface ArticleBlock {
@@ -58,7 +58,7 @@ export const ARTICLES: Article[] = [
       ]},
       { type: 'h', text: 'Cats: mostly leave them to it' },
       { type: 'p', text: "Cats run their own grooming department. Your job is backup: a weekly brush for short-haired cats, a daily one for long-haired breeds, and attention the moment grooming *stops*, a scruffy, oily coat on a cat that used to gleam is one of the earliest signs something is medically wrong, and worth a vet call before anything else." },
-      { type: 'tip', text: 'Proxypaw walkers towel-dry paws before bringing your dog back up in monsoon, and sitters note any coat or skin changes in your visit report, the small stuff a busy week makes easy to miss.' },
+      { type: 'tip', text: 'proxypaw walkers towel-dry paws before bringing your dog back up in monsoon, and sitters note any coat or skin changes in your visit report, the small stuff a busy week makes easy to miss.' },
     ],
   },
   {
@@ -69,9 +69,9 @@ export const ARTICLES: Article[] = [
     read: '4 min read',
     img: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&q=80&auto=format&fit=crop',
     body: [
-      { type: 'p', text: 'Handing your keys and your dog to someone is an act of trust, even when that someone lives four floors up. We built Proxypaw so the trust is earned by the system, not just the smile. Here is exactly what stands behind every booking.' },
+      { type: 'p', text: 'Handing your keys and your dog to someone is an act of trust, even when that someone lives four floors up. We built proxypaw so the trust is earned by the system, not just the smile. Here is exactly what stands behind every booking.' },
       { type: 'h', text: 'Everyone is verified before they walk anyone' },
-      { type: 'p', text: 'Every walker, sitter and boarding host on Proxypaw is Aadhaar-verified and background-checked before their profile goes live. They live in your community or one beside it, which means they are not anonymous gig workers but neighbours with a reputation to protect, rated by people you share a lift with.' },
+      { type: 'p', text: 'Every walker, sitter and boarding host on proxypaw is Aadhaar-verified and background-checked before their profile goes live. They live in your community or one beside it, which means they are not anonymous gig workers but neighbours with a reputation to protect, rated by people you share a lift with.' },
       { type: 'h', text: 'Every walk is on the map' },
       { type: 'p', text: 'From pickup to drop-off, walks are GPS-tracked live. You can watch the loop around your towers from your desk at work. Visits and boarding stays send photo updates, so "how is she doing?" is answered before you ask it.' },
       { type: 'h', text: 'If something goes wrong' },
@@ -84,7 +84,7 @@ export const ARTICLES: Article[] = [
         'Fear triggers: thunder, lifts, bikes, brooms, other dogs.',
         'Where the leash, towel and treats live in your flat.',
       ]},
-      { type: 'tip', text: 'Two minutes on the quirks section when you join is the highest-value safety work you will ever do on Proxypaw.' },
+      { type: 'tip', text: 'Two minutes on the quirks section when you join is the highest-value safety work you will ever do on proxypaw.' },
     ],
   },
   {
@@ -111,7 +111,7 @@ export const ARTICLES: Article[] = [
         "DON'T walk brachycephalic breeds (Pugs, Shih Tzus, bulldogs) in midday heat at all.",
         "DON'T rush the walk. Fifteen unhurried minutes beat thirty distracted ones.",
       ]},
-      { type: 'tip', text: 'Every Proxypaw walker is trained on exactly these rules, lobby leads, the pavement test, sniff time, before their first booking in your community.' },
+      { type: 'tip', text: 'Every proxypaw walker is trained on exactly these rules, lobby leads, the pavement test, sniff time, before their first booking in your community.' },
     ],
   },
   {
@@ -137,7 +137,7 @@ export const ARTICLES: Article[] = [
       ]},
       { type: 'h', text: 'How much is enough?' },
       { type: 'p', text: 'For cats: two ten-minute hunt sessions a day, roughly dawn and dusk when the drive peaks. For dogs: it varies wildly by breed and age, but the tell is behaviour, a dog that chews furniture, barks at nothing, or zooms the corridor at midnight is asking for more, and a sniffy walk plus a proper game usually answers.' },
-      { type: 'tip', text: 'Proxypaw visits are not just feeding stops, cat sitters run a full hunt-catch-eat session every visit, and walkers log play time in your report.' },
+      { type: 'tip', text: 'proxypaw visits are not just feeding stops, cat sitters run a full hunt-catch-eat session every visit, and walkers log play time in your report.' },
     ],
   },
   {
@@ -166,7 +166,7 @@ export const ARTICLES: Article[] = [
       { type: 'p', text: 'If any of these go down, call your vet immediately, with an estimate of how much and when. Do not wait for symptoms; with xylitol and grapes, early beats sorry by a wide margin.' },
       { type: 'h', text: 'Water, always, everywhere' },
       { type: 'p', text: 'In Hyderabad heat, water matters as much as food. Two bowls in different rooms, refreshed daily. Cats drink more from wide bowls placed away from their food, and more still from a fountain, if yours deigns to accept one.' },
-      { type: 'tip', text: 'Your Proxypaw pet profile carries feeding portions, treat limits and allergies, every sitter follows your numbers, not their guesses.' },
+      { type: 'tip', text: 'Your proxypaw pet profile carries feeding portions, treat limits and allergies, every sitter follows your numbers, not their guesses.' },
     ],
   },
   {
@@ -192,7 +192,7 @@ export const ARTICLES: Article[] = [
         'A scratching post that is tall enough for a full stretch, or the sofa volunteers.',
         'Something new to smell every week.',
       ]},
-      { type: 'tip', text: 'When you travel, cats do better in their kingdom than in a strange one. Proxypaw home visits keep the routine, feeding, litter, one proper hunt session, inside the territory your cat already owns.' },
+      { type: 'tip', text: 'When you travel, cats do better in their kingdom than in a strange one. proxypaw home visits keep the routine, feeding, litter, one proper hunt session, inside the territory your cat already owns.' },
     ],
   },
   {
@@ -217,7 +217,7 @@ export const ARTICLES: Article[] = [
       ]},
       { type: 'h', text: 'When habits change, listen' },
       { type: 'p', text: 'A cat that suddenly goes outside the box, strains, visits repeatedly, or cries in the box is not being spiteful, cats do not do revenge. It is telling you something: often stress (new pet, renovation, guests) and sometimes a urinary problem that is a genuine emergency in male cats. Rule out the vet stuff first, always. A blocked male cat cannot wait until Monday.' },
-      { type: 'tip', text: 'Proxypaw cat visits include litter scooping and a notes field for exactly these changes, frequency, straining, anything off, so you hear about it the same day, not after a week away.' },
+      { type: 'tip', text: 'proxypaw cat visits include litter scooping and a notes field for exactly these changes, frequency, straining, anything off, so you hear about it the same day, not after a week away.' },
     ],
   },
 ];

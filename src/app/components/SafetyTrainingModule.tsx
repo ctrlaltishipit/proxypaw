@@ -337,7 +337,7 @@ export default function SafetyTrainingModule({ onBack, userRole }: SafetyTrainin
                 <div className="flex-1">
                   <h2 className="mb-2">Final Certification Quiz</h2>
                   <p className={`mb-6 ${isLightMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                    Take the AI-driven scenario-based assessment to earn your official Proxypaw Volunteer Certification. 
+                    Take the AI-driven scenario-based assessment to earn your official proxypaw Volunteer Certification. 
                     You must score {passingScore}% or higher to pass.
                   </p>
                   
@@ -500,7 +500,7 @@ export default function SafetyTrainingModule({ onBack, userRole }: SafetyTrainin
               <div className="max-w-md mx-auto mb-8">
                 {passed ? (
                   <p className={isLightMode ? 'text-gray-700' : 'text-gray-300'}>
-                    Congratulations! You&apos;ve successfully completed the Proxypaw Volunteer Safety Training. 
+                    Congratulations! You&apos;ve successfully completed the proxypaw Volunteer Safety Training. 
                     Your certification is now active and you can start accepting walk requests.
                   </p>
                 ) : (

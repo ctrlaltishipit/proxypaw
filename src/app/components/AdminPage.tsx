@@ -48,7 +48,7 @@ interface Stats {
 }
 
 export default function AdminPage() {
-  useSeo({ title: 'Proxypaw', description: '', path: '/admin', noindex: true });
+  useSeo({ title: 'proxypaw', description: '', path: '/admin', noindex: true });
 
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);

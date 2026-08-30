@@ -1,7 +1,7 @@
 /**
  * TourPage, "Inside the app".
  *
- * Real screenshots of the built Proxypaw app (captured from the running
+ * Real screenshots of the built proxypaw app (captured from the running
  * screens, not mocked), one section per area, so someone deciding whether to
  * join the waitlist can see exactly what they're queuing for. Modelled on
  * buddyai's Tour page. Images live in public/shots/.
@@ -61,7 +61,7 @@ const SECTIONS: Section[] = [
       'Quick actions: book, rebook your favourite walker, get help',
     ],
     shot: '/shots/dashboard.png',
-    alt: 'The Proxypaw dashboard showing bookings, paw points and quick actions',
+    alt: 'The proxypaw dashboard showing bookings, paw points and quick actions',
   },
   {
     id: 'walkers',
@@ -253,7 +253,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             See what you're joining.
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 400 }}>
-            Real screens from the Proxypaw app, the one your community gets when the doors open. Keep scrolling: each screen stacks over the last.
+            Real screens from the proxypaw app, the one your community gets when the doors open. Keep scrolling: each screen stacks over the last.
           </p>
         </Reveal>
       </section>
@@ -348,7 +348,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
 
       <NextStop
         label="Meet the founder, and the boys"
-        sub="Why Proxypaw exists, plus Pablo and Leo"
+        sub="Why proxypaw exists, plus Pablo and Leo"
         onClick={onAboutClick}
       />
 

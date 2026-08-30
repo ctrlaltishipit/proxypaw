@@ -238,7 +238,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         className="pp-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Join the Proxypaw waitlist"
+        aria-label="Join the proxypaw waitlist"
         style={{
           width: 'min(1000px, 100%)', background: C.card, borderRadius: 32,
           overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr',
@@ -305,7 +305,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   ? `We already have you down for ${community}. We'll notify you shortly about your access.`
                   : volunteer
                     ? `Thank you for volunteering. We've sent a confirmation to ${email}, we'll reach out about onboarding, ID verification and safety training.`
-                    : `We've added you to the Proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
+                    : `We've added you to the proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: '0 0 28px' }}>
                 We open community by community. {community} is on our map, you'll be among the first in.
@@ -377,7 +377,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     We're not open just yet.
                   </h2>
                   <p style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, margin: '0 0 22px' }}>
-                    Proxypaw is opening one community at a time. There are no accounts to log into
+                    proxypaw is opening one community at a time. There are no accounts to log into
                     yet, join the waitlist and we'll email you the moment your towers go live.
                   </p>
                   <button
