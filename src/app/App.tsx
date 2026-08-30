@@ -65,7 +65,7 @@ function About({ onJoin }: { onJoin: JoinFn }) {
     description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every Proxypaw volunteer.",
     path: '/about',
   });
-  return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} />;
+  return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} onBlogClick={() => navigate('/blog')} />;
 }
 
 function Tour({ onJoin }: { onJoin: JoinFn }) {
@@ -75,7 +75,7 @@ function Tour({ onJoin }: { onJoin: JoinFn }) {
     description: 'Real screens from the Proxypaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
     path: '/tour',
   });
-  return <TourPage onHomeClick={() => navigate('/')} onJoin={onJoin} />;
+  return <TourPage onHomeClick={() => navigate('/')} onJoin={onJoin} onAboutClick={() => navigate('/about')} />;
 }
 
 function Blog({ onJoin }: { onJoin: JoinFn }) {
@@ -101,6 +101,7 @@ function Blog({ onJoin }: { onJoin: JoinFn }) {
       slug={slug}
       onOpenArticle={(s) => navigate(`/blog/${s}`)}
       onBackToIndex={() => navigate('/blog')}
+      onTourClick={() => navigate('/tour')}
       onHomeClick={() => navigate('/')}
       onGetStarted={() => onJoin('blog')}
     />

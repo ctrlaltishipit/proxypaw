@@ -8,6 +8,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import NextStop from './NextStop';
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, ClipboardList, Cat, ShieldCheck,
   type LucideIcon,
@@ -210,9 +211,10 @@ function PawMark({ size, radius }: { size: number; radius: number }) {
 interface TourPageProps {
   onHomeClick: () => void;
   onJoin: (source: string) => void;
+  onAboutClick: () => void;
 }
 
-export default function TourPage({ onHomeClick, onJoin }: TourPageProps) {
+export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'none' }}>
       <style>{`

@@ -9,6 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import NextStop from './NextStop';
 import { Home, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
 
 const C = {
@@ -165,9 +166,10 @@ const EVANGELISTS = [
 interface AboutUsPageProps {
   onHomeClick: () => void;
   onJoin: (source: string, intent?: 'owner' | 'walker') => void;
+  onBlogClick: () => void;
 }
 
-export default function AboutUsPage({ onHomeClick, onJoin }: AboutUsPageProps) {
+export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutUsPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'none' }}>
       <style>{`

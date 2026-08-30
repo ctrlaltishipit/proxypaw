@@ -13,6 +13,7 @@
  * IMAGES below.
  */
 import { useEffect, useRef, useState } from 'react';
+import NextStop from './NextStop';
 import type { CSSProperties, ReactNode } from 'react';
 
 const IMAGES = {

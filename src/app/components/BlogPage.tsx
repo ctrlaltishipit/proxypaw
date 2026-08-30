@@ -7,6 +7,7 @@
  */
 import type { CSSProperties } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import NextStop from './NextStop';
 import { ARTICLES, type Article } from '../data/articles';
 
 const C = {
@@ -50,9 +51,10 @@ interface BlogPageProps {
   slug?: string;
   onOpenArticle: (slug: string) => void;
   onBackToIndex: () => void;
+  onTourClick: () => void;
 }
 
-export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticle, onBackToIndex }: BlogPageProps) {
+export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticle, onBackToIndex, onTourClick }: BlogPageProps) {
   const current = slug ? ARTICLES.find((a) => a.slug === slug) ?? null : null;
 
   return (
@@ -130,6 +132,12 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                 ))}
               </div>
             </section>
+
+            <NextStop
+              label="Done reading? See the app itself"
+              sub="A walk through every screen before you join"
+              onClick={onTourClick}
+            />
           </>
         )}
 
