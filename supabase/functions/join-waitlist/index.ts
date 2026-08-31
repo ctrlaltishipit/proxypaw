@@ -44,6 +44,41 @@ function rateLimited(ip: string): boolean {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+/** Uploaded document: base64 payload from the form. */
+interface DocFile { data?: string; type?: string; name?: string }
+
+const DOC_TYPES: Record<string, string> = {
+  "application/pdf": "pdf",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+};
+const MAX_DOC_BYTES = 3 * 1024 * 1024;
+
+function decodeDoc(doc: DocFile | undefined): { bytes: Uint8Array; ext: string; mime: string } | null | "bad" {
+  if (!doc?.data) return null;
+  const ext = DOC_TYPES[doc.type ?? ""];
+  if (!ext) return "bad";
+  try {
+    const bin = atob(doc.data);
+    if (bin.length > MAX_DOC_BYTES || bin.length < 100) return "bad";
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return { bytes, ext, mime: doc.type! };
+  } catch {
+    return "bad";
+  }
+}
+
+function ageOn(dob: string): number {
+  const d = new Date(dob + "T00:00:00Z");
+  if (isNaN(d.getTime())) return -1;
+  const now = new Date();
+  let age = now.getUTCFullYear() - d.getUTCFullYear();
+  const m = now.getUTCMonth() - d.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < d.getUTCDate())) age--;
+  return age;
+}
+
 function welcomeEmail(name: string, community: string, role: string): { subject: string; html: string; text: string } {
   const who = name || "there";
   const walker = role === "walker";
@@ -137,6 +172,37 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Please tell us a bit more about your experience with pets." }, 400);
   }
 
+  // Volunteer eligibility (see supabase/rules.md).
+  let dob: string | null = null;
+  let docs: { aadhaar?: { bytes: Uint8Array; ext: string; mime: string }; pan?: typeof docs.aadhaar; dl?: typeof docs.aadhaar } = {};
+  let consents = { terms: false, docs: false, bgc: false };
+  if (role === "walker") {
+    dob = (body as Record<string, unknown>).dob as string ?? "";
+    const age = ageOn(dob);
+    if (age < 0) return json({ error: "Please enter your date of birth." }, 400);
+    if (age < 21) return json({ error: "Volunteers must be at least 21 years old." }, 400);
+    if (age > 90) return json({ error: "That date of birth doesn't look right." }, 400);
+
+    const b = body as Record<string, DocFile>;
+    const aadhaar = decodeDoc(b.aadhaar_file);
+    const pan = decodeDoc(b.pan_file);
+    const dl = decodeDoc(b.dl_file);
+    if (aadhaar === "bad" || pan === "bad" || dl === "bad") {
+      return json({ error: "Documents must be PDF, JPG or PNG, under 3 MB each." }, 400);
+    }
+    // e-Aadhaar is the mandatory proof; PAN stands in only when there is no Aadhaar.
+    if (!aadhaar && !pan) {
+      return json({ error: "Please upload your e-Aadhaar, or your PAN card if you don't have one." }, 400);
+    }
+    docs = { aadhaar: aadhaar ?? undefined, pan: pan ?? undefined, dl: dl ?? undefined };
+
+    const c = (body as Record<string, unknown>).consents as Record<string, boolean> | undefined;
+    consents = { terms: !!c?.terms, docs: !!c?.docs, bgc: !!c?.bgc };
+    if (!consents.terms || !consents.docs || !consents.bgc) {
+      return json({ error: "Please accept all three confirmations to register." }, 400);
+    }
+  }
+
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -149,10 +215,40 @@ Deno.serve(async (req: Request) => {
     .eq("email", email)
     .maybeSingle();
 
+  // Upload volunteer documents to the private bucket; paths go on the row.
+  const paths: { aadhaar_path?: string; pan_path?: string; dl_path?: string } = {};
+  if (role === "walker") {
+    const safe = email.replace(/[^a-z0-9@._-]/g, "_");
+    for (const [key, doc] of Object.entries(docs)) {
+      if (!doc) continue;
+      const path = `${safe}/${key}.${doc.ext}`;
+      const { error: upErr } = await admin.storage
+        .from("volunteer-docs")
+        .upload(path, doc.bytes, { contentType: doc.mime, upsert: true });
+      if (upErr) {
+        console.error("doc upload failed", key, upErr);
+        return json({ error: "Could not save your documents. Please try again." }, 500);
+      }
+      paths[`${key}_path` as keyof typeof paths] = path;
+    }
+  }
+
   const { error: upsertErr } = await admin
     .from("waitlist")
     .upsert(
-      { name, email, phone, community, role, id_proof: idProof, cover_letter: coverLetter, source: body.source ?? null },
+      {
+        name, email, phone, community, role, cover_letter: coverLetter,
+        id_proof: role === "walker" ? (paths.aadhaar_path ? "aadhaar" : "pan") : idProof,
+        source: body.source ?? null,
+        ...(role === "walker" ? {
+          dob,
+          ...paths,
+          consent_terms: consents.terms,
+          consent_docs: consents.docs,
+          consent_bgc: consents.bgc,
+          consented_at: new Date().toISOString(),
+        } : {}),
+      },
       { onConflict: "email" },
     );
   if (upsertErr) {

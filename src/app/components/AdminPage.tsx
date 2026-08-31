@@ -39,6 +39,8 @@ interface Row {
   id: string; name: string; email: string; phone: string; community: string;
   role: string; id_proof: string | null; cover_letter: string | null;
   source: string | null; invited_at: string | null; created_at: string;
+  dob?: string | null; aadhaar_url?: string | null; pan_url?: string | null; dl_url?: string | null;
+  consent_terms?: boolean; consent_docs?: boolean; consent_bgc?: boolean;
 }
 interface Stats {
   total: number; owners: number; walkers: number; invited: number;
@@ -248,7 +250,7 @@ export default function AdminPage() {
 
           {tab === 'signups' && (
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760 }}>
-              <thead><tr><th style={th}>WHEN</th><th style={th}>NAME</th><th style={th}>ROLE</th><th style={th}>COMMUNITY</th><th style={th}>CONTACT</th><th style={th}>NOTE</th><th style={th}>INVITED</th></tr></thead>
+              <thead><tr><th style={th}>WHEN</th><th style={th}>NAME</th><th style={th}>ROLE</th><th style={th}>COMMUNITY</th><th style={th}>CONTACT</th><th style={th}>NOTE</th><th style={th}>DOCS</th><th style={th}>INVITED</th></tr></thead>
               <tbody>
                 {stats.rows.map((r) => (
                   <tr key={r.id}>
@@ -262,7 +264,17 @@ export default function AdminPage() {
                     </td>
                     <td style={td}>{r.community}</td>
                     <td style={td}><div>{r.email}</div><div style={{ color: C.muted2 }}>{r.phone}</div></td>
-                    <td style={{ ...td, maxWidth: 260, fontSize: 12.5, color: C.muted }}>{r.cover_letter ?? '—'}</td>
+                    <td style={{ ...td, maxWidth: 240, fontSize: 12.5, color: C.muted }}>
+                      {r.cover_letter ?? '·'}
+                      {r.dob && <div style={{ fontSize: 11, color: C.muted2, marginTop: 4 }}>age {Math.floor((Date.now() - new Date(r.dob).getTime()) / 3.15576e10)}</div>}
+                    </td>
+                    <td style={td}>
+                      {[['aadhaar', r.aadhaar_url], ['pan', r.pan_url], ['dl', r.dl_url]].filter(([, u]) => u).map(([label, u]) => (
+                        <a key={label as string} href={u as string} target="_blank" rel="noreferrer" style={{ display: 'block', color: C.green, fontWeight: 700, fontSize: 12, marginBottom: 3 }}>{label} ↗</a>
+                      ))}
+                      {r.role === 'walker' && !r.aadhaar_url && !r.pan_url && <span style={{ fontSize: 11, color: C.muted2 }}>none</span>}
+                      {r.role === 'walker' && r.consent_bgc && <span style={{ fontSize: 10.5, color: C.muted2 }}>bgc ✓</span>}
+                    </td>
                     <td style={td}>
                       <button onClick={() => toggleInvited(r)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '5px 13px', fontSize: 12, fontWeight: 700, fontFamily: heading, background: r.invited_at ? C.gold : C.band, color: C.ink }}>
                         {r.invited_at ? 'invited ✓' : 'mark invited'}
@@ -270,7 +282,7 @@ export default function AdminPage() {
                     </td>
                   </tr>
                 ))}
-                {stats.rows.length === 0 && <tr><td style={td} colSpan={7}>No signups yet.</td></tr>}
+                {stats.rows.length === 0 && <tr><td style={td} colSpan={8}>No signups yet.</td></tr>}
               </tbody>
             </table>
           )}

@@ -59,10 +59,22 @@ Deno.serve(async (req: Request) => {
 
   const { data: rows, error: rowsErr } = await admin
     .from("waitlist")
-    .select("id, name, email, phone, community, role, id_proof, cover_letter, source, invited_at, created_at")
+    .select("id, name, email, phone, community, role, id_proof, cover_letter, source, invited_at, created_at, dob, aadhaar_path, pan_path, dl_path, consent_terms, consent_docs, consent_bgc")
     .order("created_at", { ascending: false })
     .limit(500);
   if (rowsErr) return json({ error: "Read failed" }, 500);
+
+  // Short-lived signed URLs so the admin can open uploaded documents.
+  for (const r of rows ?? []) {
+    const rec = r as Record<string, unknown>;
+    for (const key of ["aadhaar_path", "pan_path", "dl_path"]) {
+      const path = rec[key] as string | null;
+      if (path) {
+        const { data: signed } = await admin.storage.from("volunteer-docs").createSignedUrl(path, 3600);
+        rec[key.replace("_path", "_url")] = signed?.signedUrl ?? null;
+      }
+    }
+  }
 
   const { data: feedback } = await admin
     .from("feedback")

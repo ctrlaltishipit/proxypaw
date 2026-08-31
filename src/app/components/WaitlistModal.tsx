@@ -135,6 +135,9 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   const [community, setCommunity] = useState(COMMUNITIES[0]);
   const [idProof, setIdProof] = useState(ID_PROOFS[0].value);
   const [coverLetter, setCoverLetter] = useState('');
+  const [dob, setDob] = useState('');
+  const [files, setFiles] = useState<Record<'aadhaar' | 'pan' | 'dl', { name: string; size: number; b64: string; type: string } | null>>({ aadhaar: null, pan: null, dl: null });
+  const [consents, setConsents] = useState({ terms: false, docs: false, bgc: false });
   const [website, setWebsite] = useState(''); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -164,9 +167,44 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   if (!open) return null;
   const volunteer = intent === 'walker';
 
+  const DOC_MIMES = ['application/pdf', 'image/jpeg', 'image/png'];
+
+  function pickFile(kind: 'aadhaar' | 'pan' | 'dl') {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (!DOC_MIMES.includes(f.type)) { setError('Documents must be PDF, JPG or PNG.'); return; }
+      if (f.size > 3 * 1024 * 1024) { setError('Each document must be under 3 MB.'); return; }
+      setError('');
+      const reader = new FileReader();
+      reader.onload = () => {
+        const b64 = String(reader.result).split(',')[1] ?? '';
+        setFiles((prev) => ({ ...prev, [kind]: { name: f.name, size: f.size, b64, type: f.type } }));
+      };
+      reader.readAsDataURL(f);
+    };
+  }
+
+  function volunteerAge(): number {
+    const d = new Date(dob + 'T00:00:00');
+    if (isNaN(d.getTime())) return -1;
+    const now = new Date();
+    let a = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+    return a;
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (volunteer) {
+      const age = volunteerAge();
+      if (age < 0) { setError('Please enter your date of birth.'); return; }
+      if (age < 21) { setError('Volunteers must be at least 21 years old.'); return; }
+      if (!files.aadhaar && !files.pan) { setError("Please upload your e-Aadhaar, or your PAN card if you don't have one."); return; }
+      if (!consents.terms || !consents.docs || !consents.bgc) { setError('Please tick all three confirmations to register.'); return; }
+    }
     setBusy(true);
     try {
       const res = await fetch(FN_URL, {
@@ -177,7 +215,14 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         },
         body: JSON.stringify({
           name, phone, email, community, role: intent, source, website,
-          ...(intent === 'walker' ? { id_proof: idProof, cover_letter: coverLetter } : {}),
+          ...(intent === 'walker' ? {
+            cover_letter: coverLetter,
+            dob,
+            consents,
+            ...(files.aadhaar ? { aadhaar_file: { data: files.aadhaar.b64, type: files.aadhaar.type } } : {}),
+            ...(files.pan ? { pan_file: { data: files.pan.b64, type: files.pan.type } } : {}),
+            ...(files.dl ? { dl_file: { data: files.dl.b64, type: files.dl.type } } : {}),
+          } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -435,14 +480,62 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
 
                   {volunteer && (
                     <div style={{ marginBottom: 16 }}>
-                      <label style={label} htmlFor="pp-idproof">ID Proof</label>
-                      <select id="pp-idproof" className="pp-field" style={{ ...field, appearance: 'none', cursor: 'pointer' }}
-                        value={idProof} onChange={(e) => setIdProof(e.target.value)} required>
-                        {ID_PROOFS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </select>
+                      <label style={label} htmlFor="pp-dob">Date of Birth</label>
+                      <input id="pp-dob" className="pp-field" type="date" style={field}
+                        value={dob} onChange={(e) => setDob(e.target.value)} required
+                        max={new Date().toISOString().slice(0, 10)} />
                       <p style={{ fontSize: 12, color: C.muted2, margin: '7px 2px 0', lineHeight: 1.5 }}>
-                        Pick the document you'll bring to onboarding. We never collect ID numbers or photos online.
+                        Volunteers must be 21 or older, and your ID proof should say the same.
                       </p>
+                    </div>
+                  )}
+
+                  {volunteer && (
+                    <div style={{ marginBottom: 18 }}>
+                      <label style={label}>ID Documents</label>
+                      {([
+                        { kind: 'aadhaar' as const, title: 'e-Aadhaar', note: 'Mandatory. Download it from the UIDAI website.', required: !files.pan },
+                        { kind: 'pan' as const, title: 'PAN card', note: files.aadhaar ? 'Optional additional document.' : "Mandatory if you don't have an e-Aadhaar.", required: !files.aadhaar },
+                        { kind: 'dl' as const, title: 'Driving licence', note: 'Optional. Upload it or leave it blank.', required: false },
+                      ]).map((d) => (
+                        <label key={d.kind} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.cream, border: `1px dashed ${files[d.kind] ? C.green : C.btnBorder}`, borderRadius: 16, padding: '11px 14px', marginBottom: 8, cursor: 'pointer' }}>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={pickFile(d.kind)} style={{ display: 'none' }} />
+                          <span style={{ width: 30, height: 30, borderRadius: 10, background: files[d.kind] ? C.green : '#e9ddc8', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#fff', fontSize: 15 }}>
+                            {files[d.kind] ? <Check size={15} strokeWidth={3} /> : '+'}
+                          </span>
+                          <span style={{ minWidth: 0 }}>
+                            <span style={{ display: 'block', fontFamily: sora, fontWeight: 600, fontSize: 13.5, color: C.ink }}>
+                              {d.title}{d.required && <span style={{ color: C.orangeDark }}> *</span>}
+                            </span>
+                            <span style={{ display: 'block', fontSize: 11.5, color: files[d.kind] ? C.green : C.muted2, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {files[d.kind] ? `${files[d.kind]!.name} · ${(files[d.kind]!.size / 1024).toFixed(0)} KB` : d.note}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                      <p style={{ fontSize: 11.5, color: C.muted2, margin: '4px 2px 0', lineHeight: 1.5 }}>
+                        PDF, JPG or PNG, under 3 MB each. Stored privately, seen only by the founder, used only for verification.
+                      </p>
+                    </div>
+                  )}
+
+                  {volunteer && (
+                    <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {([
+                        { key: 'terms' as const, text: "I accept proxypaw's terms and conditions, privacy policy, and all volunteer rules and regulations, and I'm ready to follow them." },
+                        { key: 'docs' as const, text: 'All documents I submitted above are original; I previewed and double-checked each one before submitting.' },
+                        { key: 'bgc' as const, text: 'I consent to proxypaw conducting a background verification check on me as part of my volunteer registration.' },
+                      ]).map((c) => (
+                        <label key={c.key} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={consents[c.key]}
+                            onChange={(e) => setConsents((prev) => ({ ...prev, [c.key]: e.target.checked }))}
+                            style={{ marginTop: 3, width: 16, height: 16, accentColor: C.orange, flexShrink: 0 }}
+                          />
+                          <span style={{ fontSize: 12.5, lineHeight: 1.55, color: C.sub }}>{c.text}</span>
+                        </label>
+                      ))}
                     </div>
                   )}
 
