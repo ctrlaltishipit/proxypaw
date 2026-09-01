@@ -135,7 +135,11 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
 
         {/* small print */}
         <div className="ppf-bottom" style={{ borderTop: '1px solid rgba(253,249,240,.12)', marginTop: 'clamp(24px, 3vw, 34px)', padding: '16px 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <span style={{ fontSize: 12, color: C.dim }}>© 2026 proxypaw · made with love in gachibowli</span>
+          <span style={{ fontSize: 12, color: C.dim }}>
+            © 2026 proxypaw · made with love in gachibowli ·{' '}
+            <a href="/terms" style={{ color: C.dim, textDecoration: 'underline' }}>terms</a> ·{' '}
+            <a href="/privacy" style={{ color: C.dim, textDecoration: 'underline' }}>privacy</a>
+          </span>
           <span style={{ fontSize: 12, color: C.dim, display: 'flex', gap: 12, alignItems: 'center' }}>
             walks · boarding · community
             {hasSession && (

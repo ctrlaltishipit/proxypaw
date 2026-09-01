@@ -15,6 +15,7 @@ import LandingPage from './components/LandingPage';
 import BlogPage from './components/BlogPage';
 import TourPage from './components/TourPage';
 import AboutUsPage from './components/AboutUsPage';
+import LegalPage from './components/LegalPage';
 import WaitlistModal from './components/WaitlistModal';
 import SiteFooter, { type FooterNav } from './components/SiteFooter';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -140,6 +141,8 @@ export default function App() {
           <Route path="/tour" element={<Tour onJoin={openWaitlist} />} />
           <Route path="/blog" element={<Blog onJoin={openWaitlist} />} />
           <Route path="/blog/:slug" element={<Blog onJoin={openWaitlist} />} />
+          <Route path="/terms" element={<LegalPage kind="terms" onHomeClick={() => navigate('/')} onBlogClick={() => navigate('/blog')} />} />
+          <Route path="/privacy" element={<LegalPage kind="privacy" onHomeClick={() => navigate('/')} onBlogClick={() => navigate('/blog')} />} />
           <Route
             path="/admin"
             element={

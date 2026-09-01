@@ -522,7 +522,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   {volunteer && (
                     <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
                       {([
-                        { key: 'terms' as const, text: "I accept proxypaw's terms and conditions, privacy policy, and all volunteer rules and regulations, and I'm ready to follow them." },
+                        { key: 'terms' as const, text: null },
                         { key: 'docs' as const, text: 'All documents I submitted above are original; I previewed and double-checked each one before submitting.' },
                         { key: 'bgc' as const, text: 'I consent to proxypaw conducting a background verification check on me as part of my volunteer registration.' },
                       ]).map((c) => (
@@ -533,7 +533,11 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                             onChange={(e) => setConsents((prev) => ({ ...prev, [c.key]: e.target.checked }))}
                             style={{ marginTop: 3, width: 16, height: 16, accentColor: C.orange, flexShrink: 0 }}
                           />
-                          <span style={{ fontSize: 12.5, lineHeight: 1.55, color: C.sub }}>{c.text}</span>
+                          <span style={{ fontSize: 12.5, lineHeight: 1.55, color: C.sub }}>
+                            {c.text ?? (
+                              <>I accept proxypaw's <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>terms and conditions</a>, <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>privacy policy</a>, and all volunteer rules and regulations, and I'm ready to follow them.</>
+                            )}
+                          </span>
                         </label>
                       ))}
                     </div>
