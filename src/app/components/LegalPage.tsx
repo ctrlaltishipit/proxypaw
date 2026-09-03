@@ -76,7 +76,7 @@ const PRIVACY: Doc = {
       'You can ask what we hold about you, ask us to correct it, or ask us to delete it, in line with the Digital Personal Data Protection Act, 2023. Use the feedback form after you register, or reply to any email from proxypaw, and we will respond.',
     ]},
     { h: 'Cookies', p: [
-      'The public site sets no tracking cookies. The founder dashboard keeps a sign-in session in the browser of the person who signed in, and nothing else.',
+      'We use Google Analytics to understand how people use the site: pages visited and rough location, tied to a random identifier, never to your name. The founder dashboard keeps a sign-in session in the browser of the person who signed in. That is all.',
     ]},
   ],
 };
