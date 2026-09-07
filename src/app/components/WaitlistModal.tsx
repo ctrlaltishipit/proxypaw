@@ -133,6 +133,8 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [community, setCommunity] = useState(COMMUNITIES[0]);
+  const [communityQuery, setCommunityQuery] = useState('');
+  const [communityOpen, setCommunityOpen] = useState(false);
   const [idProof, setIdProof] = useState(ID_PROOFS[0].value);
   const [coverLetter, setCoverLetter] = useState('');
   const [dob, setDob] = useState('');
@@ -166,6 +168,17 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
 
   if (!open) return null;
   const volunteer = intent === 'walker';
+
+  /** Type-ahead ranking: names starting with the query first, then contains. */
+  function communityMatches(): string[] {
+    const q = communityQuery.trim().toLowerCase();
+    if (!q) return COMMUNITIES;
+    const starts = COMMUNITIES.filter((c) => c.toLowerCase().startsWith(q));
+    const wordStarts = COMMUNITIES.filter((c) => !starts.includes(c) && c.toLowerCase().split(/\s+/).some((w) => w.startsWith(q)));
+    const contains = COMMUNITIES.filter((c) => !starts.includes(c) && !wordStarts.includes(c) && c.toLowerCase().includes(q));
+    const out = [...starts, ...wordStarts, ...contains];
+    return out.length ? out : [COMMUNITIES[COMMUNITIES.length - 1]];
+  }
 
   const DOC_MIMES = ['application/pdf', 'image/jpeg', 'image/png'];
 
@@ -394,14 +407,12 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               </div>
 
               {mode === 'signup' && (
-                <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 16, padding: '13px 16px', marginBottom: 20, fontSize: 12.5, lineHeight: 1.6, color: '#5a6b3f' }}>
-                  <strong style={{ fontFamily: sora, fontSize: 12.5 }}>A quick note:</strong> we're currently
-                  live only in Hyderabad, and we're focusing on gated communities for now. Pick your community
-                  from the list and sign up as an owner to get access, or register as a volunteer from that
-                  same community. Volunteers don't need to come from outside: if you live in Prestige High
-                  Fields and want to walk, care for, or foster a neighbour's pet for a day or two, you can
-                  volunteer, earn on every booking, and be part of the care. Your pet stays with someone from
-                  your own community, often a face you already know, so leaving them feels safe.
+                <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 11.5, lineHeight: 1.55, color: '#5a6b3f' }}>
+                  <strong style={{ fontFamily: sora }}>A quick note:</strong> we're live only in Hyderabad,
+                  gated communities first. Pick your community to sign up as an owner, or register as a
+                  volunteer from that same community: if you live in a community and want to walk, care for,
+                  or foster a neighbour's pet, you can volunteer and earn on every booking. Your pet stays
+                  with someone from your own community, often a face you already know.
                 </div>
               )}
               {volunteer && mode === 'signup' && (
@@ -472,12 +483,11 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                         style={{ ...field, borderRadius: 18, minHeight: 110, resize: 'vertical', lineHeight: 1.55 }}
                         value={coverLetter}
                         onChange={(e) => setCoverLetter(e.target.value.slice(0, 1600))}
-                        placeholder="One short paragraph (~200 words): your experience with pets, your own, or ones you've cared for, and why you'd like to volunteer."
+                        placeholder="Your experience with pets and why you'd like to volunteer. Even a line is enough, you can tell us more if you're shortlisted."
                         required
                       />
-                      <p style={{ fontSize: 12, color: C.muted2, margin: '6px 2px 0', lineHeight: 1.5, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                        <span>Tip: tap the mic on your phone keyboard to dictate this.</span>
-                        <span>{coverLetter.trim() ? coverLetter.trim().split(/\s+/).length : 0}/200 words</span>
+                      <p style={{ fontSize: 11.5, color: C.muted2, margin: '6px 2px 0', lineHeight: 1.5 }}>
+                        Only the team onboarding volunteers reads this. Tip: tap the mic on your phone keyboard to dictate.
                       </p>
                     </div>
                   )}
@@ -547,12 +557,33 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     </div>
                   )}
 
-                  <div style={{ marginBottom: 22 }}>
+                  <div style={{ marginBottom: 22, position: 'relative' }}>
                     <label style={label} htmlFor="pp-community">Your Community</label>
-                    <select id="pp-community" className="pp-field" style={{ ...field, appearance: 'none', cursor: 'pointer' }}
-                      value={community} onChange={(e) => setCommunity(e.target.value)} required>
-                      {COMMUNITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <input
+                      id="pp-community"
+                      className="pp-field"
+                      style={field}
+                      value={communityOpen ? communityQuery : community}
+                      placeholder="Type to search, e.g. Aparna"
+                      autoComplete="off"
+                      onFocus={() => { setCommunityOpen(true); setCommunityQuery(''); }}
+                      onChange={(e) => { setCommunityQuery(e.target.value); setCommunityOpen(true); }}
+                      onBlur={() => setTimeout(() => setCommunityOpen(false), 150)}
+                    />
+                    {communityOpen && (
+                      <div style={{ position: 'absolute', zIndex: 5, left: 0, right: 0, top: '100%', marginTop: 6, background: C.card, border: `1px solid ${C.btnBorder}`, borderRadius: 16, boxShadow: '0 18px 40px rgba(42,33,24,.18)', maxHeight: 208, overflowY: 'auto' }}>
+                        {communityMatches().slice(0, 40).map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onMouseDown={(e) => { e.preventDefault(); setCommunity(c); setCommunityQuery(''); setCommunityOpen(false); }}
+                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '11px 16px', border: 'none', background: c === community ? C.band : 'transparent', fontSize: 15, color: C.ink, cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Honeypot, hidden from people, catches bots. */}

@@ -168,8 +168,9 @@ Deno.serve(async (req: Request) => {
   if (!EMAIL_RE.test(email)) return json({ error: "That email doesn't look right." }, 400);
   if (phone.replace(/\D/g, "").length < 10) return json({ error: "Please enter a valid phone number." }, 400);
   if (!community) return json({ error: "Please pick your community." }, 400);
-  if (role === "walker" && (!coverLetter || coverLetter.length < 40)) {
-    return json({ error: "Please tell us a bit more about your experience with pets." }, 400);
+  // Even a single line is enough; details can come at shortlisting.
+  if (role === "walker" && (!coverLetter || coverLetter.length < 5)) {
+    return json({ error: "Please write at least a line about you and pets." }, 400);
   }
 
   // Volunteer eligibility (see supabase/rules.md).
