@@ -477,7 +477,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
             </div>
             <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 5vw, 60px)', lineHeight: 1.06, letterSpacing: '-0.015em', margin: '0 0 6px' }}>
               Your neighbours.<br />Your pets'<br />
-              <span style={{ color: C.orange }}>Best friends.</span>
+              <span style={{ color: C.orange }}>best friends.</span>
             </h1>
             <Squiggle />
             <p style={{ fontSize: 'clamp(16px, 1.6vw, 18.5px)', lineHeight: 1.6, color: C.sub, maxWidth: 440, margin: '20px 0 30px', fontWeight: 400, textTransform: 'none' }}>
