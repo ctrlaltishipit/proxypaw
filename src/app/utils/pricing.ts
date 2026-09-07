@@ -1,4 +1,4 @@
-// Proxypaw pricing — INR-anchored with location-based display.
+// ProxyPaw pricing — INR-anchored with location-based display.
 //
 // Research basis (Hyderabad Financial District / Gachibowli, 2026):
 //   • Informal walkers: ₹100–200 per walk (no insurance, no vetting)
