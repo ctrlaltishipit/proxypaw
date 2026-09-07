@@ -73,7 +73,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
         <header style={{ ...shell, padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
           <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
             <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
           </div>
           <button
             className="pp-dark-btn"
@@ -100,7 +100,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                 care guides from the pack
               </h1>
               <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 48px', fontWeight: 400, textTransform: 'none' }}>
-                Short, practical reads from the proxypaw care team: grooming, feeding, safety and play, for dogs and cats alike.
+                Short, practical reads from the ProxyPaw care team: grooming, feeding, safety and play, for dogs and cats alike.
               </p>
             </section>
 
@@ -206,7 +206,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
               }}
             >
               <span style={{ fontFamily: sora, fontWeight: 600, color: C.ink, display: 'block', marginBottom: 6 }}>
-                🐾 On proxypaw
+                🐾 On ProxyPaw
               </span>
               {b.text}
             </aside>

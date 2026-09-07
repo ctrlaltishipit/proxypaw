@@ -287,7 +287,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         className="pp-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Join the proxypaw waitlist"
+        aria-label="Join the ProxyPaw waitlist"
         style={{
           width: 'min(1000px, 100%)', margin: 'auto', background: C.card, borderRadius: 32,
           overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr',
@@ -336,7 +336,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                 <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
               </svg>
             </span>
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>ProxyPaw</span>
           </div>
 
           {done ? (
@@ -354,7 +354,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   ? `We already have you down for ${community}. We'll notify you shortly about your access.`
                   : volunteer
                     ? `Thank you for volunteering. We've sent a confirmation to ${email}, we'll reach out about onboarding, ID verification and safety training.`
-                    : `We've added you to the proxypaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
+                    : `We've added you to the ProxyPaw waitlist and sent a confirmation to ${email}. We'll notify you shortly about your access.`}
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: '0 0 28px' }}>
                 We open community by community. {community} is on our map, you'll be among the first in.
@@ -426,7 +426,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                     We're not open just yet.
                   </h2>
                   <p style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, margin: '0 0 22px' }}>
-                    proxypaw is opening one community at a time. There are no accounts to log into
+                    ProxyPaw is opening one community at a time. There are no accounts to log into
                     yet, join the waitlist and we'll email you the moment your towers go live.
                   </p>
                   <button
@@ -528,7 +528,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       {([
                         { key: 'terms' as const, text: null },
                         { key: 'docs' as const, text: 'All documents I submitted above are original; I previewed and double-checked each one before submitting.' },
-                        { key: 'bgc' as const, text: 'I consent to proxypaw conducting a background verification check on me as part of my volunteer registration.' },
+                        { key: 'bgc' as const, text: 'I consent to ProxyPaw conducting a background verification check on me as part of my volunteer registration.' },
                       ]).map((c) => (
                         <label key={c.key} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
                           <input
@@ -539,7 +539,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                           />
                           <span style={{ fontSize: 12.5, lineHeight: 1.55, color: C.sub }}>
                             {c.text ?? (
-                              <>I accept proxypaw's <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>terms and conditions</a>, <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>privacy policy</a>, and all volunteer rules and regulations, and I'm ready to follow them.</>
+                              <>I accept ProxyPaw's <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>terms and conditions</a>, <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>privacy policy</a>, and all volunteer rules and regulations, and I'm ready to follow them.</>
                             )}
                           </span>
                         </label>

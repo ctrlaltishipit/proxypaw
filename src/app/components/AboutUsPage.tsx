@@ -1,9 +1,9 @@
 /**
- * AboutUsPage, vision, founder story, and why proxypaw is deliberately small.
+ * AboutUsPage, vision, founder story, and why ProxyPaw is deliberately small.
  *
  * The positioning here is the moat: city-wide platforms (PawSpace and the
  * like) offer nine services across five cities with contractor networks;
- * proxypaw offers two services inside the communities where both the pets and
+ * ProxyPaw offers two services inside the communities where both the pets and
  * the carers live. Depth over breadth, neighbours over strangers, the pet's
  * own home over any facility.
  */
@@ -100,7 +100,7 @@ const BELIEFS = [
     Icon: Users,
     accent: C.gold,
     title: 'A community, not a marketplace.',
-    body: "proxypaw is also the place your community's pet life happens: see the pets in your towers, know which dog is friendly before you meet it in the lobby, follow where your own pet is on their walk in real time, and talk to the other owners around you. A stranger with a leash is a transaction. A neighbour with a leash is a relationship.",
+    body: "ProxyPaw is also the place your community's pet life happens: see the pets in your towers, know which dog is friendly before you meet it in the lobby, follow where your own pet is on their walk in real time, and talk to the other owners around you. A stranger with a leash is a transaction. A neighbour with a leash is a relationship.",
   },
 ];
 
@@ -141,14 +141,14 @@ const VETTING = [
   },
 ];
 
-/** The founder's cats, proxypaw's first and most demanding users. */
+/** The founder's cats, ProxyPaw's first and most demanding users. */
 const EVANGELISTS = [
   {
     name: 'pablo',
     img: '/founder/pablo.jpg',
     title: 'Chief Comfort Officer',
     tagline: 'The lovable goof',
-    body: "Pablo has one superpower: he knows when you've had a bad day before you've said a word. He values his personal space, does his own thing, and then, the moment you're at your lowest, he appears. He's also proxypaw's head of quality television: football matches, random videos, whatever's on, Pablo sits, watches, and judges silently.",
+    body: "Pablo has one superpower: he knows when you've had a bad day before you've said a word. He values his personal space, does his own thing, and then, the moment you're at your lowest, he appears. He's also ProxyPaw's head of quality television: football matches, random videos, whatever's on, Pablo sits, watches, and judges silently.",
     facts: ['Detects a rough day from two rooms away', 'Watches football like he has money on it', 'Respects personal space. Expects the same.'],
     accent: '#e0662f',
   },
@@ -192,7 +192,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
         <header style={{ ...shell, maxWidth: 1200, padding: `18px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
           <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
             <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
           </div>
           <button
             className="pp-dark-btn"
@@ -221,7 +221,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
               <span style={{ color: C.orange }}>Ours is their own home.</span>
             </h1>
             <p style={{ fontSize: 'clamp(16.5px, 1.7vw, 19px)', lineHeight: 1.7, color: C.sub, maxWidth: 720, margin: 0, fontWeight: 400 }}>
-              proxypaw exists for one moment: the moment you have to leave, and your pet has to stay.
+              ProxyPaw exists for one moment: the moment you have to leave, and your pet has to stay.
               We believe that moment should never mean a cage, a strange facility, or a stranger.
               It should mean a verified neighbour walking through a familiar door, so your pet
               feels what we want every pet to feel: <em>my human is busy today, and someone kind has come.</em>
@@ -269,14 +269,14 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
                   themselves, every one of them, verified, trained, and minutes from your door.
                 </p>
                 <p style={{ margin: '0 0 18px' }}>
-                  proxypaw will stay deliberately small and deliberately deep: walks &amp; home visits, and
+                  ProxyPaw will stay deliberately small and deliberately deep: walks &amp; home visits, and
                   cage-free boarding in the pet's own home, inside the communities where both the pets and
                   their people live. Because the safest hands for your pet were always the ones a few
                   floors away.
                 </p>
                 <p style={{ margin: 0, fontFamily: sora, fontWeight: 600, color: C.cream2 }}>
                   Deekshitha<br />
-                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted2 }}>Founder, proxypaw · cat mum to Pablo &amp; Leo · Gachibowli, Hyderabad</span>
+                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted2 }}>Founder, ProxyPaw · cat mum to Pablo &amp; Leo · Gachibowli, Hyderabad</span>
                 </p>
               </div>
             </Reveal>
@@ -306,7 +306,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
               Meet the boys who approve every feature.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.7, color: C.sub, maxWidth: 640, margin: '0 0 clamp(18px, 2.4vw, 28px)', fontWeight: 400 }}>
-              Pablo and Leo, brothers, flatmates, and proxypaw's first users. They grew up curled in
+              Pablo and Leo, brothers, flatmates, and ProxyPaw's first users. They grew up curled in
               the same cage, still groom each other daily, and take turns keeping the founder company.
               Nothing ships until it feels right for these two.
             </p>
@@ -418,7 +418,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
             <div style={{ background: C.greenPale, border: `1px solid ${C.bandBorder}`, borderRadius: 28, padding: 'clamp(26px, 3.6vw, 44px)', display: 'flex', gap: 'clamp(20px, 3vw, 40px)', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 380px' }}>
                 <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(22px, 2.6vw, 30px)', letterSpacing: '-0.01em', margin: '0 0 12px' }}>
-                  The other half of proxypaw: our volunteers.
+                  The other half of ProxyPaw: our volunteers.
                 </h2>
                 <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.sub, margin: '0 0 8px', fontWeight: 400 }}>
                   Every walk and every visit happens because a neighbour raised their hand. Volunteers

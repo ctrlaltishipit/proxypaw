@@ -42,7 +42,7 @@ export default function AboutPage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            about proxypaw
+            about ProxyPaw
           </motion.h1>
           <motion.p 
             className={`max-w-2xl mx-auto ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}
@@ -110,7 +110,7 @@ export default function AboutPage({
               </div>
               <h2 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>0.3 our purpose</h2>
               <p className={`${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
-                proxypaw exists to bridge the critical gap between the need for large-scale web data 
+                ProxyPaw exists to bridge the critical gap between the need for large-scale web data 
                 acquisition (scraping, monitoring, ad verification) and the absolute requirement for 
                 ethical compliance and high technical reliability in an era of increasingly sophisticated 
                 web defenses. we provide the infrastructure that turns the world&apos;s web data into actionable 
@@ -172,9 +172,9 @@ export default function AboutPage({
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 bg-[#7D5A3B]/10 rounded-full">
                 <Globe className="w-6 h-6 text-[#7D5A3B]" />
               </div>
-              <h3 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>proxypaw&apos;s solution</h3>
+              <h3 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>ProxyPaw&apos;s solution</h3>
               <p className={`${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
-                sarah uses the proxypaw api (feature p-04) to programmatically generate country-specific 
+                sarah uses the ProxyPaw api (feature p-04) to programmatically generate country-specific 
                 proxy credentials for the residential network. she sets up a sticky session rotation 
                 (feature p-03) lasting 10 minutes to mimic genuine user behavior.
               </p>
@@ -193,7 +193,7 @@ export default function AboutPage({
               </div>
               <h3 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>outcome</h3>
               <p className={`mb-4 ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
-                with proxypaw, sarah reliably collects 98% of her target data on time, enabling her 
+                with ProxyPaw, sarah reliably collects 98% of her target data on time, enabling her 
                 company to react instantly to competitor pricing changes, while maintaining a clean, 
                 compliant ip footprint.
               </p>
@@ -214,7 +214,7 @@ export default function AboutPage({
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>why choose proxypaw</h2>
+            <h2 className={`mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>why choose ProxyPaw</h2>
             <p className={`max-w-2xl mx-auto ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
               enterprise-grade proxy solutions with ethical ip sourcing and unmatched reliability
             </p>
@@ -282,7 +282,7 @@ export default function AboutPage({
       {/* Footer */}
       <footer className={`border-t py-12 px-6 ${isLightMode ? 'border-gray-300 bg-white' : 'border-gray-700 bg-gray-950'}`}>
         <div className={`max-w-6xl mx-auto text-center ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
-          <p className="mb-4">© 2025 proxypaw. ethical proxy solutions for data-driven organizations.</p>
+          <p className="mb-4">© 2025 ProxyPaw. ethical proxy solutions for data-driven organizations.</p>
           <div className="flex justify-center gap-6 mb-4">
             <a href="#" className={`transition-colors ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`}>privacy</a>
             <a href="#" className={`transition-colors ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`}>terms</a>

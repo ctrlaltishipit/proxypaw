@@ -108,7 +108,7 @@ export default function TestimonialForm({ onClose }: TestimonialFormProps) {
                   className="w-full bg-white border border-gray-300 rounded-sm px-4 py-3 focus:border-gray-500 outline-none transition-colors resize-none text-gray-900"
                   rows={5}
                   maxLength={500}
-                  placeholder="share your experience with proxypaw..."
+                  placeholder="share your experience with ProxyPaw..."
                   required
                 />
                 <p className="text-gray-500 mt-1">{testimonial.length}/500 characters</p>

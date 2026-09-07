@@ -102,7 +102,7 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
               <span style={{ width: 30, height: 30, borderRadius: 10, background: C.orange, display: 'grid', placeItems: 'center' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
               </span>
-              <span style={{ fontFamily: heading, fontWeight: 600, fontSize: 17 }}>proxypaw</span>
+              <span style={{ fontFamily: heading, fontWeight: 600, fontSize: 17 }}>ProxyPaw</span>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.6, color: C.muted2, margin: 0, maxWidth: 290 }}>
               Hyderabad, gated communities first: Gachibowli, Financial District, Kokapet, Kondapur and Nallagandla. Your community next?
@@ -136,7 +136,7 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
         {/* small print */}
         <div className="ppf-bottom" style={{ borderTop: '1px solid rgba(253,249,240,.12)', marginTop: 'clamp(24px, 3vw, 34px)', padding: '16px 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ fontSize: 12, color: C.dim }}>
-            © 2026 proxypaw · made with love in gachibowli ·{' '}
+            © 2026 ProxyPaw · made with love in gachibowli ·{' '}
             <a href="/terms" style={{ color: C.dim, textDecoration: 'underline' }}>terms</a> ·{' '}
             <a href="/privacy" style={{ color: C.dim, textDecoration: 'underline' }}>privacy</a>
           </span>

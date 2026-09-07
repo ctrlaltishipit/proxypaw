@@ -1,5 +1,5 @@
 /**
- * join-waitlist, records a proxypaw early-access signup and emails a confirmation.
+ * join-waitlist, records a ProxyPaw early-access signup and emails a confirmation.
  *
  * Called straight from the signup form. There is no account and no JWT to
  * verify, so unlike buddyai's version this endpoint is public and has to do its
@@ -8,7 +8,7 @@
  *
  * Secrets (set with `supabase secrets set`):
  *   RESEND_API_KEY   from resend.com
- *   WAITLIST_FROM    e.g. "proxypaw <hello@proxypaw.com>"  (domain must be verified)
+ *   WAITLIST_FROM    e.g. "ProxyPaw <hello@proxypaw.com>"  (domain must be verified)
  *
  * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
  * Without RESEND_API_KEY the signup still saves, only the email is skipped.
@@ -83,27 +83,27 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
   const who = name || "there";
   const walker = role === "walker";
   const subject = walker
-    ? `You're registered as a proxypaw volunteer, ${who}`
-    : `You're on the proxypaw waitlist, ${who}`;
+    ? `You're registered as a ProxyPaw volunteer, ${who}`
+    : `You're on the ProxyPaw waitlist, ${who}`;
 
   const walkerIntro = walker
-    ? `Thank you for registering as a proxypaw volunteer. We will get back to you shortly, we're going ` +
+    ? `Thank you for registering as a ProxyPaw volunteer. We will get back to you shortly, we're going ` +
       `through the information you sent and reviewing everything, including your note about your ` +
       `experience with pets. If you'd like to revise anything, just write to us through the feedback ` +
       `form that appears right after you register.\n\n` +
       `What happens next: ID verification, a short conversation, our safety training, and then you ` +
       `can start accepting walks, visits and boarding in your community, keeping 70% of every booking.\n\n`
-    : `You've been added to the proxypaw waitlist. We'll notify you shortly about your access.\n\n`;
+    : `You've been added to the ProxyPaw waitlist. We'll notify you shortly about your access.\n\n`;
   const text =
     `Hi ${who},\n\n` +
     walkerIntro +
     `We're opening community by community, and yours, ${community}, is on our map. ` +
     `The moment we have verified walkers and sitters in your towers, you'll be among the first in.\n\n` +
-    `proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own ` +
+    `ProxyPaw is walks, cat home visits and overnight boarding from neighbours who live in your own ` +
     `gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.\n\n` +
     `There's nothing else you need to do. We'll email you when your access is ready.\n\n` +
     `Give your pet a scratch behind the ears from us.\n\n` +
-    `Deekshitha\nFounder, proxypaw\n\n` +
+    `Deekshitha\nFounder, ProxyPaw\n\n` +
     `You're getting this because you joined the waitlist at proxypaw.com\n`;
 
   // Deliberately flat markup: Gmail collapses deeply nested tables behind a
@@ -120,15 +120,15 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
 <h1 style="margin:0 0 20px;font-size:25px;line-height:1.25;font-weight:700;color:#2a2118;">You're on the list.</h1>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Hi ${who},</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">${walker
-  ? "Thank you for registering as a proxypaw volunteer. We will get back to you shortly, we're going through the information you sent and reviewing everything, including your note about your experience with pets. If you'd like to revise anything, just write to us through the feedback form that appears right after you register."
-  : "You've been added to the proxypaw waitlist. We'll notify you shortly about your access."}</p>
+  ? "Thank you for registering as a ProxyPaw volunteer. We will get back to you shortly, we're going through the information you sent and reviewing everything, including your note about your experience with pets. If you'd like to revise anything, just write to us through the feedback form that appears right after you register."
+  : "You've been added to the ProxyPaw waitlist. We'll notify you shortly about your access."}</p>
 ${walker ? `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">What happens next: ID verification, a short conversation, our safety training, and then you can start accepting walks, visits and boarding in your community, keeping <strong style="color:#2a2118;">70%</strong> of every booking.</p>` : ""}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">We're opening community by community, and yours, <strong style="color:#2a2118;">${community}</strong>, is on our map. The moment we have verified walkers and sitters in your towers, you'll be among the first in.</p>
-<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">proxypaw is walks, cat home visits and overnight boarding from neighbours who live in your own gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">ProxyPaw is walks, cat home visits and overnight boarding from neighbours who live in your own gated community. Every one of them Aadhaar-checked, every booking GPS-tracked and insured.</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">There's nothing else you need to do. We'll email you when your access is ready.</p>
 <p style="margin:0 0 28px;font-size:16px;line-height:1.65;color:#4a3f33;">Give your pet a scratch behind the ears from us.</p>
 <p style="margin:0;font-size:16px;line-height:1.5;color:#2a2118;font-weight:600;">Deekshitha</p>
-<p style="margin:0 0 32px;font-size:14px;line-height:1.5;color:#8b7a63;">Founder, proxypaw</p>
+<p style="margin:0 0 32px;font-size:14px;line-height:1.5;color:#8b7a63;">Founder, ProxyPaw</p>
 <p style="margin:0;padding-top:22px;border-top:1px solid #eee3cf;font-size:12.5px;line-height:1.6;color:#a08e73;">You're getting this because you joined the waitlist at <a href="https://www.proxypaw.com" style="color:#c24e1d;text-decoration:none;">proxypaw.com</a>.</p>
 </td></tr></table>
 </td></tr></table>
@@ -262,7 +262,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("WAITLIST_FROM") ?? "proxypaw <onboarding@resend.dev>";
+  const from = Deno.env.get("WAITLIST_FROM") ?? "ProxyPaw <onboarding@resend.dev>";
   let emailed = false;
 
   if (resendKey) {

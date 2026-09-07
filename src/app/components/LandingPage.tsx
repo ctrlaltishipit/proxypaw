@@ -411,7 +411,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <header style={{ ...shell, padding: `18px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
           <div className="pp-brand" style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'default' }}>
             <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>proxypaw</span>
+            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
           </div>
           <nav className="pp-nav-row" style={{ display: 'flex', gap: 24, marginLeft: 14, flexWrap: 'wrap' }}>
             {[

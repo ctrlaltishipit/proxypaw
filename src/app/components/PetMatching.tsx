@@ -272,10 +272,10 @@ export default function PetMatching({ onBack, userRole, currentUser }: PetMatchi
           <div className="flex items-center gap-2">
             <img 
               src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B4423'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h2v2H7v-2zm8 0h2v2h-2v-2zm-4 4h2v2h-2v-2z'/%3E%3C/svg%3E"
-              alt="proxypaw"
+              alt="ProxyPaw"
               className="w-8 h-8"
             />
-            <h1 className={`text-xl ${isLightMode ? 'text-amber-900' : 'text-amber-200'}`}>proxypaw</h1>
+            <h1 className={`text-xl ${isLightMode ? 'text-amber-900' : 'text-amber-200'}`}>ProxyPaw</h1>
           </div>
 
           <div className="flex items-center gap-2">

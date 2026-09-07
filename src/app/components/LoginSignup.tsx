@@ -39,7 +39,7 @@ export default function LoginSignup({ onClose, onLogin, isFullPage = false }: Lo
 
       <div className="flex items-center gap-2 mb-3">
         <PawPrint className="w-5 h-5 text-[#6B4423]" />
-        <h2 className="text-[#2D5016] text-lg">{isLogin ? 'welcome back, hooman!' : 'join proxypaw'}</h2>
+        <h2 className="text-[#2D5016] text-lg">{isLogin ? 'welcome back, hooman!' : 'join ProxyPaw'}</h2>
       </div>
 
       {/* Role Selection */}

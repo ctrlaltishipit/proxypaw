@@ -1,4 +1,4 @@
-# Proxypaw
+# ProxyPaw
 
 Verified neighbours for dog walks, cat home visits and overnight boarding, inside
 gated communities in Gachibowli, Hyderabad.
@@ -12,7 +12,7 @@ Live: <https://www.proxypaw.com>
 | Frontend | React 18 + Vite 6 + Tailwind v4, shadcn/ui components |
 | Type | Sora (headings) · Outfit (body) |
 | Backend | Supabase edge function `make-server-0cfbd72b` (Deno + Hono) |
-| Hosting | Vercel — `proxypaw` project |
+| Hosting | Vercel — `ProxyPaw` project |
 
 ## Running locally
 

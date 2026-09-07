@@ -139,7 +139,7 @@ export default function HomePage({ onLoginClick, isLoggedIn, onDashboardClick, o
           >
             <h2 className={`mb-6 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>a thoughtful initiative</h2>
             <p className={`max-w-2xl mx-auto ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
-              proxypaw isn&apos;t just a service, it&apos;s a movement. we believe every pet deserves 
+              ProxyPaw isn&apos;t just a service, it&apos;s a movement. we believe every pet deserves 
               enriching experiences, and every community member should have the opportunity to 
               connect through responsible pet care.
             </p>
@@ -460,7 +460,7 @@ export default function HomePage({ onLoginClick, isLoggedIn, onDashboardClick, o
       {/* Footer */}
       <footer className={`border-t py-12 px-6 ${isLightMode ? 'border-gray-300 bg-white' : 'border-gray-700 bg-gray-950'}`}>
         <div className={`max-w-6xl mx-auto text-center ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
-          <p className="mb-4">© 2025 proxypaw. building community through compassionate pet care.</p>
+          <p className="mb-4">© 2025 ProxyPaw. building community through compassionate pet care.</p>
           <div className="flex justify-center gap-6 mb-4">
             <a href="#" className={`transition-colors ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`}>Privacy</a>
             <a href="#" className={`transition-colors ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`}>Terms</a>

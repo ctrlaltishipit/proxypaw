@@ -20,11 +20,11 @@ interface Doc { title: string; intro: string; updated: string; sections: Section
 const TERMS: Doc = {
   title: 'Terms and conditions',
   updated: '1 September 2026',
-  intro: 'These are the terms for using proxypaw.com and, once it opens, the proxypaw app. We have kept them short and in plain English. By joining the waitlist, registering as a volunteer, or booking a service, you agree to them.',
+  intro: 'These are the terms for using proxypaw.com and, once it opens, the ProxyPaw app. We have kept them short and in plain English. By joining the waitlist, registering as a volunteer, or booking a service, you agree to them.',
   sections: [
-    { h: 'What proxypaw is', p: [
-      'proxypaw connects pet parents in gated communities with verified neighbours who walk dogs, visit cats at home, and host overnight boarding. We are currently in a waitlist phase and operate only in Hyderabad.',
-      'proxypaw arranges and supports the service. The care itself is provided by a verified volunteer from your community.',
+    { h: 'What ProxyPaw is', p: [
+      'ProxyPaw connects pet parents in gated communities with verified neighbours who walk dogs, visit cats at home, and host overnight boarding. We are currently in a waitlist phase and operate only in Hyderabad.',
+      'ProxyPaw arranges and supports the service. The care itself is provided by a verified volunteer from your community.',
     ]},
     { h: 'Joining the waitlist', p: [
       'You give us your name, phone number, email and community so we can tell you when your community opens. Joining the waitlist does not guarantee access or a booking.',
@@ -41,10 +41,10 @@ const TERMS: Doc = {
       'Tell us the truth about your pet: health, temperament, fears and quirks. Keep vaccinations current. Provide what the volunteer needs to care for your pet safely.',
     ]},
     { h: 'Liability', p: [
-      'We take safety seriously and insure every booking, but proxypaw is not liable for indirect losses, or for outcomes caused by information you did not share with us. Nothing here limits liability that cannot be limited under Indian law.',
+      'We take safety seriously and insure every booking, but ProxyPaw is not liable for indirect losses, or for outcomes caused by information you did not share with us. Nothing here limits liability that cannot be limited under Indian law.',
     ]},
     { h: 'Changes and contact', p: [
-      'We may update these terms as the service grows; the date at the top tells you when. Questions or concerns: use the feedback form after you register, or reply to any email from proxypaw.',
+      'We may update these terms as the service grows; the date at the top tells you when. Questions or concerns: use the feedback form after you register, or reply to any email from ProxyPaw.',
     ]},
   ],
 };
@@ -52,7 +52,7 @@ const TERMS: Doc = {
 const PRIVACY: Doc = {
   title: 'Privacy policy',
   updated: '1 September 2026',
-  intro: 'This explains what proxypaw collects, why, where it is kept, and your rights. Short version: we collect only what verification and bookings need, we keep it private, and we never sell it.',
+  intro: 'This explains what ProxyPaw collects, why, where it is kept, and your rights. Short version: we collect only what verification and bookings need, we keep it private, and we never sell it.',
   sections: [
     { h: 'What we collect', p: [
       'Pet parents: name, phone number, email address, and community.',
@@ -73,7 +73,7 @@ const PRIVACY: Doc = {
       'Waitlist details until your community opens and you decide whether to join. Volunteer documents until verification is complete and for as long as you remain an active volunteer, after which they are deleted.',
     ]},
     { h: 'Your rights', p: [
-      'You can ask what we hold about you, ask us to correct it, or ask us to delete it, in line with the Digital Personal Data Protection Act, 2023. Use the feedback form after you register, or reply to any email from proxypaw, and we will respond.',
+      'You can ask what we hold about you, ask us to correct it, or ask us to delete it, in line with the Digital Personal Data Protection Act, 2023. Use the feedback form after you register, or reply to any email from ProxyPaw, and we will respond.',
     ]},
     { h: 'Cookies', p: [
       'We use Google Analytics to understand how people use the site: pages visited and rough location, tied to a random identifier, never to your name. The founder dashboard keeps a sign-in session in the browser of the person who signed in. That is all.',
@@ -84,7 +84,7 @@ const PRIVACY: Doc = {
 export default function LegalPage({ kind, onHomeClick, onBlogClick }: { kind: 'terms' | 'privacy'; onHomeClick: () => void; onBlogClick: () => void }) {
   const doc = kind === 'terms' ? TERMS : PRIVACY;
   useSeo({
-    title: `${doc.title} · proxypaw`,
+    title: `${doc.title} · ProxyPaw`,
     description: doc.intro.slice(0, 150),
     path: `/${kind}`,
   });
@@ -96,7 +96,7 @@ export default function LegalPage({ kind, onHomeClick, onBlogClick }: { kind: 't
           <span style={{ width: 38, height: 38, borderRadius: 13, background: C.orange, display: 'grid', placeItems: 'center' }}>
             <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
           </span>
-          <span style={{ fontFamily: heading, fontWeight: 600, fontSize: 21 }}>proxypaw</span>
+          <span style={{ fontFamily: heading, fontWeight: 600, fontSize: 21 }}>ProxyPaw</span>
         </div>
       </header>
 

@@ -1,5 +1,5 @@
 /**
- * Gated communities proxypaw covers, Financial District, Gachibowli,
+ * Gated communities ProxyPaw covers, Financial District, Gachibowli,
  * Kokapet, Nanakramguda, Narsingi, Kondapur and Nallagandla.
  *
  * Used by the signup form's Community picker. "Other" must stay last: never

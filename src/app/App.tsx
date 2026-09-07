@@ -1,5 +1,5 @@
 /**
- * proxypaw public site — waitlist phase, now with real URLs.
+ * ProxyPaw public site — waitlist phase, now with real URLs.
  *
  * Routes: / /about /tour /blog /blog/:slug, plus /admin — the founder's
  * private dashboard (never linked from the site, noindex, robots-disallowed,
@@ -45,7 +45,7 @@ function ScrollManager() {
 function Home({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: "proxypaw — Your Neighbours. Your Pets' Best Friends.",
+    title: "ProxyPaw — Your Neighbours. Your Pets' Best Friends.",
     description: 'Verified neighbours for dog walks, cat home visits and overnight boarding, inside your gated community in Hyderabad. From ₹149.',
     path: '/',
   });
@@ -62,8 +62,8 @@ function Home({ onJoin }: { onJoin: JoinFn }) {
 function About({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: 'About proxypaw — every pet deserves a safe space',
-    description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every proxypaw volunteer.",
+    title: 'About ProxyPaw — every pet deserves a safe space',
+    description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every ProxyPaw volunteer.",
     path: '/about',
   });
   return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} onBlogClick={() => navigate('/blog')} />;
@@ -72,8 +72,8 @@ function About({ onJoin }: { onJoin: JoinFn }) {
 function Tour({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
-    title: 'Inside the proxypaw app',
-    description: 'Real screens from the proxypaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
+    title: 'Inside the ProxyPaw app',
+    description: 'Real screens from the ProxyPaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
     path: '/tour',
   });
   return <TourPage onHomeClick={() => navigate('/')} onJoin={onJoin} onAboutClick={() => navigate('/about')} />;
@@ -88,7 +88,7 @@ function Blog({ onJoin }: { onJoin: JoinFn }) {
     article
       ? { title: `${article.title} — The Paw Journal`, description: article.dek, path: `/blog/${article.slug}` }
       : {
-          title: 'The Paw Journal — care guides from proxypaw',
+          title: 'The Paw Journal — care guides from ProxyPaw',
           description: 'Short, practical pet-care reads for flat-dwellers: grooming, feeding, safety, walking and play, for dogs and cats alike.',
           path: '/blog',
         },

@@ -42,7 +42,7 @@ export default function Navigation({ onLoginClick, isLoggedIn, onDashboardClick,
                 : 'text-white hover:text-[#4A9EFF]'
             }`}
           >
-            proxypaw
+            ProxyPaw
           </button>
         </div>
         
