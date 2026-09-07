@@ -49,109 +49,124 @@ interface Section {
 
 const SECTIONS: Section[] = [
   {
-    id: 'dashboard',
-    eyebrow: 'YOUR DASHBOARD',
+    id: 'home',
+    eyebrow: 'YOUR HOME SCREEN',
     Icon: LayoutDashboard,
     accent: '#e0662f',
-    title: 'Everything about your pet, one screen.',
-    body: "Open the app and it's all there: today's bookings, your paw points balance, your community's activity, and one-tap paths to book a walk or a visit. No digging through menus while your dog waits at the door.",
+    title: 'Everything about your pets, one thumb-reach away.',
+    body: "Open ProxyPaw and it's all there: your pets, your next booking with live tracking one tap away, Paw Points, and the photo updates from yesterday's walk. Built for the phone in your hand, not a desk.",
     points: [
-      'Live view of upcoming walks, visits and boarding stays',
-      'Paw points earned on every booking, spendable on the next one',
-      'Quick actions: book, rebook your favourite walker, get help',
+      'Switch between your pets in one tap',
+      'Next booking up top, with live tracking and reschedule',
+      'Paw Points balance and your latest photo updates',
     ],
-    shot: '/shots/dashboard.png',
-    alt: 'The ProxyPaw dashboard showing bookings, paw points and quick actions',
+    shot: '/shots/m-home.png',
+    alt: 'ProxyPaw home screen with pets, next booking and Paw Points',
+  },
+  {
+    id: 'services',
+    eyebrow: 'THREE SERVICES, HONESTLY',
+    Icon: CalendarCheck,
+    accent: '#3f6c51',
+    title: 'We only list what we actually deliver.',
+    body: "Dog walking and cleaning from ₹149. Home pet boarding, day or overnight, from ₹449, in your pet's own home. Pet sitting and feeding at ₹129 a visit, litter box included, for adult dogs, puppies, cats and kittens. Missing food, medicine or equipment? Ask in the booking: if your volunteer accepts, they bring it at MRP, no markup.",
+    points: [
+      'Dog walking & cleaning · GPS-tracked, from ₹149',
+      'Home boarding, day or overnight · cage-free, from ₹449',
+      'Pet sitting, feeding & litter care · ₹129 a visit',
+    ],
+    shot: '/shots/m-services.png',
+    alt: 'The three ProxyPaw services with prices and the MRP add-on note',
+  },
+  {
+    id: 'pet',
+    eyebrow: 'YOUR PET, PROPERLY KNOWN',
+    Icon: Cat,
+    accent: '#f0b429',
+    title: 'Tell us once. Every volunteer knows.',
+    body: "Biscuit's profile carries his birth date, his temperament, his chicken allergy and the fact that he sleeps with the hallway light on. Add care instructions in your own words, kept practical on purpose, and only your booked volunteer ever sees them.",
+    points: [
+      'Name and birth date, so age is always right',
+      'Temperament in one tap: zoomy, shy, cuddly, chaser and more',
+      'Medical notes and instructions, 200 words each, private to your volunteer',
+    ],
+    shot: '/shots/m-pet.png',
+    alt: "Biscuit's pet profile with temperament chips and care instructions",
   },
   {
     id: 'walkers',
-    eyebrow: 'FIND YOUR WALKER',
+    eyebrow: 'NEIGHBOURS, NOT STRANGERS',
     Icon: Users,
-    accent: '#3f6c51',
-    title: 'Neighbours, not strangers.',
-    body: 'Browse verified walkers and sitters who live in your towers. Every profile shows their Aadhaar-verified badge, community rating, completed walks and the buildings they cover, so the person holding the leash is someone your neighbours already trust.',
+    accent: '#e0662f',
+    title: 'Your volunteers live minutes away.',
+    body: 'Every volunteer is from your own community: Aadhaar-verified, background-checked and safety-trained before their first booking, rated by neighbours you share a lift with. Two minutes away, not two suburbs.',
     points: [
       'Aadhaar-checked, background-verified, community-rated',
-      'Filter by tower, timing and service, walks, visits, boarding',
-      'See real reviews from pet parents in your own community',
+      'Distance shown in minutes from your tower',
+      'See who already walks your pet regularly',
     ],
-    shot: '/shots/volunteers.png',
-    alt: 'Browsing verified walkers with ratings and verification badges',
+    shot: '/shots/m-walkers.png',
+    alt: 'Verified volunteer cards with ratings and distance in minutes',
   },
   {
     id: 'booking',
     eyebrow: 'BOOK IN 30 SECONDS',
-    Icon: CalendarCheck,
-    accent: '#f0b429',
-    title: 'Pick a day. Pick a time. Done.',
-    body: "Choose a duration from 30 minutes to 2 hours, pick your slot, and your walker gets your pet's quirks, route notes and vet details automatically. Repeat bookings take one tap, because Tuesday's 7 AM walk is always Tuesday's 7 AM walk.",
+    Icon: ClipboardList,
+    accent: '#3f6c51',
+    title: 'Pick a slot. Add a request. Done.',
+    body: 'Duration, day, time, confirm. Out of poop bags or need something for the booking? Add it as a request: your volunteer brings it at MRP if they accept. Every booking earns Paw Points.',
     points: [
-      'Walks from ₹149, cat home visits ₹129, boarding from ₹549',
-      "Your pet's profile travels with every booking, quirks included",
-      'Reschedule or cancel without a phone call',
+      'Durations from 30 minutes to 2 hours',
+      'Add practical requests, brought at MRP on acceptance',
+      '25 Paw Points on every booking',
     ],
-    shot: '/shots/booking.png',
-    alt: 'Booking a walk: choosing duration, date and time slot',
-  },
-  {
-    id: 'payment',
-    eyebrow: 'PAY BY UPI',
-    Icon: Wallet,
-    accent: '#e0662f',
-    title: 'Checkout that takes seconds, not forms.',
-    body: 'Pay by UPI like everything else in your life. Fair, flat pricing with no surge and no tips awkwardness, and walkers keep 70% of every booking, so good people stay on the platform.',
-    points: [
-      'UPI, cards and net banking',
-      'Every booking insured and receipted',
-      'Paw points credited instantly, 25 per booking',
-    ],
-    shot: '/shots/payment.png',
-    alt: 'The payment screen with UPI checkout and booking summary',
+    shot: '/shots/m-booking.png',
+    alt: 'Booking a walk: duration, day, time and an extra request',
   },
   {
     id: 'bookings',
-    eyebrow: 'TRACK EVERYTHING',
-    Icon: ClipboardList,
-    accent: '#3f6c51',
-    title: 'Every walk on the record.',
-    body: "Live GPS while the walk happens, photos from every visit, and a full history of who walked whom and when. When you're travelling, the boarding host's daily photo update is the difference between a holiday and a worry.",
-    points: [
-      'Live GPS tracking on every walk',
-      'Photo updates from visits and sleepovers',
-      'Complete history, rebook any past booking in one tap',
-    ],
-    shot: '/shots/bookings.png',
-    alt: 'Bookings screen with live status and booking history',
-  },
-  {
-    id: 'community',
-    eyebrow: 'COMMUNITY PETS',
-    Icon: Cat,
+    eyebrow: 'EVERY BOOKING, KEPT',
+    Icon: CalendarCheck,
     accent: '#f0b429',
-    title: "Meet the pets you share a lift with.",
-    body: "Every pet in your community, tower by tower: who's friendly with dogs, who's shy, whose birthday it is. Owner details stay masked until you're a verified member, community, with privacy done properly.",
+    title: 'Your history, photos and ratings in one place.',
+    body: 'Upcoming bookings up top, everything earlier below: who came, what it cost, the photos they sent and the rating you gave. Rebook any of it in one tap.',
     points: [
-      'Tower-by-tower pet directory',
-      'Personal details masked until verification',
-      'Know the dogs before you meet them in the lobby',
+      'Upcoming and past bookings at a glance',
+      'Photos and ratings attached to every visit',
+      'One-tap rebook for the regulars',
     ],
-    shot: '/shots/community.png',
-    alt: 'The community pets directory, organised by tower',
+    shot: '/shots/m-bookings.png',
+    alt: 'Bookings history with photos, ratings and one-tap rebook',
   },
   {
-    id: 'safety',
-    eyebrow: 'SAFETY TRAINING',
+    id: 'payment',
+    eyebrow: 'PAY YOUR WAY',
+    Icon: Wallet,
+    accent: '#f0b429',
+    title: 'Card, UPI, before or after. Your call.',
+    body: 'A clean payment sheet slides up: pay now with a card or by scanning a UPI QR, or simply pay after the service with UPI or cash. Built for how Hyderabad actually pays.',
+    points: [
+      'Pay now: card, or scan the UPI QR in any app',
+      'Pay after the service: UPI or cash',
+      'Every booking insured and receipted either way',
+    ],
+    shot: '/shots/m-payment.png',
+    alt: 'Payment sheet with card and UPI QR options, pay now or after',
+  },
+  {
+    id: 'track',
+    eyebrow: 'WATCH THE WALK LIVE',
     Icon: ShieldCheck,
     accent: '#e0662f',
-    title: 'Walkers trained before their first walk.',
-    body: 'Every walker completes our safety modules before they can accept a booking: leash rules in lobbies and lifts, the hot-pavement test, emergency first steps, and when to call the vet line. The training lives in the app, and so does the record of who passed it.',
+    title: 'Your pet on the map, your rules followed.',
+    body: 'Live GPS through your community, photo updates at the pace you asked for in your instructions, and a timeline of the whole walk: pickup, zoomies, water break, home. Promised, and delivered.',
     points: [
-      'Mandatory modules with completion tracking',
-      'Heat, monsoon and lobby protocols specific to gated communities',
-      'Emergency playbook one tap away during every booking',
+      'Live route through your own community',
+      'Photo updates at your chosen rhythm',
+      'A timeline you can check from anywhere',
     ],
-    shot: '/shots/safety.png',
-    alt: 'The safety training modules walkers complete',
+    shot: '/shots/m-track.png',
+    alt: 'Live walk tracking with route map, stats and update timeline',
   },
 ];
 
@@ -253,7 +268,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             See what you're joining.
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 400 }}>
-            Real screens from the ProxyPaw app, the one your community gets when the doors open. Keep scrolling: each screen stacks over the last.
+            ProxyPaw is a mobile app, and these are its real screens, the same on Android and iOS. Keep scrolling: each screen stacks over the last, from booking to payment to live tracking.
           </p>
         </Reveal>
       </section>
@@ -308,13 +323,15 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
                   </ul>
                 </div>
 
-                <div style={{ borderRadius: 18, overflow: 'hidden', border: `1px solid ${C.cardBorder}`, boxShadow: '0 16px 40px rgba(74,52,24,.12)', background: '#fffdf8' }}>
-                  <img
-                    src={sec.shot}
-                    alt={sec.alt}
-                    loading="lazy"
-                    style={{ display: 'block', width: '100%', aspectRatio: '1280 / 800', objectFit: 'cover', objectPosition: 'top' }}
-                  />
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ borderRadius: 34, overflow: 'hidden', border: `6px solid ${C.ink}`, boxShadow: '0 22px 50px rgba(42,33,24,.22)', background: '#fffdf8', width: 'min(280px, 72vw)' }}>
+                    <img
+                      src={sec.shot}
+                      alt={sec.alt}
+                      loading="lazy"
+                      style={{ display: 'block', width: '100%', aspectRatio: '390 / 844', objectFit: 'cover' }}
+                    />
+                  </div>
                 </div>
               </div>
             </section>

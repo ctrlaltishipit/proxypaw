@@ -73,7 +73,7 @@ function Tour({ onJoin }: { onJoin: JoinFn }) {
   const navigate = useNavigate();
   useSeo({
     title: 'Inside the ProxyPaw app',
-    description: 'Real screens from the ProxyPaw app: dashboard, verified walkers, 30-second booking, UPI checkout, live GPS tracking and safety training.',
+    description: 'Real screens from the ProxyPaw mobile app: pet profiles, verified neighbour volunteers, 30-second booking, UPI and card payments, and live GPS walk tracking in your community.',
     path: '/tour',
   });
   return <TourPage onHomeClick={() => navigate('/')} onJoin={onJoin} onAboutClick={() => navigate('/about')} />;
