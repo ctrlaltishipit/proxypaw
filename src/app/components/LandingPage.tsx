@@ -768,45 +768,45 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </div>
         </section>
 
-        {/* ---------- closing cta ---------- */}
-        <section style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD}`, textAlign: 'center', position: 'relative' }}>
-          <span aria-hidden="true" style={{ position: 'absolute', left: '12%', top: '30%', transform: 'rotate(-16deg)', animation: 'pp-floaty 9s ease-in-out infinite' }}>
-            <PawSvg size={22} color={C.orange} style={{ opacity: 0.12 }} />
-          </span>
-          <span aria-hidden="true" style={{ position: 'absolute', right: '13%', top: '52%', transform: 'rotate(14deg)', animation: 'pp-floaty 11s ease-in-out 1s infinite' }}>
-            <PawSvg size={18} color={C.green} style={{ opacity: 0.14 }} />
-          </span>
+        {/* ---------- closing cta: one contained band, no floating orphans ---------- */}
+        <section style={{ ...shell, padding: `clamp(40px, 5.5vw, 72px) ${SIDE_PAD}` }}>
           <Reveal>
-            <img
-              src={IMAGES.ctaPuppy}
-              alt="puppy"
-              style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', border: `4px solid ${C.card}`, boxShadow: '0 12px 30px rgba(74,52,24,.18)', marginBottom: 20 }}
-            />
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.8vw, 48px)', margin: '0 0 14px' }}>Ready when your pets are.</h2>
-            <p style={{ fontSize: 16.5, color: C.muted, margin: '0 0 28px', fontWeight: 400, textTransform: 'none' }}>
-              Join your community's pack in under a minute.
-            </p>
-            <button
-              className="pp-cta"
-              onClick={() => onJoin('closing-cta')}
-              style={{
-                border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
-                fontWeight: 600, fontSize: 16.5, padding: '17px 38px', borderRadius: 999,
-                cursor: 'pointer', boxShadow: '0 14px 32px rgba(224,102,47,.32)', transition: '.25s',
-              }}
-            >
-              Get started, it's free
-            </button>
+            <div style={{ background: '#fdf6ec', border: `1px solid ${C.cardBorder}`, borderRadius: 28, padding: 'clamp(30px, 4.5vw, 56px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+              <span aria-hidden="true" style={{ position: 'absolute', top: -22, right: -18, transform: 'rotate(18deg)' }}>
+                <PawSvg size={110} color={C.orange} style={{ opacity: 0.07 }} />
+              </span>
+              <h2 style={{ ...h2, fontSize: 'clamp(26px, 3.4vw, 42px)', margin: '0 0 12px' }}>Ready when your pets are.</h2>
+              <p style={{ fontSize: 16, color: C.muted, margin: '0 auto 26px', fontWeight: 400, textTransform: 'none', maxWidth: 460 }}>
+                Join your community's pack in under a minute.
+              </p>
+              <div className="pp-hero-ctas" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  className="pp-cta"
+                  onClick={() => onJoin('closing-cta')}
+                  style={{
+                    border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
+                    fontWeight: 600, fontSize: 16, padding: '16px 34px', borderRadius: 999,
+                    cursor: 'pointer', boxShadow: '0 14px 32px rgba(224,102,47,.32)', transition: '.25s',
+                  }}
+                >
+                  Get started, it's free
+                </button>
+                <button
+                  className="pp-ghost"
+                  onClick={onTourClick}
+                  style={{
+                    border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
+                    fontFamily: sora, fontWeight: 600, fontSize: 16, padding: '16px 34px',
+                    borderRadius: 999, cursor: 'pointer', transition: '.25s',
+                  }}
+                >
+                  Peek inside the app &rarr;
+                </button>
+              </div>
+            </div>
           </Reveal>
         </section>
 
-
-
-        <NextStop
-          label="Peek inside the app"
-          sub="Real screens from the product your community gets"
-          onClick={onTourClick}
-        />
       </div>
     </div>
   );
