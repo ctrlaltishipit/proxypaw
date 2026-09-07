@@ -256,7 +256,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
       className="pp-modal-overlay"
       style={{
         position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(42,33,24,.55)',
-        backdropFilter: 'blur(4px)', display: 'grid', placeItems: 'center', padding: 20,
+        backdropFilter: 'blur(4px)', display: 'flex', padding: 20,
         overflowY: 'auto', textTransform: 'none',
       }}
     >
@@ -266,6 +266,10 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         .pp-field:focus { border-color:${C.orange} !important; box-shadow:0 0 0 3px rgba(224,102,47,.15); }
         .pp-submit:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 16px 34px rgba(224,102,47,.4); }
         .pp-x:hover { background:${C.band}; }
+        @media (min-width: 861px) {
+          .pp-modal { max-height: 92vh; }
+          .pp-modal-form { overflow-y: auto; max-height: 92vh; justify-content: flex-start !important; }
+        }
         @media (max-width: 860px) {
           .pp-modal-photo { display:none !important; }
           .pp-modal { grid-template-columns: 1fr !important; width: 100% !important; border-radius: 24px !important; }
@@ -285,7 +289,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         aria-modal="true"
         aria-label="Join the proxypaw waitlist"
         style={{
-          width: 'min(1000px, 100%)', background: C.card, borderRadius: 32,
+          width: 'min(1000px, 100%)', margin: 'auto', background: C.card, borderRadius: 32,
           overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr',
           boxShadow: '0 40px 90px rgba(42,33,24,.35)', position: 'relative',
         }}
@@ -479,7 +483,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   )}
 
                   {volunteer && (
-                    <div style={{ marginBottom: 16 }}>
+                    <div style={{ marginBottom: 13 }}>
                       <label style={label} htmlFor="pp-dob">Date of Birth</label>
                       <input id="pp-dob" className="pp-field" type="date" style={field}
                         value={dob} onChange={(e) => setDob(e.target.value)} required
@@ -498,7 +502,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                         { kind: 'pan' as const, title: 'PAN card', note: files.aadhaar ? 'Optional additional document.' : "Mandatory if you don't have an e-Aadhaar.", required: !files.aadhaar },
                         { kind: 'dl' as const, title: 'Driving licence', note: 'Optional. Upload it or leave it blank.', required: false },
                       ]).map((d) => (
-                        <label key={d.kind} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.cream, border: `1px dashed ${files[d.kind] ? C.green : C.btnBorder}`, borderRadius: 16, padding: '11px 14px', marginBottom: 8, cursor: 'pointer' }}>
+                        <label key={d.kind} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.cream, border: `1px dashed ${files[d.kind] ? C.green : C.btnBorder}`, borderRadius: 16, padding: '9px 13px', marginBottom: 7, cursor: 'pointer' }}>
                           <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={pickFile(d.kind)} style={{ display: 'none' }} />
                           <span style={{ width: 30, height: 30, borderRadius: 10, background: files[d.kind] ? C.green : '#e9ddc8', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#fff', fontSize: 15 }}>
                             {files[d.kind] ? <Check size={15} strokeWidth={3} /> : '+'}
