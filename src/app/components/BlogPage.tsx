@@ -58,7 +58,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
   const current = slug ? ARTICLES.find((a) => a.slug === slug) ?? null : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'capitalize' }}>
+    <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip' }}>
       <style>{`
         @keyframes pp-fadeUp { from { opacity:0; transform:translateY(18px);} to {opacity:1;transform:translateY(0);} }
         .pp-screen { animation:.5s cubic-bezier(.16,1,.3,1) both pp-fadeUp; }
@@ -84,7 +84,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
               borderRadius: 999, cursor: 'pointer', transition: '.25s',
             }}
           >
-            get started
+            Get started
           </button>
         </header>
 
@@ -97,7 +97,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                 THE PAW JOURNAL
               </div>
               <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 4.6vw, 58px)', letterSpacing: '-0.01em', lineHeight: 1.05, margin: '0 0 18px' }}>
-                care guides from the pack
+                Care guides from the pack
               </h1>
               <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 48px', fontWeight: 400, textTransform: 'none' }}>
                 Short, practical reads from the ProxyPaw care team: grooming, feeding, safety and play, for dogs and cats alike.
@@ -125,7 +125,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                       <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
                       <div style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.55, textTransform: 'none', marginBottom: 18 }}>{a.dek}</div>
                       <div className="pp-read" style={{ marginTop: 'auto', fontSize: 13.5, color: C.muted2, transition: 'color .25s' }}>
-                        {a.read} &middot; read &rarr;
+                        {a.read} &middot; Read &rarr;
                       </div>
                     </div>
                   </article>
@@ -159,7 +159,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
           padding: 0, marginBottom: 30, transition: 'color .2s',
         }}
       >
-        <ArrowLeft size={16} /> all guides
+        <ArrowLeft size={16} /> All guides
       </button>
 
       <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 12, fontWeight: 600, padding: '5px 13px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 18, textTransform: 'capitalize' }}>
@@ -169,7 +169,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
         {article.title}
       </h1>
       <div style={{ fontSize: 14, color: C.muted2, marginBottom: 30 }}>
-        {article.read} · the paw journal
+        {article.read} · The Paw Journal
       </div>
 
       <img

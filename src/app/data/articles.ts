@@ -33,7 +33,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'apartment-grooming-guide',
     tag: 'grooming',
-    title: 'the apartment grooming guide for dogs & cats',
+    title: 'The apartment grooming guide for dogs & cats',
     dek: 'Brushing beats bathing, monsoon coat care, and the nail-click rule every flat-dweller should know.',
     read: '5 min read',
     img: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=1200&q=80&auto=format&fit=crop',
@@ -64,7 +64,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'how-bookings-stay-safe',
     tag: 'safety',
-    title: 'how every ProxyPaw booking stays safe',
+    title: 'How every ProxyPaw booking stays safe',
     dek: 'Verification, live GPS, incident coverage and the one thing owners forget to share.',
     read: '4 min read',
     img: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&q=80&auto=format&fit=crop',
@@ -90,7 +90,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'walking-gated-community',
     tag: 'walking',
-    title: 'walking do’s and don’ts in a gated community',
+    title: 'Walking do’s and don’ts in a gated community',
     dek: 'Short leads in lobbies, the 7-second pavement test, and why sniffing beats marching.',
     read: '6 min read',
     img: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80&auto=format&fit=crop',
@@ -117,7 +117,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'play-tails-wagging',
     tag: 'play',
-    title: 'play that keeps tails wagging (and whiskers happy)',
+    title: 'Play that keeps tails wagging (and whiskers happy)',
     dek: 'Consent checks for dogs, hunt-catch-eat for cats, and the toy rules that prevent vet visits.',
     read: '5 min read',
     img: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=1200&q=80&auto=format&fit=crop',
@@ -143,7 +143,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'feeding-right-portions-treats',
     tag: 'feeding',
-    title: 'feeding right: portions, treats and the no-no list',
+    title: 'Feeding right: portions, treats and the no-no list',
     dek: 'The 10% treat rule, body-condition portions, and foods that should never leave your plate.',
     read: '6 min read',
     img: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=1200&q=80&auto=format&fit=crop',
@@ -172,7 +172,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'indoor-cats-bigger-life',
     tag: 'cats',
-    title: 'the indoor cat’s guide to a bigger life',
+    title: 'The indoor cat’s guide to a bigger life',
     dek: 'Vertical territory, window theatre and scent games that turn a flat into a kingdom.',
     read: '5 min read',
     img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1200&q=80&auto=format&fit=crop',
@@ -198,7 +198,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'litter-box-science',
     tag: 'cats',
-    title: 'litter box science: count, placement and cleaning',
+    title: 'Litter box science: count, placement and cleaning',
     dek: 'The n+1 rule, why the box hates the washing machine, and what changing habits really mean.',
     read: '4 min read',
     img: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=1200&q=80&auto=format&fit=crop',

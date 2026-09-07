@@ -144,7 +144,7 @@ const VETTING = [
 /** The founder's cats, ProxyPaw's first and most demanding users. */
 const EVANGELISTS = [
   {
-    name: 'pablo',
+    name: 'Pablo',
     img: '/founder/pablo.jpg',
     title: 'Chief Comfort Officer',
     tagline: 'The lovable goof',
@@ -153,7 +153,7 @@ const EVANGELISTS = [
     accent: '#e0662f',
   },
   {
-    name: 'leo',
+    name: 'Leo',
     img: '/founder/leo.jpg',
     title: 'Head of Balcony Security',
     tagline: 'The curious one',
@@ -289,7 +289,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
                   style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
                 />
                 <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
-                  From their very first days home with us: pablo holding leo, brand new to the house and already inseparable.
+                  From their very first days home with us: Pablo holding Leo, brand new to the house and already inseparable.
                 </figcaption>
               </figure>
             </Reveal>

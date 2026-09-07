@@ -111,24 +111,24 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
             <div style={colTitle}>EXPLORE</div>
-            <button className="ppf-link" style={link} onClick={() => nav.toSection('how')}>how it works</button>
-            <button className="ppf-link" style={link} onClick={() => nav.toSection('pricing')}>pricing</button>
-            <button className="ppf-link" style={link} onClick={nav.toTour}>inside the app</button>
-            <button className="ppf-link" style={link} onClick={nav.toBlog}>the paw journal</button>
-            <button className="ppf-link" style={link} onClick={nav.toAbout}>about us</button>
+            <button className="ppf-link" style={link} onClick={() => nav.toSection('how')}>How it works</button>
+            <button className="ppf-link" style={link} onClick={() => nav.toSection('pricing')}>Pricing</button>
+            <button className="ppf-link" style={link} onClick={nav.toTour}>Inside the app</button>
+            <button className="ppf-link" style={link} onClick={nav.toBlog}>The Paw Journal</button>
+            <button className="ppf-link" style={link} onClick={nav.toAbout}>About us</button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
             <div style={colTitle}>SERVICES</div>
-            <button className="ppf-link" style={link} onClick={() => nav.toSection('services')}>dog walks, from ₹149</button>
-            <button className="ppf-link" style={link} onClick={() => nav.toSection('services')}>cat home visits, ₹129</button>
-            <button className="ppf-link" style={link} onClick={() => nav.toSection('pricing')}>boarding, from ₹449</button>
+            <button className="ppf-link" style={link} onClick={() => nav.toSection('services')}>Dog walks, from ₹149</button>
+            <button className="ppf-link" style={link} onClick={() => nav.toSection('services')}>Cat home visits, ₹129</button>
+            <button className="ppf-link" style={link} onClick={() => nav.toSection('pricing')}>Boarding, from ₹449</button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
             <div style={colTitle}>GET INVOLVED</div>
-            <button className="ppf-link" style={link} onClick={() => nav.onJoin('footer-owner')}>join as a pet parent</button>
-            <button className="ppf-link" style={link} onClick={() => nav.onJoin('footer-volunteer-link', 'walker')}>register as a volunteer</button>
+            <button className="ppf-link" style={link} onClick={() => nav.onJoin('footer-owner')}>Join as a pet parent</button>
+            <button className="ppf-link" style={link} onClick={() => nav.onJoin('footer-volunteer-link', 'walker')}>Register as a volunteer</button>
             <span style={{ fontSize: 12, color: C.dim, lineHeight: 1.5 }}>Volunteers keep 70% of every booking.</span>
           </div>
         </div>
@@ -136,14 +136,14 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
         {/* small print */}
         <div className="ppf-bottom" style={{ borderTop: '1px solid rgba(253,249,240,.12)', marginTop: 'clamp(24px, 3vw, 34px)', padding: '16px 0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ fontSize: 12, color: C.dim }}>
-            © 2026 ProxyPaw · made with love in gachibowli ·{' '}
-            <a href="/terms" style={{ color: C.dim, textDecoration: 'underline' }}>terms</a> ·{' '}
-            <a href="/privacy" style={{ color: C.dim, textDecoration: 'underline' }}>privacy</a>
+            © 2026 ProxyPaw · Made with love in Gachibowli ·{' '}
+            <a href="/terms" style={{ color: C.dim, textDecoration: 'underline' }}>Terms</a> ·{' '}
+            <a href="/privacy" style={{ color: C.dim, textDecoration: 'underline' }}>Privacy</a>
           </span>
           <span style={{ fontSize: 12, color: C.dim, display: 'flex', gap: 12, alignItems: 'center' }}>
-            walks · boarding · community
+            Walks · Boarding · Community
             {hasSession && (
-              <a href="/admin" style={{ color: C.gold, textDecoration: 'none', fontWeight: 700 }}>founder dashboard</a>
+              <a href="/admin" style={{ color: C.gold, textDecoration: 'none', fontWeight: 700 }}>Founder dashboard</a>
             )}
           </span>
         </div>

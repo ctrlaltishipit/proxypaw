@@ -2,7 +2,7 @@
  * Landing page, built from the "Proxy Paw UI redesign" Claude Design artifact,
  * with a motion-and-rhythm pass on top:
  *  - one consistent spacing scale (SECTION_PAD / uniform GRID_GAP)
- *  - pricing split into two buckets: walks & home visits, overnight boarding
+ *  - pricing split into two buckets: walks & home visits, Overnight boarding
  *  - scroll reveals: cards pop in with stagger (IO-based, disabled under
  *    prefers-reduced-motion)
  *  - decorative SVG layer: drifting paw prints, soft colour blobs, a walking
@@ -69,53 +69,53 @@ const COMMUNITIES = [
 const STEPS = [
   {
     n: '1',
-    title: 'meet your neighbours',
+    title: 'Meet your neighbours',
     body: 'Browse verified walkers, cat sitters and boarding hosts who live in your towers. Every profile is Aadhaar-checked and community-rated.',
   },
   {
     n: '2',
-    title: 'book in 30 seconds',
+    title: 'Book in 30 seconds',
     body: 'Pick a day, a time and a duration. Pay by UPI. Your sitter gets your pet’s quirks, routes and vet info automatically.',
   },
   {
     n: '3',
-    title: 'watch the tail wag (or the slow blink)',
+    title: 'Watch the tail wag (or the slow blink)',
     body: 'Live GPS on every walk, photo updates from every visit and sleepover, and paw points on every booking.',
   },
 ];
 
 /** Pricing, split into the two service buckets. */
 const WALK_TIERS = [
-  { label: '30 min walk', price: '₹149', note: 'perfect first trial', featured: false },
-  { label: '1 hour walk', price: '₹249', note: 'most popular', featured: true },
-  { label: '1.5 hour walk', price: '₹349', note: 'for the zoomies', featured: false },
-  { label: '2 hour walk', price: '₹449', note: 'weekend best value', featured: false },
-  { label: 'cat home visit', price: '₹129', note: 'feed, play, litter', featured: false },
+  { label: '30 min walk', price: '₹149', note: 'Perfect first trial', featured: false },
+  { label: '1 hour walk', price: '₹249', note: 'Most popular', featured: true },
+  { label: '1.5 hour walk', price: '₹349', note: 'For the zoomies', featured: false },
+  { label: '2 hour walk', price: '₹449', note: 'Weekend best value', featured: false },
+  { label: 'Cat home visit', price: '₹129', note: 'Feed, play, litter', featured: false },
 ];
 
 const BOARDING_TIERS = [
-  { label: 'dog boarding', price: '₹549', per: '/ night', note: 'sleepover at a vetted host', featured: true },
-  { label: 'cat boarding', price: '₹449', per: '/ night', note: 'quiet homes, daily photos', featured: false },
-  { label: 'extended stay', price: '₹499', per: '/ night', note: '5+ nights, dogs & cats', featured: false },
+  { label: 'Dog boarding', price: '₹549', per: '/ night', note: 'Sleepover at a vetted host', featured: true },
+  { label: 'Cat boarding', price: '₹449', per: '/ night', note: 'Quiet homes, daily photos', featured: false },
+  { label: 'Extended stay', price: '₹499', per: '/ night', note: '5+ nights, dogs & cats', featured: false },
 ];
 
 const POSTS = [
   {
     tag: 'grooming',
     img: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=900&q=80&auto=format&fit=crop',
-    title: 'the apartment grooming guide for dogs & cats',
+    title: 'The apartment grooming guide for dogs & cats',
     body: 'Brushing beats bathing, monsoon coat care, and the nail-click rule every flat-dweller should know.',
   },
   {
     tag: 'cats',
     img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=900&q=80&auto=format&fit=crop',
-    title: 'the indoor cat’s guide to a bigger life',
+    title: 'The indoor cat’s guide to a bigger life',
     body: 'Vertical territory, window theatre and scent games that turn a flat into a kingdom.',
   },
   {
     tag: 'walking',
     img: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=900&q=80&auto=format&fit=crop',
-    title: 'walking do’s and don’ts in a gated community',
+    title: 'Walking do’s and don’ts in a gated community',
     body: 'Short leads in lobbies, the 7-second pavement test, and why sniffing beats marching.',
   },
 ];
@@ -346,7 +346,7 @@ interface LandingPageProps {
 
 export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutClick }: LandingPageProps) {
   return (
-    <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'capitalize', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', position: 'relative' }}>
       <style>{`
         @keyframes pp-fadeUp { from { opacity:0; transform:translateY(18px);} to {opacity:1;transform:translateY(0);} }
         @keyframes pp-floaty { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-11px);} }
@@ -415,12 +415,12 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </div>
           <nav className="pp-nav-row" style={{ display: 'flex', gap: 24, marginLeft: 14, flexWrap: 'wrap' }}>
             {[
-              { label: 'how it works', go: () => scrollTo('how') },
-              { label: 'services', go: () => scrollTo('services') },
-              { label: 'pricing', go: () => scrollTo('pricing') },
-              { label: 'inside the app', go: onTourClick },
-              { label: 'about', go: onAboutClick },
-              { label: 'blog', go: () => scrollTo('blog') },
+              { label: 'How it works', go: () => scrollTo('how') },
+              { label: 'Services', go: () => scrollTo('services') },
+              { label: 'Pricing', go: () => scrollTo('pricing') },
+              { label: 'Inside the app', go: onTourClick },
+              { label: 'About', go: onAboutClick },
+              { label: 'Blog', go: () => scrollTo('blog') },
             ].map((item) => (
               <span
                 key={item.label}
@@ -437,7 +437,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               onClick={() => onJoin('nav-login')}
               style={{ border: 'none', background: 'transparent', fontSize: 15, fontWeight: 500, color: C.ink, cursor: 'pointer', padding: '10px 14px' }}
             >
-              log in
+              Log in
             </button>
             <button
               className="pp-dark-btn"
@@ -448,7 +448,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 borderRadius: 999, cursor: 'pointer', transition: '.25s',
               }}
             >
-              get started
+              Get started
             </button>
           </div>
         </header>
@@ -473,11 +473,11 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               }}
             >
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.dotGreen, animation: '2s ease infinite pp-pulse' }} />
-              live in 10 gachibowli communities
+              Live in 10 Gachibowli communities
             </div>
             <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 5vw, 60px)', lineHeight: 1.06, letterSpacing: '-0.015em', margin: '0 0 6px' }}>
-              your neighbours.<br />your pets'<br />
-              <span style={{ color: C.orange }}>best friends.</span>
+              Your neighbours.<br />Your pets'<br />
+              <span style={{ color: C.orange }}>Best friends.</span>
             </h1>
             <Squiggle />
             <p style={{ fontSize: 'clamp(16px, 1.6vw, 18.5px)', lineHeight: 1.6, color: C.sub, maxWidth: 440, margin: '20px 0 30px', fontWeight: 400, textTransform: 'none' }}>
@@ -493,7 +493,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                   cursor: 'pointer', boxShadow: '0 12px 28px rgba(224,102,47,.3)', transition: '.25s',
                 }}
               >
-                find a walker
+                Find a walker
               </button>
               <button
                 className="pp-ghost"
@@ -505,17 +505,17 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                   display: 'flex', alignItems: 'center', gap: 9,
                 }}
               >
-                register as a volunteer
+                Register as a volunteer
                 <span style={{ background: C.green, color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, letterSpacing: '0.04em' }}>
-                  earn 70%
+                  Earn 70%
                 </span>
               </button>
             </div>
             <div className="pp-stats" style={{ display: 'flex', gap: 36, marginTop: 'clamp(32px, 4vw, 48px)', flexWrap: 'wrap' }}>
               {[
-                { big: '2,400+', small: 'walks & visits done' },
-                { big: '4.9', star: true, small: 'average rating' },
-                { big: '180+', small: 'verified neighbours' },
+                { big: '2,400+', small: 'Walks & visits done' },
+                { big: '4.9', star: true, small: 'Average rating' },
+                { big: '180+', small: 'Verified neighbours' },
               ].map((s) => (
                 <div key={s.small}>
                   <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(23px, 2.2vw, 28px)', letterSpacing: '-0.008em' }}>
@@ -610,7 +610,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           <Reveal>
             <div style={eyebrow}>HOW IT WORKS</div>
             <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 clamp(28px, 4vw, 44px)', maxWidth: 560 }}>
-              three steps between your dog and a great day
+              Three steps between your dog and a great day
             </h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
@@ -634,22 +634,22 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <section id="services" style={{ ...shell, padding: `clamp(26px, 3.5vw, 44px) ${SIDE_PAD} 0` }}>
           <Reveal>
             <div style={eyebrow}>SERVICES</div>
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 clamp(28px, 4vw, 44px)' }}>walks by day. boarding by night.</h2>
+            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 clamp(28px, 4vw, 44px)' }}>Walks by day. Boarding by night.</h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: GRID_GAP }}>
             {[
               {
                 img: IMAGES.walks, alt: 'neighbour walking dogs', badge: null,
-                title: 'walks & home visits',
+                title: 'Walks & home visits',
                 body: 'A trained neighbour walks your dog, GPS-tracked with photo updates. Cats get play, feeding and litter visits at home.',
-                price: 'dogs from ₹149 · cats ₹129',
+                price: 'Dogs from ₹149 · Cats ₹129',
                 scrim: 'linear-gradient(rgba(42,33,24,0) 30%, rgba(42,33,24,.86) 100%)',
               },
               {
                 img: IMAGES.boarding, alt: 'dog relaxing at a host home', badge: 'NEW',
-                title: 'overnight boarding',
+                title: 'Overnight boarding',
                 body: "Travelling? Your dog or cat sleeps over at a vetted host's home in your community, daily photos, vet on call.",
-                price: 'dogs & cats · from ₹449',
+                price: 'Dogs & cats · From ₹449',
                 scrim: 'linear-gradient(rgba(30,42,33,0) 30%, rgba(24,36,27,.88) 100%)',
               },
             ].map((s, i) => (
@@ -690,7 +690,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 'clamp(26px, 3.4vw, 40px)' }}>
                 <div>
                   <div style={{ ...eyebrow, color: C.gold }}>SIMPLE PRICING</div>
-                  <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 38px)' }}>longer walks,<br />better value.</h2>
+                  <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 38px)' }}>Longer walks,<br />Better value.</h2>
                 </div>
                 <div style={{ fontSize: 14.5, color: C.darkSub, maxWidth: 300, lineHeight: 1.55, textTransform: 'none' }}>
                   Every booking is insured, GPS-tracked and earns paw points. Walkers keep 70%.
@@ -702,7 +702,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 <span style={{ width: 26, height: 26, borderRadius: 9, background: C.orange, display: 'grid', placeItems: 'center' }}>
                   <PawSvg size={13} />
                 </span>
-                walks &amp; home visits
+                Walks &amp; home visits
                 <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
               </div>
               <div className="pp-price-grid" style={{ marginBottom: 'clamp(26px, 3.4vw, 38px)' }}>
@@ -719,7 +719,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                     <path d="M20.6 14.5A8.6 8.6 0 0 1 9.5 3.4 8.9 8.9 0 1 0 20.6 14.5z" />
                   </svg>
                 </span>
-                overnight boarding
+                Overnight boarding
                 <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
               </div>
               <div className="pp-board-grid">
@@ -739,14 +739,14 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', marginBottom: 'clamp(24px, 3vw, 34px)' }}>
               <div>
                 <div style={eyebrow}>THE PAW JOURNAL</div>
-                <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 40px)' }}>care guides for dogs and cats</h2>
+                <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 40px)' }}>Care guides for dogs and cats</h2>
               </div>
               <button
                 className="pp-ghost"
                 onClick={onBlogClick}
                 style={{ border: `1.5px solid ${C.btnBorder}`, background: 'transparent', color: C.ink, fontFamily: sora, fontWeight: 600, fontSize: 14.5, padding: '12px 24px', borderRadius: 999, cursor: 'pointer', transition: '.25s' }}
               >
-                read all guides &rarr;
+                Read all guides &rarr;
               </button>
             </div>
           </Reveal>
@@ -782,7 +782,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               alt="puppy"
               style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', border: `4px solid ${C.card}`, boxShadow: '0 12px 30px rgba(74,52,24,.18)', marginBottom: 20 }}
             />
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.8vw, 48px)', margin: '0 0 14px' }}>ready when your pets are.</h2>
+            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.8vw, 48px)', margin: '0 0 14px' }}>Ready when your pets are.</h2>
             <p style={{ fontSize: 16.5, color: C.muted, margin: '0 0 28px', fontWeight: 400, textTransform: 'none' }}>
               Join your community's pack in under a minute.
             </p>
@@ -795,7 +795,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 cursor: 'pointer', boxShadow: '0 14px 32px rgba(224,102,47,.32)', transition: '.25s',
               }}
             >
-              get started, it's free
+              Get started, it's free
             </button>
           </Reveal>
         </section>
