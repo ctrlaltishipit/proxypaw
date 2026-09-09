@@ -260,7 +260,7 @@ export const ARTICLES: Article[] = [
     title: 'The kitten care guide: the first year, week by week',
     dek: 'Feeding, vaccinations, deworming and litter training for a kitten growing up in a Hyderabad flat.',
     read: '6 min read',
-    img: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=1200&q=80&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1595433707802-6b2626ef1c91?w=1200&h=600&q=78&auto=format&fit=crop&crop=faces',
     body: [
       { type: 'p', text: 'A kitten\u2019s first year decides a lot: how confident they are with people, how healthy their adult body is, and how they feel about carriers, vets and visitors for the rest of their life. The good news is that the checklist is short and most of it is routine. Here is the whole first year, in plain words. One rule above all: your vet\u2019s schedule always wins over any guide, including this one.' },
       { type: 'h', text: 'Feeding: little and often' },
@@ -296,7 +296,7 @@ export const ARTICLES: Article[] = [
     title: 'The adult cat care guide: keeping an indoor cat truly well',
     dek: 'Annual vaccines, quarterly deworming, weight, teeth and the quiet signs of illness cats are experts at hiding.',
     read: '5 min read',
-    img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1200&q=80&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=1200&h=600&q=78&auto=format&fit=crop&crop=faces',
     body: [
       { type: 'p', text: 'An adult indoor cat looks low-maintenance, and mostly is. The catch: cats are professionals at hiding illness, so adult cat care is really a routine of small habits that let you notice change early. Here is the routine that keeps a flat cat genuinely well, not just quietly coping.' },
       { type: 'h', text: 'The yearly non-negotiables' },
@@ -326,7 +326,7 @@ export const ARTICLES: Article[] = [
     title: 'The puppy care guide: vaccinations, deworming and flat life',
     dek: 'The first-year schedule that keeps a Hyderabad puppy safe from parvo, plus toilet training that works in apartments.',
     read: '6 min read',
-    img: 'https://images.unsplash.com/photo-1591160690555-5debfba289f0?w=1200&q=80&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?w=1200&h=600&q=78&auto=format&fit=crop&crop=faces',
     body: [
       { type: 'p', text: 'Puppies compress a childhood into twelve months. The stakes in an Indian city are real, parvovirus and distemper still take puppies here every year, but the protection is simple: follow the vaccine schedule exactly, and keep paws off public ground until it is complete. As always, your vet\u2019s word beats any guide.' },
       { type: 'h', text: 'Vaccinations: the schedule' },
@@ -358,7 +358,7 @@ export const ARTICLES: Article[] = [
     title: 'The adult dog care guide: the routine behind a healthy city dog',
     dek: 'Annual boosters, quarterly deworming, tick season, weight and exercise for dogs living the apartment life.',
     read: '5 min read',
-    img: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=1200&q=80&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1605897472359-85e4b94d685d?w=1200&h=600&q=78&auto=format&fit=crop&crop=faces',
     body: [
       { type: 'p', text: 'An adult dog\u2019s health is mostly built from boring, repeated things: the yearly booster, the quarterly dewormer, the daily walk that actually tires them, and a parent who notices when something is off. Here is the full routine for a dog living the Hyderabad apartment life.' },
       { type: 'h', text: 'The medical calendar' },

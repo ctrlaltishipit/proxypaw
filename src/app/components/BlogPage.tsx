@@ -5,6 +5,7 @@
  * article inline (no router yet), and the browser back affordance is a visible
  * "all guides" link instead.
  */
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import NextStop from './NextStop';
@@ -56,6 +57,14 @@ interface BlogPageProps {
 
 export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticle, onBackToIndex, onTourClick }: BlogPageProps) {
   const current = slug ? ARTICLES.find((a) => a.slug === slug) ?? null : null;
+  const [cat, setCat] = useState('all');
+  const CAT_SLUGS: Record<string, string[]> = {
+    kittens: ['kitten-care-first-year', 'litter-box-science', 'play-tails-wagging', 'how-bookings-stay-safe'],
+    'adult cats': ['adult-cat-care-guide', 'indoor-cats-bigger-life', 'litter-box-science', 'apartment-grooming-guide', 'away-for-a-month-pet-care-plan'],
+    puppies: ['puppy-care-first-year', 'feeding-right-portions-treats', 'play-tails-wagging', 'walking-gated-community'],
+    'adult dogs': ['adult-dog-care-guide', 'walking-gated-community', 'apartment-grooming-guide', 'feeding-right-portions-treats', 'away-for-a-month-pet-care-plan'],
+  };
+  const shown = cat === 'all' ? ARTICLES : CAT_SLUGS[cat].map((sl) => ARTICLES.find((a) => a.slug === sl)).filter((a): a is Article => Boolean(a));
 
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip' }}>
@@ -92,46 +101,67 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
           <ArticleView article={current} onBack={onBackToIndex} onGetStarted={onGetStarted} />
         ) : (
           <>
-            <section style={{ ...shell, padding: '30px 28px 0' }}>
+            <section style={{ ...shell, padding: '8px 28px 0' }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.orange, letterSpacing: '0.12em', marginBottom: 14 }}>
                 THE PAW JOURNAL
               </div>
-              <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 4.6vw, 58px)', letterSpacing: '-0.01em', lineHeight: 1.05, margin: '0 0 18px' }}>
+              <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(30px, 4vw, 46px)', letterSpacing: '-0.01em', lineHeight: 1.05, margin: '0 0 12px' }}>
                 Care guides from the pack
               </h1>
-              <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 48px', fontWeight: 400, textTransform: 'none' }}>
+              <p style={{ fontSize: 17.5, lineHeight: 1.6, color: C.sub, maxWidth: 620, margin: '0 0 20px', fontWeight: 400, textTransform: 'none' }}>
                 Short, practical reads from the ProxyPaw care team: grooming, feeding, safety and play, for dogs and cats alike.
               </p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 26px' }}>
+                {['all', 'kittens', 'adult cats', 'puppies', 'adult dogs'].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCat(c)}
+                    style={{
+                      border: `1.5px solid ${cat === c ? C.orange : C.cardBorder}`,
+                      background: cat === c ? C.orange : C.card,
+                      color: cat === c ? '#fff' : C.ink,
+                      fontFamily: sora, fontWeight: 600, fontSize: 13.5,
+                      padding: '9px 18px', borderRadius: 999, cursor: 'pointer',
+                      transition: '.2s', textTransform: 'none',
+                    }}
+                  >
+                    {c === 'all' ? 'All guides' : c.charAt(0).toUpperCase() + c.slice(1)}
+                  </button>
+                ))}
+              </div>
             </section>
 
-            {/* life-stage guide hub */}
             <section style={{ ...shell, padding: '0 28px 40px' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.muted2, letterSpacing: '0.1em', marginBottom: 14 }}>
-                START WITH YOUR PET'S LIFE STAGE
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 14 }}>
-                {[
-                  { label: 'Kittens', sub: 'Vaccines, deworming, litter, first year', slug: 'kitten-care-first-year', emojiAlt: 'kitten guide' },
-                  { label: 'Adult cats', sub: 'Boosters, weight, teeth, enrichment', slug: 'adult-cat-care-guide', emojiAlt: 'adult cat guide' },
-                  { label: 'Puppies', sub: 'Parvo-safe schedule, toilet training', slug: 'puppy-care-first-year', emojiAlt: 'puppy guide' },
-                  { label: 'Adult dogs', sub: 'Ticks, exercise, monsoon, seniors', slug: 'adult-dog-care-guide', emojiAlt: 'adult dog guide' },
-                ].map((c) => (
-                  <div
-                    key={c.slug}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
+                {shown.map((a) => (
+                  <article
+                    key={a.slug}
                     className="pp-post"
-                    onClick={() => onOpenArticle(c.slug)}
-                    style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: '20px 22px', cursor: 'pointer', transition: '.3s' }}
+                    onClick={() => onOpenArticle(a.slug)}
+                    style={{
+                      background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 28,
+                      overflow: 'hidden', cursor: 'pointer', transition: '.3s',
+                      display: 'flex', flexDirection: 'column',
+                    }}
                   >
-                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 18, marginBottom: 6 }}>{c.label}</div>
-                    <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.5, textTransform: 'none', marginBottom: 12 }}>{c.sub}</div>
-                    <div className="pp-read" style={{ fontSize: 13, color: C.orange, fontWeight: 700 }}>Open the guide &rarr;</div>
-                  </div>
+                    <div style={{ width: '100%', height: 200, backgroundImage: `url("${a.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
+                    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ display: 'inline-flex', alignSelf: 'flex-start', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 14 }}>
+                        {a.tag.replace(/-/g, ' ')}
+                      </div>
+                      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
+                      <div style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.55, textTransform: 'none', marginBottom: 18 }}>{a.dek}</div>
+                      <div className="pp-read" style={{ marginTop: 'auto', fontSize: 13.5, color: C.muted2, transition: 'color .25s' }}>
+                        {a.read} &middot; Read &rarr;
+                      </div>
+                    </div>
+                  </article>
                 ))}
               </div>
             </section>
 
             {/* 24/7 emergency vets */}
-            <section style={{ ...shell, padding: '0 28px 48px' }}>
+            <section style={{ ...shell, padding: '0 28px 88px' }}>
               <div style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 24, padding: 'clamp(20px, 2.6vw, 30px)' }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: C.orange, letterSpacing: '0.1em', marginBottom: 10 }}>
                   EMERGENCY? SAVE THESE NUMBERS
@@ -165,35 +195,6 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                   them. They are here because your pet's emergency should never start with a
                   Google search.
                 </p>
-              </div>
-            </section>
-
-            <section style={{ ...shell, padding: '0 28px 96px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
-                {ARTICLES.map((a) => (
-                  <article
-                    key={a.slug}
-                    className="pp-post"
-                    onClick={() => onOpenArticle(a.slug)}
-                    style={{
-                      background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 28,
-                      overflow: 'hidden', cursor: 'pointer', transition: '.3s',
-                      display: 'flex', flexDirection: 'column',
-                    }}
-                  >
-                    <div style={{ width: '100%', height: 200, backgroundImage: `url("${a.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
-                    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'inline-flex', alignSelf: 'flex-start', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 14 }}>
-                        {a.tag}
-                      </div>
-                      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
-                      <div style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.55, textTransform: 'none', marginBottom: 18 }}>{a.dek}</div>
-                      <div className="pp-read" style={{ marginTop: 'auto', fontSize: 13.5, color: C.muted2, transition: 'color .25s' }}>
-                        {a.read} &middot; Read &rarr;
-                      </div>
-                    </div>
-                  </article>
-                ))}
               </div>
             </section>
 
