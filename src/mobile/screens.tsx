@@ -24,6 +24,12 @@ const IMG = {
   boarding: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80&auto=format&fit=crop',
   sitting: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=500&q=80&auto=format&fit=crop',
   walking: 'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=500&q=80&auto=format&fit=crop',
+  chai: 'https://images.unsplash.com/photo-1518288774672-b94e808873ff?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
+  lily: 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
+  lolio: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
+  donut: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
+  rhea: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&q=75&auto=format&fit=crop&crop=faces',
+  arjun: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&q=75&auto=format&fit=crop&crop=faces',
 };
 
 /* ------------------------------ icons ------------------------------ */
@@ -127,7 +133,7 @@ function Home() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <div>
             <div style={{ fontSize: 13, color: C.muted }}>Good morning</div>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22 }}>Ananya · My Home Bhooja</div>
+            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22 }}>Ananya · Prestige High Fields</div>
           </div>
           <span style={{ width: 42, height: 42, borderRadius: 15, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center', position: 'relative' }}>
             <Ic d={paths.bell} size={19} />
@@ -359,7 +365,7 @@ function Walkers() {
   const colors = [C.orange, C.green, C.gold, C.orangeDark];
   return (
     <Phone>
-      <Header title="Volunteers nearby" right={<span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}>My Home Bhooja</span>} />
+      <Header title="Volunteers nearby" right={<span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}>Prestige High Fields</span>} />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
         <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 12, lineHeight: 1.5 }}>
           Every volunteer lives in your community: Aadhaar-verified, background-checked and safety-trained before their first booking.
@@ -671,6 +677,70 @@ function Switch() {
   );
 }
 
+/* ------------------------------ 10. COMMUNITY ------------------------------ */
+
+function Community() {
+  const pets = [
+    { n: 'Chai', img: IMG.chai, breed: 'Persian cat', tower: 'Tower 2', need: 'Feeding + play, weekday evenings' },
+    { n: 'Donut', img: IMG.donut, breed: 'French bulldog', tower: 'Tower 5', need: 'Evening walks + weekend boarding' },
+    { n: 'Lily', img: IMG.lily, breed: 'Tabby cat', tower: 'Tower 5', need: 'Litter + cuddles when parents travel' },
+    { n: 'Lolio', img: IMG.lolio, breed: 'Retriever', tower: 'Tower 7', need: 'Morning walks, 30 min' },
+  ];
+  return (
+    <Phone nav="community">
+      <div style={{ padding: '22px 20px 96px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22 }}>Your community</div>
+          <span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}>Prestige High Fields</span>
+        </div>
+        <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>Every pet in your towers, and what they are looking for.</div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 14 }}>
+          {pets.map((pt) => (
+            <div key={pt.n} style={{ ...card, padding: 11, display: 'flex', alignItems: 'center', gap: 11 }}>
+              <img src={pt.img} alt={pt.n} style={{ width: 46, height: 46, borderRadius: 16, objectFit: 'cover' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ fontFamily: F, fontWeight: 600, fontSize: 14 }}>{pt.n}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, background: C.peach, color: C.orangeDark, borderRadius: 99, padding: '2px 9px' }}>{pt.tower}</span>
+                </div>
+                <div style={{ fontSize: 11, color: C.muted }}>{pt.breed} &middot; {pt.need}</div>
+              </div>
+              <span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.orange, color: '#fff', borderRadius: 99, padding: '8px 13px', flexShrink: 0 }}>Raise a request</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 10.5, color: C.muted2, textAlign: 'center', marginBottom: 14 }}>
+          Requests reach our team instantly. Smart volunteer auto-assign is on the way.
+        </div>
+
+        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, marginBottom: 10 }}>What neighbours say</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+          {[
+            { n: 'Rhea M.', t: 'Tower 5', img: IMG.rhea, q: 'Donut waits at the door for his walker now. I get photos before I even think to ask.' },
+            { n: 'Arjun T.', t: 'Tower 2', img: IMG.arjun, q: 'Ten days away: Chai was fed, brushed and entertained at home, and stayed calm.' },
+          ].map((r) => (
+            <div key={r.n} style={{ ...card, padding: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
+                <img src={r.img} alt={r.n} style={{ width: 32, height: 32, borderRadius: 99, objectFit: 'cover' }} />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontFamily: F, fontWeight: 600, fontSize: 13 }}>{r.n}</span>
+                  <span style={{ fontSize: 11, color: C.muted2 }}> &middot; {r.t}</span>
+                </div>
+                <span style={{ display: 'inline-flex', gap: 2 }}>
+                  {[0, 1, 2, 3, 4].map((i) => <Ic key={i} d={paths.star} size={11} color={C.gold} fill={C.gold} />)}
+                </span>
+              </div>
+              <div style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.55 }}>&ldquo;{r.q}&rdquo;</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
 /* ------------------------------ 8. BOOKINGS ------------------------------ */
 
 function Bookings() {
@@ -734,4 +804,5 @@ export const MOBILE_SCREENS: Record<string, () => ReactNode> = {
   payment: Payment,
   track: Track,
   switch: Switch,
+  community: Community,
 };

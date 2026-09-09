@@ -183,6 +183,21 @@ const SECTIONS: Section[] = [
     shot: '/shots/m-switch.png',
     alt: 'Request a change screen with reasons, replacement steps and raise ticket button',
   },
+  {
+    id: 'community',
+    eyebrow: 'EVERY TOWER, EVERY PET',
+    Icon: ShieldCheck,
+    accent: '#e0662f',
+    title: 'Your community, tower by tower.',
+    body: 'Pick your community and see the pets who live around you, which tower they are in, and the care they are looking for. Raise a request in one tap and it reaches our team instantly, with smart volunteer auto-assignment on the roadmap. Screens shown with sample data from our demo community.',
+    points: [
+      'Every pet listed with their tower and their needs',
+      'One-tap requests that reach our team instantly',
+      'Neighbour reviews build trust where you live',
+    ],
+    shot: '/shots/m-community.png',
+    alt: 'Community screen listing pets by tower with requests and neighbour reviews',
+  },
 ];
 
 /** Fade-and-rise on scroll, once, honouring reduced-motion. */

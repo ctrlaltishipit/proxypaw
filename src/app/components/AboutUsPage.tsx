@@ -689,6 +689,14 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
                 trusted carer instead of a stranger.
               </p>
               <p style={{ fontSize: 16, lineHeight: 1.75, color: C.sub, maxWidth: 720, margin: '0 0 22px', fontWeight: 400 }}>
+                Built out of Hyderabad, for Hyderabad first: operating here is our home advantage.
+                The roadmap is bigger, though. Next come more communities across the city, then
+                India's other big metros, and in time, wherever in the world busy pet parents need
+                a trusted neighbour, in the countries where we are permitted to operate. We will do
+                that research when the time is right: one community done properly beats ten done
+                loosely.
+              </p>
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: C.sub, maxWidth: 720, margin: '0 0 22px', fontWeight: 400 }}>
                 If this idea resonates with you, as a pet parent, a volunteer, or someone who wants
                 to help build it, I would love to hear from you and build this further together.
               </p>
