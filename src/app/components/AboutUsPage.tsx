@@ -27,6 +27,7 @@ const C = {
   gold: '#f0b429',
   band: '#f1eadb',
   bandBorder: '#e9ddc8',
+  btnBorder: '#d9cbb2',
   cream2: '#fdf9f0',
   peach: '#f9e7da',
   darkSub: '#c9b799',
@@ -164,12 +165,13 @@ const EVANGELISTS = [
 ];
 
 interface AboutUsPageProps {
+  onTourClick: () => void;
   onHomeClick: () => void;
   onJoin: (source: string, intent?: 'owner' | 'walker') => void;
   onBlogClick: () => void;
 }
 
-export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutUsPageProps) {
+export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourClick }: AboutUsPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'none' }}>
       <style>{`
@@ -316,7 +318,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
             <img
               src="/founder/pablo-leo.jpg"
               alt="Pablo and Leo together on the balcony beside their bonsai"
-              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24, display: 'block', border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
+              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24, border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
             />
           </Reveal>
 
@@ -349,6 +351,35 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
               </Reveal>
             ))}
           </div>
+
+          <Reveal delay={120}>
+            <div style={{ marginTop: 'clamp(14px, 1.8vw, 20px)', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 26, padding: 'clamp(22px, 3vw, 34px)' }}>
+              <p style={{ fontSize: 'clamp(15.5px, 1.6vw, 17px)', lineHeight: 1.8, color: C.sub, margin: '0 0 12px', fontWeight: 400 }}>
+                I got two of them so they would always have each other for company. But even with a
+                brother around, someone still has to feed them on time, clean the litter, refill the
+                water bowl, brush out the knots, and give them the human touch they quietly wait for
+                all day. We have a hundred ways to entertain ourselves: for our pets, we are the
+                entertainment. We are their whole Netflix.
+              </p>
+              <p style={{ fontSize: 'clamp(15.5px, 1.6vw, 17px)', lineHeight: 1.8, color: C.sub, margin: '0 0 16px', fontWeight: 400 }}>
+                The real joy, for mine, is when they climb up, cuddle in and fall asleep, completely
+                safe. And now, every single time I open the front door, both of them are standing
+                right there waiting. It is the first time I have ever seen cats do that. If you have
+                a story like this, we would love to hear it when you join.
+              </p>
+              <button
+                className="pp-ghost"
+                onClick={onTourClick}
+                style={{
+                  border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
+                  fontFamily: sora, fontWeight: 600, fontSize: 13.5, padding: '10px 20px',
+                  borderRadius: 999, cursor: 'pointer', transition: '.25s',
+                }}
+              >
+                See how the app works
+              </button>
+            </div>
+          </Reveal>
         </section>
 
         {/* what we believe */}

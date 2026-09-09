@@ -66,7 +66,7 @@ function About({ onJoin }: { onJoin: JoinFn }) {
     description: "Our vision, the founder's story, Pablo and Leo, and the six verification gates behind every ProxyPaw volunteer.",
     path: '/about',
   });
-  return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} onBlogClick={() => navigate('/blog')} />;
+  return <AboutUsPage onHomeClick={() => navigate('/')} onJoin={onJoin} onBlogClick={() => navigate('/blog')} onTourClick={() => navigate('/tour')} />;
 }
 
 function Tour({ onJoin }: { onJoin: JoinFn }) {

@@ -593,6 +593,37 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </div>
         </section>
 
+        {/* ---------- the proxypaw difference ---------- */}
+        <section style={{ ...shell, padding: `0 ${SIDE_PAD} clamp(30px, 4vw, 46px)`, textTransform: 'none' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
+            {[
+              {
+                bg: C.orange, icon: <PawSvg size={19} color="#fff" />,
+                t: 'Born in Hyderabad',
+                d: 'Built in Gachibowli for IT-corridor life, by people who live it.',
+              },
+              {
+                bg: C.green, icon: <Doodle kind="heart" size={19} color="#fff" />,
+                t: 'The same neighbour, every time',
+                d: 'One trained volunteer your pet gets to know, for every walk, meal and stay.',
+              },
+              {
+                bg: C.gold, icon: <Doodle kind="bone" size={19} color="#fff" />,
+                t: 'Trust built before the booking',
+                d: 'Aadhaar checks, one-on-one interviews, training, and a meet-and-greet first.',
+              },
+            ].map((f) => (
+              <div key={f.t} style={{ display: 'flex', gap: 13, alignItems: 'flex-start', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: '16px 18px' }}>
+                <span style={{ width: 38, height: 38, borderRadius: 12, background: f.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{f.icon}</span>
+                <div>
+                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 15.5, marginBottom: 3 }}>{f.t}</div>
+                  <div style={{ fontSize: 13.5, lineHeight: 1.55, color: C.muted, fontWeight: 400 }}>{f.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ---------- community marquee ---------- */}
         <div style={{ borderTop: `1px solid ${C.bandBorder}`, borderBottom: `1px solid ${C.bandBorder}`, background: C.band, overflow: 'hidden', padding: '16px 0' }}>
           <div data-marquee style={{ display: 'flex', gap: 52, width: 'max-content', animation: '34s linear infinite pp-drift' }}>
@@ -604,6 +635,69 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
             ))}
           </div>
         </div>
+
+        {/* ---------- why we exist ---------- */}
+        <section style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD} 0` }}>
+          <Reveal>
+            <div style={eyebrow}>WHY PROXYPAW EXISTS</div>
+            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 12px', maxWidth: 620 }}>
+              Leaving them is the hardest part of leaving
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.muted, maxWidth: 640, margin: '0 0 clamp(26px, 3.5vw, 40px)', textTransform: 'none' }}>
+              We are pet parents ourselves. We studied every option families have today, and kept coming back to the same three things.
+            </p>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
+            {[
+              {
+                icon: <Doodle kind="heart" size={22} color="#fff" />, bg: C.orange,
+                title: 'Every trip is a worry',
+                body: 'Pet parents travel more than ever, and every trip starts with the same question: who do we trust with them this time?',
+              },
+              {
+                icon: <PawSvg size={22} color="#fff" />, bg: C.green,
+                title: 'Strangers, however checked, are still strangers',
+                body: 'A sitter from an app is a profile on a screen. You meet them for the first time on the day you hand over your pet.',
+              },
+              {
+                icon: <Doodle kind="yarn" size={22} color="#fff" />, bg: C.gold,
+                title: 'Pets cannot tell you',
+                body: 'If care goes wrong, they carry it silently. So trust has to be built before the booking, not hoped for after it.',
+              },
+            ].map((card, i) => (
+              <Reveal key={card.title} delay={i * 110}>
+                <div className="pp-step-card" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 'clamp(18px, 2vw, 24px)', transition: '.3s', height: '100%', boxSizing: 'border-box' }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 13, background: card.bg, display: 'grid', placeItems: 'center', marginBottom: 16 }}>
+                    {card.icon}
+                  </span>
+                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 17, marginBottom: 8, textTransform: 'none' }}>{card.title}</div>
+                  <div style={{ fontSize: 14.5, lineHeight: 1.6, color: C.muted, fontWeight: 400, textTransform: 'none' }}>{card.body}</div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delay={140}>
+            <div style={{ marginTop: GRID_GAP, background: C.band, border: `1px solid ${C.bandBorder}`, borderRadius: 24, padding: 'clamp(22px, 3vw, 32px)', display: 'flex', gap: 'clamp(16px, 2.5vw, 28px)', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ width: 54, height: 54, borderRadius: 18, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                <PawSvg size={26} color="#fff" />
+              </span>
+              <div style={{ flex: '1 1 340px', textTransform: 'none' }}>
+                <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.ink, margin: '0 0 6px', fontWeight: 400 }}>
+                  &ldquo;I have two cats I am hopelessly in love with, and leaving them even for a weekend was
+                  hard enough that I built the app I wished existed. Neighbours who love pets, verified
+                  properly, caring for pets they will meet again in the lift tomorrow.&rdquo;
+                </p>
+                <div style={{ fontSize: 13, color: C.muted2 }}>
+                  Deekshitha, founder &middot;{' '}
+                  <span onClick={onAboutClick} style={{ color: C.orange, cursor: 'pointer', fontWeight: 700 }}>read our story</span>
+                </div>
+              </div>
+              <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(17px, 2vw, 21px)', color: C.green, flexShrink: 0, textTransform: 'none' }}>
+                We are a community of pets.
+              </div>
+            </div>
+          </Reveal>
+        </section>
 
         {/* ---------- how it works ---------- */}
         <section id="how" style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD} 0` }}>

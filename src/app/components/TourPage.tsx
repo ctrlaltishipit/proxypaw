@@ -274,7 +274,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       </section>
 
       {/* sections: sticky stacked cards — each new card slides over the last */}
-      <div style={{ ...shell, padding: `10px ${'{'}0{'}'} 40px`, position: 'relative' }}>
+      <div style={{ ...shell, padding: '10px 0 40px', position: 'relative' }}>
         {SECTIONS.map((sec, i) => {
           const tints = ['#fffdf8', '#f7f3e6', '#fdf6ec'];
           return (

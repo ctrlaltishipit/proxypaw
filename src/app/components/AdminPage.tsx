@@ -70,18 +70,22 @@ export default function AdminPage() {
   useEffect(() => {
     if (!session) { setStats(null); setDenied(false); return; }
     (async () => {
-      const res = await fetch(FN_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-          apikey: SB_ANON,
-        },
-        body: JSON.stringify({}),
-      });
-      if (res.status === 403) { setDenied(true); return; }
-      if (!res.ok) { setError('Could not load the dashboard. Try refreshing.'); return; }
-      setStats(await res.json());
+      try {
+        const res = await fetch(FN_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: SB_ANON,
+          },
+          body: JSON.stringify({}),
+        });
+        if (res.status === 403) { setDenied(true); return; }
+        if (!res.ok) { setError('Could not load the dashboard. Try refreshing.'); return; }
+        setStats(await res.json());
+      } catch {
+        setError('Could not load the dashboard. Try refreshing.');
+      }
     })();
   }, [session]);
 
