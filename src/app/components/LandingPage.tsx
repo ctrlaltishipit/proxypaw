@@ -415,12 +415,12 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </div>
           <nav className="pp-nav-row" style={{ display: 'flex', gap: 24, marginLeft: 14, flexWrap: 'wrap' }}>
             {[
+              { label: 'About', go: onAboutClick },
               { label: 'How it works', go: () => scrollTo('how') },
               { label: 'Services', go: () => scrollTo('services') },
               { label: 'Pricing', go: () => scrollTo('pricing') },
               { label: 'Inside the app', go: onTourClick },
-              { label: 'About', go: onAboutClick },
-              { label: 'Blog', go: () => scrollTo('blog') },
+              { label: 'Blogs', go: onBlogClick },
             ].map((item) => (
               <span
                 key={item.label}
@@ -820,6 +820,47 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 {BOARDING_TIERS.map((t, i) => (
                   <Reveal key={t.label} delay={i * 70}><TierCard t={t} /></Reveal>
                 ))}
+              </div>
+
+              {/* care passes */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 'clamp(26px, 3.4vw, 40px) 0 18px', fontFamily: sora, fontWeight: 600, fontSize: 15, color: C.gold, letterSpacing: '0.06em' }}>
+                <span style={{ width: 26, height: 26, borderRadius: 9, background: 'rgba(240,180,41,.16)', display: 'grid', placeItems: 'center' }}>
+                  <PawSvg size={13} color={C.gold} />
+                </span>
+                Care passes: book once, covered all month
+                <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 14, textTransform: 'none' }}>
+                {[
+                  { label: 'Day pass', price: '\u20b9349', note: 'One 1-hour walk plus one home visit, same day', save: 'Save \u20b929 vs booking singly' },
+                  { label: 'Week pass', price: '\u20b91,499', note: 'A 1-hour walk every day for 7 days', save: 'About 14% off single walks' },
+                  { label: 'Month pass', price: '\u20b94,999', note: '26 one-hour walks, priority booking, weekly photo report', save: 'About 23% off single walks' },
+                  { label: 'Cat month pass', price: '\u20b92,999', note: 'A daily visit for 26 days: feed, play, litter, photo', save: 'About 11% off single visits' },
+                ].map((t) => (
+                  <div key={t.label} style={{ border: '1px solid rgba(253,249,240,.16)', borderRadius: 18, padding: '18px 20px' }}>
+                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 14.5, color: C.darkSub, marginBottom: 6 }}>{t.label}</div>
+                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 26, marginBottom: 6 }}>{t.price}</div>
+                    <div style={{ fontSize: 13, color: C.darkSub, lineHeight: 1.55, marginBottom: 8 }}>{t.note}</div>
+                    <div style={{ fontSize: 12, color: C.gold, fontWeight: 700 }}>{t.save}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, marginTop: 18, textTransform: 'none' }}>
+                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
+                  <span style={{ color: C.cream2, fontWeight: 700 }}>Free to join.</span> Registering and
+                  exploring the app costs nothing. Booking opens with early access: join the waitlist
+                  and you are first in line when we go live.
+                </div>
+                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
+                  <span style={{ color: C.cream2, fontWeight: 700 }}>New pet parent?</span> Add a coaching
+                  visit to any booking: a trained volunteer walks you through feeding, grooming and
+                  routines, with your own pet, in your own home.
+                </div>
+                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
+                  <span style={{ color: C.cream2, fontWeight: 700 }}>Priced to be a no-brainer.</span> Passes
+                  undercut every comparable plan we found in Hyderabad, volunteers still keep their
+                  70%, and we trim our share instead.
+                </div>
               </div>
             </div>
           </Reveal>

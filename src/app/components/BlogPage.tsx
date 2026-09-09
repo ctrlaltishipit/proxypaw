@@ -104,6 +104,70 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
               </p>
             </section>
 
+            {/* life-stage guide hub */}
+            <section style={{ ...shell, padding: '0 28px 40px' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.muted2, letterSpacing: '0.1em', marginBottom: 14 }}>
+                START WITH YOUR PET'S LIFE STAGE
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 14 }}>
+                {[
+                  { label: 'Kittens', sub: 'Vaccines, deworming, litter, first year', slug: 'kitten-care-first-year', emojiAlt: 'kitten guide' },
+                  { label: 'Adult cats', sub: 'Boosters, weight, teeth, enrichment', slug: 'adult-cat-care-guide', emojiAlt: 'adult cat guide' },
+                  { label: 'Puppies', sub: 'Parvo-safe schedule, toilet training', slug: 'puppy-care-first-year', emojiAlt: 'puppy guide' },
+                  { label: 'Adult dogs', sub: 'Ticks, exercise, monsoon, seniors', slug: 'adult-dog-care-guide', emojiAlt: 'adult dog guide' },
+                ].map((c) => (
+                  <div
+                    key={c.slug}
+                    className="pp-post"
+                    onClick={() => onOpenArticle(c.slug)}
+                    style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: '20px 22px', cursor: 'pointer', transition: '.3s' }}
+                  >
+                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 18, marginBottom: 6 }}>{c.label}</div>
+                    <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.5, textTransform: 'none', marginBottom: 12 }}>{c.sub}</div>
+                    <div className="pp-read" style={{ fontSize: 13, color: C.orange, fontWeight: 700 }}>Open the guide &rarr;</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 24/7 emergency vets */}
+            <section style={{ ...shell, padding: '0 28px 48px' }}>
+              <div style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 24, padding: 'clamp(20px, 2.6vw, 30px)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.orange, letterSpacing: '0.1em', marginBottom: 10 }}>
+                  EMERGENCY? SAVE THESE NUMBERS
+                </div>
+                <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(20px, 2.4vw, 26px)', lineHeight: 1.2, margin: '0 0 8px', textTransform: 'none' }}>
+                  24/7 vet hospitals near West Hyderabad
+                </h2>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted, textTransform: 'none', margin: '0 0 18px', maxWidth: 680 }}>
+                  Verified against each hospital's own website, with ratings as of September 2026
+                  (approximate). Hours change in this city: always call before you drive.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
+                  {[
+                    { n: 'Mr.VET Animal Hospital', a: 'Gachibowli · also Kokapet', r: '~4.6 · 1,300+ ratings', t: '24/7, on their own site', d: 'Surgery including neurosurgery, diagnostics, exotics. The closest verified round-the-clock option to the pilot communities.', ph: '+91 96767 55544' },
+                    { n: 'Vetic Pet Clinic', a: 'HITEC City, opp. Cyber Towers', r: '~4.6 · 280+ ratings', t: 'Open 24 hours', d: 'Emergency, surgery, ICU and post-op monitoring, X-ray, blood work, published pricing.', ph: '+91 89290 43121' },
+                    { n: 'Seven Oaks Pet Hospital', a: 'Jubilee Hills', r: '~4.5 · 300+ ratings', t: 'Open 24/7', d: 'Critical care with a CT scanner, oncology, cardiology and an ambulance. Fear Free certified.', ph: '+91 83677 00772' },
+                    { n: 'MaxPetZ', a: 'Jubilee Hills', r: 'New branch, few local reviews yet', t: '24/7 emergency, on their own site', d: 'ICU, fluoroscopy, echo and imaging, spinal and ortho surgery. Established chain, new to Hyderabad.', ph: '+91 92203 09755' },
+                    { n: 'Crown Vet', a: 'Gachibowli', r: '~4.9 · 240+ ratings', t: 'Daytime: 10 am to 8 pm', d: 'Not 24/7 yet, but an excellent first-choice daytime clinic minutes from Gachibowli, with an emergency helpline.', ph: '+91 80627 44111' },
+                  ].map((c) => (
+                    <div key={c.n} style={{ border: `1px solid ${C.cardBorder}`, borderRadius: 16, padding: '16px 18px', textTransform: 'none' }}>
+                      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 16, marginBottom: 2 }}>{c.n}</div>
+                      <div style={{ fontSize: 12.5, color: C.muted2, marginBottom: 8 }}>{c.a} · {c.r}</div>
+                      <div style={{ display: 'inline-block', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, marginBottom: 10 }}>{c.t}</div>
+                      <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.55, marginBottom: 10 }}>{c.d}</div>
+                      <a href={`tel:${c.ph.replace(/ /g, '')}`} style={{ fontSize: 13.5, fontWeight: 700, color: C.orange, textDecoration: 'none' }}>{c.ph}</a>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12.5, color: C.muted2, textTransform: 'none', margin: '14px 0 0', lineHeight: 1.6 }}>
+                  ProxyPaw is not affiliated with these hospitals and earns nothing from listing
+                  them. They are here because your pet's emergency should never start with a
+                  Google search.
+                </p>
+              </div>
+            </section>
+
             <section style={{ ...shell, padding: '0 28px 96px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
                 {ARTICLES.map((a) => (
