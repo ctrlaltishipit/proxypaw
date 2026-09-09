@@ -70,12 +70,12 @@ const STEPS = [
   {
     n: '1',
     title: 'Meet your neighbours',
-    body: 'Browse verified walkers, cat sitters and boarding hosts who live in your towers. Every profile is Aadhaar-checked and community-rated.',
+    body: 'Pick your community and see its towers, the pets who live in them, and the verified neighbours who can care for them. Every profile is Aadhaar-checked and community-rated.',
   },
   {
     n: '2',
     title: 'Book in 30 seconds',
-    body: 'Pick a day, a time and a duration. Pay by UPI. Your sitter gets your pet’s quirks, routes and vet info automatically.',
+    body: 'Pick a day, a time and a duration. Pay by UPI or card. Your first booking always starts with an in-person meet-and-greet at your door.',
   },
   {
     n: '3',

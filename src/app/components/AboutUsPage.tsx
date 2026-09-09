@@ -458,6 +458,48 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick }: AboutU
         </section>
 
 
+        {/* pilot stage, founder CTA */}
+        <section style={{ ...shell, padding: `0 ${SIDE_PAD} clamp(44px, 6vw, 80px)` }}>
+          <Reveal>
+            <div style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 28, padding: 'clamp(26px, 3.6vw, 44px)' }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+                WHERE WE ARE TODAY
+              </div>
+              <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(24px, 3vw, 36px)', letterSpacing: '-0.01em', lineHeight: 1.15, margin: '0 0 16px', maxWidth: 640 }}>
+                We're in pilot, and building in the open.
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: C.sub, maxWidth: 720, margin: '0 0 14px', fontWeight: 400 }}>
+                ProxyPaw is live as a pilot in a handful of West Hyderabad communities. Pick your
+                community in the app and you can see every tower and the pets who live there, their
+                names, their breeds, their little quirks. Volunteer for one and you meet the pet
+                parent in person first, understand exactly what their pet needs, and only then take
+                the leash. That first meeting is non-negotiable: it is how a neighbour becomes a
+                trusted carer instead of a stranger.
+              </p>
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: C.sub, maxWidth: 720, margin: '0 0 22px', fontWeight: 400 }}>
+                If this idea resonates with you, as a pet parent, a volunteer, or someone who wants
+                to help build it, I would love to hear from you and build this further together.
+              </p>
+              <a
+                className="pp-cta"
+                href="https://www.linkedin.com/in/deekshitha-sreerala/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block', textDecoration: 'none', border: 'none', background: C.orange,
+                  color: '#fff', fontFamily: sora, fontWeight: 600, fontSize: 15.5, padding: '16px 30px',
+                  borderRadius: 999, cursor: 'pointer', boxShadow: '0 12px 28px rgba(224,102,47,.3)', transition: '.25s',
+                }}
+              >
+                Connect with me on LinkedIn
+              </a>
+              <span style={{ display: 'block', marginTop: 12, fontSize: 13, color: C.muted2 }}>
+                Deekshitha Sreerala, founder · Gachibowli, Hyderabad
+              </span>
+            </div>
+          </Reveal>
+        </section>
+
         <NextStop
           label="Want to read more? Check out our blogs"
           sub="The Paw Journal: practical care guides for flat pets"

@@ -220,6 +220,40 @@ export const ARTICLES: Article[] = [
       { type: 'tip', text: 'ProxyPaw cat visits include litter scooping and a notes field for exactly these changes, frequency, straining, anything off, so you hear about it the same day, not after a week away.' },
     ],
   },
+  {
+    slug: 'away-for-a-month-pet-care-plan',
+    tag: 'planning',
+    title: 'Away for a month? How to plan care your pet can rely on',
+    dek: 'A 30-day trip does not have to mean a kennel or a stranger. How to hand over a routine, not just a pet.',
+    read: '6 min read',
+    img: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&q=80&auto=format&fit=crop',
+    body: [
+      { type: 'p', text: 'A work posting abroad, a family wedding on the other side of the country, a long-postponed holiday: at some point every pet parent faces the same question. Who takes care of them for a whole month? The usual answers are a commercial kennel across town, a paid sitter you found online and met once, or a relative who "does not mind". All three can go fine. All three can also go badly, and your pet cannot phone you when they do.' },
+      { type: 'h', text: 'What a month away actually asks of a carer' },
+      { type: 'p', text: 'A weekend sitter can wing it. A month cannot be winged. Thirty days means someone keeping your pet\u2019s routine, not just their stomach: the same feeding times, the same walk streets, the medication given at the hour it works, the quirks respected, and the judgement to spot the difference between a lazy day and a sick day.' },
+      { type: 'list', items: [
+        'Continuity: one primary carer for the whole stay, not a rotation of strangers.',
+        'Proximity: care inside your own community means your vet, your streets and your backup neighbours stay in reach.',
+        'Accountability: someone who is verified, reachable daily, and answerable to people you both know.',
+        'Proof of life, daily: photos and updates on a schedule, so silence is a signal and not the norm.',
+      ]},
+      { type: 'h', text: 'The handover is the whole game' },
+      { type: 'p', text: 'Do not hand over a pet. Hand over a routine, in writing, and walk the carer through it in person before you book anything. A good long-stay handover covers:' },
+      { type: 'list', items: [
+        'Food: brand, portion, timings, and where the next month\u2019s supply is kept.',
+        'Health: medications with doses and times, your vet\u2019s name and number, the nearest 24-hour clinic, and a written go-ahead for emergency treatment up to an amount you set.',
+        'Habits: the walk route they actually like, the hiding spot they bolt to when the doorbell rings, the word that means dinner.',
+        'Red flags for your specific pet: what refusing food means for a cat versus a Labrador, what their scared looks like.',
+        'People: one backup contact in the community who has met your pet and holds a spare key.',
+      ]},
+      { type: 'tip', text: 'This is exactly why every ProxyPaw booking, long or short, starts with an in-person meet-and-greet. For extended stays we insist on it: you, your pet and the volunteer in one room, walking the routine together, before any money changes hands.' },
+      { type: 'h', text: 'Cats and dogs want different months' },
+      { type: 'p', text: 'Most cats do best staying in their own territory with one or two visits a day for food, litter, play and a health check; moving a cat to a new home for a month is a bigger upheaval than the owner leaving. Most dogs are the opposite: a month of visits without companionship is lonely, and they generally do better boarding with a host family whose home and habits they have already met. Neither rule is absolute, which is why the meet-and-greet matters more than the category.' },
+      { type: 'h', text: 'Run a rehearsal before the real thing' },
+      { type: 'p', text: 'Never let the month be the first test. Two weeks before you travel, do one overnight or a full weekend with the same carer. You learn whether your dog settles in that home, the carer learns the routine while you are still one lift ride away, and your pet learns the most important lesson of all: this person is safe, and you came back.' },
+      { type: 'tip', text: 'Going away for 30 days is the hardest version of the problem ProxyPaw exists to solve: your pet, in safe hands you have met, inside your own community, with updates every single day. If a stay ever slips, we make it up to you, that is the standard we hold ourselves to.' },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {
