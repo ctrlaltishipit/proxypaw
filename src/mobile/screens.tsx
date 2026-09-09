@@ -53,6 +53,7 @@ const paths = {
   check: 'M20 6 9 17l-5-5',
   star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
   cash: 'M2 7h20v10H2zM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  swap: 'M17 1l4 4-4 4M21 5H9a4 4 0 0 0-4 4v2M7 23l-4-4 4-4M3 19h12a4 4 0 0 0 4-4v-2',
 };
 function Paw({ size = 18, color = '#fff' }: { size?: number; color?: string }) {
   return (
@@ -574,6 +575,11 @@ function Track() {
           <span style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, border: `1.2px solid ${C.btnBorder}`, borderRadius: 99, padding: '8px 15px' }}>Message</span>
         </div>
 
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 12 }}>
+          <Ic d={paths.swap} size={12} color={C.orange} />
+          <span style={{ fontSize: 11.5, color: C.orange, fontWeight: 700 }}>Not working out? Request a change, no questions asked</span>
+        </div>
+
         {/* timeline */}
         <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, marginBottom: 10 }}>Walk updates</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -596,6 +602,69 @@ function Track() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+/* ------------------------------ 9. SWITCH ------------------------------ */
+
+function Switch() {
+  return (
+    <Phone nav="bookings">
+      <Header title="Request a change" />
+      <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
+        {/* current volunteer */}
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 13, marginBottom: 16 }}>
+          <span style={{ width: 44, height: 44, borderRadius: 15, background: C.orange, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 16 }}>P</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Priya S. · walking Biscuit</div>
+            <div style={{ fontSize: 11.5, color: C.muted }}>Your current volunteer for this booking</div>
+          </div>
+          <span style={{ fontSize: 10.5, fontWeight: 800, background: C.greenPale, color: C.green, borderRadius: 99, padding: '4px 11px' }}>ACTIVE</span>
+        </div>
+
+        {/* reason */}
+        <span style={label}>What is not working?</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          {[['Late or missed visits', true], ['Instructions not followed', false], ['My pet seems uneasy', false], ['Something else', false]].map(([t, sel]) => (
+            <span key={t as string} style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 99, padding: '9px 15px', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.ink, border: `1.2px solid ${sel ? C.orange : C.btnBorder}` }}>{t}</span>
+          ))}
+        </div>
+
+        {/* what happens next */}
+        <div style={{ ...card, padding: 14, marginBottom: 12 }}>
+          <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5, marginBottom: 10 }}>What happens next</div>
+          {[
+            'Your ticket reaches our team instantly',
+            'The next best verified volunteer is assigned right away',
+            'Your current volunteer continues until the new one arrives, so care never pauses',
+          ].map((t, i) => (
+            <div key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < 2 ? 9 : 0 }}>
+              <span style={{ width: 20, height: 20, borderRadius: 99, background: C.peach, color: C.orangeDark, display: 'grid', placeItems: 'center', fontFamily: F, fontWeight: 600, fontSize: 11, flexShrink: 0 }}>{i + 1}</span>
+              <span style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.5 }}>{t}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* no awkwardness */}
+        <div style={{ ...card, background: C.greenPale, borderColor: '#dfe4cf', padding: 13, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 12, background: C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Ic d={paths.shield} size={16} color="#fff" />
+          </span>
+          <div style={{ fontSize: 11.5, color: C.green, lineHeight: 1.55 }}>
+            <span style={{ fontFamily: F, fontWeight: 600 }}>No questions, no awkwardness.</span> Volunteers
+            stay professional and will not ask why. If anyone ever does, point them to our team and
+            we will have that conversation for you.
+          </div>
+        </div>
+
+        <div style={{ background: C.orange, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 15.5, textAlign: 'center', borderRadius: 18, padding: '15px 0', boxShadow: '0 12px 26px rgba(224,102,47,.35)' }}>
+          Raise ticket and switch
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 11, color: C.muted2, marginTop: 9 }}>
+          We start arranging your replacement the moment you tap.
         </div>
       </div>
     </Phone>
@@ -664,4 +733,5 @@ export const MOBILE_SCREENS: Record<string, () => ReactNode> = {
   bookings: Bookings,
   payment: Payment,
   track: Track,
+  switch: Switch,
 };

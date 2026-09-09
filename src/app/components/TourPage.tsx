@@ -168,6 +168,21 @@ const SECTIONS: Section[] = [
     shot: '/shots/m-track.png',
     alt: 'Live walk tracking with route map, stats and update timeline',
   },
+  {
+    id: 'switch',
+    eyebrow: 'NOT WORKING OUT? SWITCH',
+    Icon: ShieldCheck,
+    accent: '#3f6c51',
+    title: 'Request a change, no questions asked.',
+    body: 'If a volunteer is not delivering what you asked for, raise a ticket right from the app and we assign the next best verified volunteer immediately. Your current volunteer continues until the new one arrives, so your pet\u2019s care never pauses. And it stays drama-free: volunteers will not ask why, and if anyone ever does, you point them to our team and we handle that conversation.',
+    points: [
+      'Raise a ticket in two taps, straight from the booking',
+      'Replacement assigned immediately, care never pauses',
+      'No questions, no awkwardness: our team talks to the volunteer, not you',
+    ],
+    shot: '/shots/m-switch.png',
+    alt: 'Request a change screen with reasons, replacement steps and raise ticket button',
+  },
 ];
 
 /** Fade-and-rise on scroll, once, honouring reduced-motion. */
