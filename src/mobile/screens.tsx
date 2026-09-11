@@ -114,7 +114,7 @@ function Header({ title, right }: { title: string; right?: ReactNode }) {
       <span style={{ width: 38, height: 38, borderRadius: 13, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center' }}>
         <Ic d={paths.back} size={18} />
       </span>
-      <span style={{ fontFamily: F, fontWeight: 600, fontSize: 19, flex: 1 }}>{title}</span>
+      <span style={{ fontFamily: F, fontWeight: 600, fontSize: 18, flex: 1, whiteSpace: 'nowrap' }}>{title}</span>
       {right}
     </div>
   );
@@ -365,7 +365,7 @@ function Walkers() {
   const colors = [C.orange, C.green, C.gold, C.orangeDark];
   return (
     <Phone>
-      <Header title="Volunteers nearby" right={<span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}>Prestige High Fields</span>} />
+      <Header title="Volunteers nearby" right={<span style={{ fontFamily: F, fontWeight: 600, fontSize: 10.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '5px 10px', whiteSpace: 'nowrap' }}>Prestige High Fields</span>} />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
         <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 12, lineHeight: 1.5 }}>
           Every volunteer lives in your community: Aadhaar-verified, background-checked and safety-trained before their first booking.
@@ -501,7 +501,7 @@ function Payment() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
             <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 13, padding: '10px 0', background: C.card, border: `1px solid ${C.border}`, color: C.sub }}>
-              <Ic d={paths.card} size={15} color={C.muted} /> Pay online
+              <Ic d={paths.card} size={15} color={C.muted} /> Pay online (via card)
             </span>
             <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 13, padding: '10px 0', background: C.ink, color: C.cream2 }}>
               <Ic d={paths.qr} size={15} color={C.gold} /> Pay by UPI
