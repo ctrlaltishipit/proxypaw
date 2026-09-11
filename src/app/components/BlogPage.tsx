@@ -79,23 +79,6 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
       `}</style>
 
       <div className="pp-screen" key={current?.slug ?? 'index'}>
-        <header style={{ ...shell, padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-          <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-            <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
-          </div>
-          <button
-            className="pp-dark-btn"
-            onClick={onGetStarted}
-            style={{
-              marginLeft: 'auto', border: 'none', background: C.ink, color: C.cream2,
-              fontFamily: sora, fontWeight: 600, fontSize: 14.5, padding: '12px 22px',
-              borderRadius: 999, cursor: 'pointer', transition: '.25s',
-            }}
-          >
-            Get started
-          </button>
-        </header>
 
         {current ? (
           <ArticleView article={current} onBack={onBackToIndex} onGetStarted={onGetStarted} />

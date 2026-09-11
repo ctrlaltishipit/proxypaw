@@ -191,23 +191,6 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
 
       <div className="pp-screen">
         {/* header */}
-        <header style={{ ...shell, maxWidth: 1200, padding: `18px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-          <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-            <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
-          </div>
-          <button
-            className="pp-dark-btn"
-            onClick={() => onJoin('about-header')}
-            style={{
-              marginLeft: 'auto', border: 'none', background: C.ink, color: C.cream2,
-              fontFamily: sora, fontWeight: 600, fontSize: 14.5, padding: '12px 22px',
-              borderRadius: 999, cursor: 'pointer', transition: '.25s',
-            }}
-          >
-            Join the waitlist
-          </button>
-        </header>
 
         {/* vision hero */}
         <section style={{ ...shell, padding: `clamp(36px, 5vw, 64px) ${SIDE_PAD} clamp(40px, 5vw, 64px)`, position: 'relative' }}>

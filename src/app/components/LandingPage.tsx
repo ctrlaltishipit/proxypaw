@@ -408,50 +408,6 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       <Ambient />
       <div className="pp-screen" style={{ position: 'relative', zIndex: 1 }}>
         {/* ---------- header ---------- */}
-        <header style={{ ...shell, padding: `18px ${SIDE_PAD}`, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-          <div className="pp-brand" style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'default' }}>
-            <PawMark size={38} radius={13} />
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
-          </div>
-          <nav className="pp-nav-row" style={{ display: 'flex', gap: 24, marginLeft: 14, flexWrap: 'wrap' }}>
-            {[
-              { label: 'About', go: onAboutClick },
-              { label: 'How it works', go: () => scrollTo('how') },
-              { label: 'Services', go: () => scrollTo('services') },
-              { label: 'Pricing', go: () => scrollTo('pricing') },
-              { label: 'Inside the app', go: onTourClick },
-              { label: 'Blogs', go: onBlogClick },
-            ].map((item) => (
-              <span
-                key={item.label}
-                className="pp-nav"
-                onClick={item.go}
-                style={{ fontSize: 15, color: C.muted, cursor: 'pointer', transition: 'color .2s', whiteSpace: 'nowrap' }}
-              >
-                {item.label}
-              </span>
-            ))}
-          </nav>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              onClick={() => onJoin('nav-login')}
-              style={{ border: 'none', background: 'transparent', fontSize: 15, fontWeight: 500, color: C.ink, cursor: 'pointer', padding: '10px 14px' }}
-            >
-              Log in
-            </button>
-            <button
-              className="pp-dark-btn"
-              onClick={() => onJoin('nav-get-started')}
-              style={{
-                border: 'none', background: C.ink, color: C.cream2, fontFamily: sora,
-                fontWeight: 600, fontSize: 14.5, padding: '12px 22px',
-                borderRadius: 999, cursor: 'pointer', transition: '.25s',
-              }}
-            >
-              Get started
-            </button>
-          </div>
-        </header>
 
         {/* ---------- hero ---------- */}
         <section
@@ -611,6 +567,11 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 bg: C.gold, icon: <Doodle kind="bone" size={19} color="#fff" />,
                 t: 'Trust built before the booking',
                 d: 'Aadhaar checks, one-on-one interviews, training, and a meet-and-greet first.',
+              },
+              {
+                bg: C.orangeDark, icon: <Doodle kind="yarn" size={19} color="#fff" />,
+                t: 'We speak your language',
+                d: 'Telugu, Hindi or English: volunteers from your own community, matched to your family.',
               },
             ].map((f) => (
               <div key={f.t} style={{ display: 'flex', gap: 13, alignItems: 'flex-start', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: '16px 18px' }}>
@@ -910,10 +871,15 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               <span aria-hidden="true" style={{ position: 'absolute', top: -22, right: -18, transform: 'rotate(18deg)' }}>
                 <PawSvg size={110} color={C.orange} style={{ opacity: 0.07 }} />
               </span>
-              <h2 style={{ ...h2, fontSize: 'clamp(26px, 3.4vw, 42px)', margin: '0 0 12px' }}>Ready when your pets are.</h2>
+              <h2 style={{ ...h2, fontSize: 'clamp(26px, 3.4vw, 42px)', margin: '0 0 12px' }}>Ready when your pets are!</h2>
               <p style={{ fontSize: 16, color: C.muted, margin: '0 auto 26px', fontWeight: 400, textTransform: 'none', maxWidth: 460 }}>
-                Join your community's pack in under a minute.
+                Join your community's pack in under a minute. Somewhere in your tower, a wagging
+                tail is already waiting!
               </p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: C.greenPale, border: '1px solid #dfe4cf', color: C.green, borderRadius: 999, padding: '9px 18px', fontFamily: sora, fontWeight: 600, fontSize: 13.5, margin: '0 0 24px', maxWidth: '94%', textTransform: 'none' }}>
+                <PawSvg size={15} color={C.green} />
+                <span style={{ textAlign: 'left' }}>Founding 1,000 perk: a free onboarding session for your pet, plus &#8377;100 off your first booking!</span>
+              </div>
               <div className="pp-hero-ctas" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button
                   className="pp-cta"

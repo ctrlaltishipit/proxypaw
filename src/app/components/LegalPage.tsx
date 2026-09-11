@@ -91,14 +91,6 @@ export default function LegalPage({ kind, onHomeClick, onBlogClick }: { kind: 't
 
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, textTransform: 'none' }}>
-      <header style={{ maxWidth: 1200, margin: '0 auto', padding: '18px clamp(18px, 3vw, 28px)', display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-          <span style={{ width: 38, height: 38, borderRadius: 13, background: C.orange, display: 'grid', placeItems: 'center' }}>
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
-          </span>
-          <span style={{ fontFamily: heading, fontWeight: 600, fontSize: 21 }}>ProxyPaw</span>
-        </div>
-      </header>
 
       <article style={{ maxWidth: 760, margin: '0 auto', padding: '20px clamp(18px, 3vw, 28px) 60px' }}>
         <div style={{ fontFamily: heading, fontWeight: 600, fontSize: 12.5, letterSpacing: '0.13em', color: C.orange, marginBottom: 12 }}>

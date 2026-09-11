@@ -8,7 +8,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import NextStop from './NextStop';
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, ClipboardList, Cat, ShieldCheck,
   type LucideIcon,
@@ -174,7 +173,7 @@ const SECTIONS: Section[] = [
     Icon: ShieldCheck,
     accent: '#3f6c51',
     title: 'Request a change, no questions asked.',
-    body: 'If a volunteer is not delivering what you asked for, raise a ticket right from the app and we assign the next best verified volunteer immediately. Your current volunteer continues until the new one arrives, so your pet\u2019s care never pauses. And it stays drama-free: volunteers will not ask why, and if anyone ever does, you point them to our team and we handle that conversation.',
+    body: 'Not happy with your volunteer? Switch! Raise a ticket right from the app and we immediately send the next best verified volunteer, with your current one continuing until they arrive, so care never pauses. Keep switching until it feels exactly right: once you are happy, the same trusted person comes for every booking after. Drama-free, always: our team talks to the volunteer, never you.',
     points: [
       'Raise a ticket in two taps, straight from the booking',
       'Replacement assigned immediately, care never pauses',
@@ -260,6 +259,42 @@ interface TourPageProps {
 }
 
 export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPageProps) {
+  // Deck effect: as the next card slides up, the one beneath settles back
+  // slightly, like cards closing into an envelope. Subtle, and disabled for
+  // reduced-motion users.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const wraps = Array.from(document.querySelectorAll<HTMLElement>('.pp-stack-wrap'));
+      for (let i = 0; i < wraps.length; i++) {
+        const inner = wraps[i].querySelector<HTMLElement>('.pp-stack-card');
+        if (!inner) continue;
+        const next = wraps[i + 1];
+        if (!next) { inner.style.transform = ''; inner.style.opacity = ''; continue; }
+        const r = wraps[i].getBoundingClientRect();
+        const n = next.getBoundingClientRect();
+        const span = Math.max(r.height * 0.9, 1);
+        const pRaw = (r.top + span - n.top) / span;
+        const prog = Math.min(1, Math.max(0, pRaw));
+        inner.style.transform = `scale(${1 - prog * 0.055}) translateY(${(-prog * 8).toFixed(1)}px)`;
+        inner.style.transformOrigin = 'top center';
+        inner.style.opacity = String(1 - prog * 0.12);
+        inner.style.willChange = prog > 0 && prog < 1 ? 'transform' : '';
+      }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', textTransform: 'none' }}>
       <style>{`
@@ -270,23 +305,6 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       `}</style>
 
       {/* header */}
-      <header style={{ ...shell, padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-        <div onClick={onHomeClick} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-          <PawMark size={38} radius={13} />
-          <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em' }}>ProxyPaw</span>
-        </div>
-        <button
-          className="pp-dark-btn"
-          onClick={() => onJoin('tour-header')}
-          style={{
-            marginLeft: 'auto', border: 'none', background: C.ink, color: C.cream2,
-            fontFamily: sora, fontWeight: 600, fontSize: 14.5, padding: '12px 22px',
-            borderRadius: 999, cursor: 'pointer', transition: '.25s',
-          }}
-        >
-          Join the waitlist
-        </button>
-      </header>
 
       {/* hero */}
       <section style={{ ...shell, padding: '40px 28px 30px', textAlign: 'center' }}>
@@ -311,6 +329,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             <section
               key={sec.id}
               id={sec.id}
+              className="pp-stack-wrap"
               style={{ position: 'sticky', top: 'clamp(64px, 8vh, 88px)', zIndex: i + 1, padding: '0 clamp(14px, 2.5vw, 28px)', marginBottom: 'clamp(28px, 4vh, 44px)' }}
             >
               <div
@@ -373,11 +392,17 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       <section style={{ ...shell, padding: '90px 28px 100px', textAlign: 'center' }}>
         <Reveal>
           <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(28px, 3.8vw, 48px)', letterSpacing: '-0.01em', margin: '0 0 14px' }}>
-            Your community could be next.
+            Paws crossed, your community could be next!
           </h2>
-          <p style={{ fontSize: 16.5, color: C.muted, margin: '0 0 30px', fontWeight: 400 }}>
-            We open tower by tower. Join the waitlist and you're first in line when yours goes live.
+          <p style={{ fontSize: 16.5, color: C.muted, margin: '0 auto 18px', fontWeight: 400, maxWidth: 560 }}>
+            We open tower by tower, and every wagging tail brings it closer to home. Come, let's
+            build this community together!
           </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#eef0e4', border: '1px solid #dfe4cf', color: '#3f6c51', borderRadius: 999, padding: '9px 18px', fontFamily: sora, fontWeight: 600, fontSize: 13.5, margin: '0 0 26px', maxWidth: '92%' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#3f6c51" aria-hidden="true"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
+            <span style={{ textAlign: 'left' }}>Founding 1,000 perk: a free onboarding session for your pet, plus &#8377;100 off your first booking!</span>
+          </div>
+          <br />
           <button
             className="pp-cta"
             onClick={() => onJoin('tour-closing')}
@@ -393,11 +418,26 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       </section>
 
 
-      <NextStop
-        label="Meet the founder, and the boys"
-        sub="Why ProxyPaw exists, plus Pablo and Leo"
-        onClick={onAboutClick}
-      />
+      {/* founder teaser */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 18px clamp(40px, 5vw, 64px)', textTransform: 'none' }}>
+        <button
+          className="pp-founder-card"
+          onClick={onAboutClick}
+          style={{ display: 'flex', alignItems: 'stretch', gap: 0, background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', maxWidth: 560, overflow: 'hidden' }}
+        >
+          <img src="/founder/pablo-leo-young.jpg" alt="Pablo and Leo, the founder's Persian cats" style={{ width: 150, objectFit: 'cover', objectPosition: 'center', flexShrink: 0 }} />
+          <span style={{ padding: '18px 20px', display: 'block' }}>
+            <span style={{ display: 'block', fontFamily: sora, fontWeight: 600, fontSize: 10.5, letterSpacing: '0.12em', color: C.muted, marginBottom: 4 }}>NEXT STOP</span>
+            <span style={{ display: 'block', fontFamily: sora, fontWeight: 600, fontSize: 17, color: C.ink, marginBottom: 5 }}>Meet the founder, and the boys!</span>
+            <span style={{ display: 'block', fontSize: 13, color: C.muted, lineHeight: 1.55 }}>
+              She built ProxyPaw for her own community and uses it with Pablo and Leo, her two
+              Persian cats. Every volunteer is hand-verified, so your pet is always in safe hands.
+              Sound like your pain point too? <span style={{ color: C.orange, fontWeight: 700 }}>Read her story &rarr;</span>
+            </span>
+          </span>
+        </button>
+      </div>
+      <style>{`.pp-founder-card { transition: transform .25s, box-shadow .25s; } .pp-founder-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(74,52,24,.12); } @media (max-width: 560px) { .pp-founder-card { flex-direction: column; } .pp-founder-card img { width: 100%; height: 140px; } }`}</style>
 
     </div>
   );

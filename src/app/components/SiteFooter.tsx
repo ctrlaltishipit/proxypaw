@@ -23,6 +23,7 @@ const heading = "'Fredoka', system-ui, sans-serif";
 export interface FooterNav {
   /** Scroll to a landing-page section (routes home first if needed). */
   toSection: (id: 'how' | 'services' | 'pricing' | 'blog') => void;
+  toHome: () => void;
   toTour: () => void;
   toBlog: () => void;
   toAbout: () => void;

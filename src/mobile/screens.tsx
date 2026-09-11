@@ -660,9 +660,9 @@ function Switch() {
             <Ic d={paths.shield} size={16} color="#fff" />
           </span>
           <div style={{ fontSize: 11.5, color: C.green, lineHeight: 1.55 }}>
-            <span style={{ fontFamily: F, fontWeight: 600 }}>No questions, no awkwardness.</span> Volunteers
-            stay professional and will not ask why. If anyone ever does, point them to our team and
-            we will have that conversation for you.
+            <span style={{ fontFamily: F, fontWeight: 600 }}>Switch until it feels right.</span> Volunteers
+            stay professional and will not ask why: our team has that conversation for you. Once
+            you are happy, the same volunteer comes for every booking after.
           </div>
         </div>
 
@@ -670,7 +670,7 @@ function Switch() {
           Raise ticket and switch
         </div>
         <div style={{ textAlign: 'center', fontSize: 11, color: C.muted2, marginTop: 9 }}>
-          We start arranging your replacement the moment you tap.
+          Your replacement is arranged immediately, no questions asked.
         </div>
       </div>
     </Phone>

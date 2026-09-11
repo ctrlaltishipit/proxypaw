@@ -18,6 +18,7 @@ import AboutUsPage from './components/AboutUsPage';
 import LegalPage from './components/LegalPage';
 import WaitlistModal from './components/WaitlistModal';
 import SiteFooter, { type FooterNav } from './components/SiteFooter';
+import SiteHeader from './components/SiteHeader';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useSeo } from './lib/seo';
 import { getArticle } from './data/articles';
@@ -122,6 +123,7 @@ export default function App() {
     setWaitlist({ open: true, source, intent });
 
   const footerNav: FooterNav = {
+    toHome: () => navigate('/'),
     toSection: (id) => navigate('/', { state: { scrollTo: id } }),
     toTour: () => navigate('/tour'),
     toBlog: () => navigate('/blog'),
@@ -135,6 +137,7 @@ export default function App() {
     <ThemeProvider>
       <div className="min-h-screen">
         <ScrollManager />
+        {!isAdmin && <SiteHeader nav={footerNav} />}
         <Routes>
           <Route path="/" element={<Home onJoin={openWaitlist} />} />
           <Route path="/about" element={<About onJoin={openWaitlist} />} />
