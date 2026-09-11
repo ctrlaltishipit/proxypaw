@@ -532,7 +532,7 @@ function Payment() {
           Pay with a card or with UPI, before or after the service. Pay before using these two online methods, or pay after the service using UPI or cash.
         </div>
         <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, textAlign: 'center', background: C.orange, color: '#fff', borderRadius: 99, padding: '15px 0', boxShadow: '0 10px 24px rgba(224,102,47,.3)' }}>
-          I've paid · Confirm booking
+          Confirm booking
         </div>
       </div>
     </Phone>
