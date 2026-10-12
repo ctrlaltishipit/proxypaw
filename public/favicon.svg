@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="ProxyPaw">
+  <title>ProxyPaw</title>
+  <defs>
+    <mask id="proxypaw-icon-light-door" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <rect width="256" height="256" fill="#FFFFFF"/>
+      <path d="M116 206V184a12 12 0 0 1 24 0V206Z" fill="#000000"/>
+    </mask>
+  </defs>
+  <rect width="256" height="256" rx="85.33" fill="#E0662F"/>
+  <g transform="translate(128 128) scale(0.98) translate(-128 -129)" fill="#FFFFFF">
+    <ellipse cx="74" cy="104" rx="17" ry="22" transform="rotate(-24 74 104)"/>
+    <ellipse cx="107" cy="76" rx="17" ry="23" transform="rotate(-8 107 76)"/>
+    <ellipse cx="149" cy="76" rx="17" ry="23" transform="rotate(8 149 76)"/>
+    <ellipse cx="182" cy="104" rx="17" ry="22" transform="rotate(24 182 104)"/>
+    <path d="M128 122L178 156V194H78V156Z" stroke="#FFFFFF" stroke-width="22" stroke-linejoin="round" mask="url(#proxypaw-icon-light-door)"/>
+  </g>
+</svg>

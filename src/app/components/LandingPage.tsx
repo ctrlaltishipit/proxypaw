@@ -14,6 +14,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import NextStop from './NextStop';
+import { BrandIcon } from './BrandLogo';
 import type { CSSProperties, ReactNode } from 'react';
 
 const IMAGES = {
@@ -131,14 +132,6 @@ function PawSvg({ size = 24, color = '#fff', style }: { size?: number; color?: s
       <ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" />
       <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
     </svg>
-  );
-}
-
-function PawMark({ size, radius }: { size: number; radius: number }) {
-  return (
-    <span className="pp-logo" style={{ width: size, height: size, borderRadius: radius, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-      <PawSvg size={size * 0.5} />
-    </span>
   );
 }
 
@@ -554,7 +547,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
             {[
               {
-                bg: C.orange, icon: <PawSvg size={19} color="#fff" />,
+                tile: <BrandIcon size={38} alt="" />,
                 t: 'Born in Hyderabad',
                 d: 'Built in Gachibowli for IT-corridor life, by people who live it.',
               },
@@ -575,7 +568,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               },
             ].map((f) => (
               <div key={f.t} style={{ display: 'flex', gap: 13, alignItems: 'flex-start', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: '16px 18px' }}>
-                <span style={{ width: 38, height: 38, borderRadius: 12, background: f.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{f.icon}</span>
+                {f.tile ?? <span style={{ width: 38, height: 38, borderRadius: 12, background: f.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{f.icon}</span>}
                 <div>
                   <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 15.5, marginBottom: 3 }}>{f.t}</div>
                   <div style={{ fontSize: 13.5, lineHeight: 1.55, color: C.muted, fontWeight: 400 }}>{f.d}</div>
@@ -639,9 +632,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </div>
           <Reveal delay={140}>
             <div style={{ marginTop: GRID_GAP, background: C.band, border: `1px solid ${C.bandBorder}`, borderRadius: 24, padding: 'clamp(22px, 3vw, 32px)', display: 'flex', gap: 'clamp(16px, 2.5vw, 28px)', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ width: 54, height: 54, borderRadius: 18, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                <PawSvg size={26} color="#fff" />
-              </span>
+              <BrandIcon size={54} alt="" />
               <div style={{ flex: '1 1 340px', textTransform: 'none' }}>
                 <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.ink, margin: '0 0 6px', fontWeight: 400 }}>
                   &ldquo;I have two cats I am hopelessly in love with, and leaving them even for a weekend was
@@ -754,9 +745,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
 
               {/* bucket 1: walks & home visits */}
               <div style={bucketHead}>
-                <span style={{ width: 26, height: 26, borderRadius: 9, background: C.orange, display: 'grid', placeItems: 'center' }}>
-                  <PawSvg size={13} />
-                </span>
+                <BrandIcon size={26} alt="" />
                 Walks &amp; home visits
                 <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
               </div>

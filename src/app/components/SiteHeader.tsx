@@ -3,9 +3,10 @@
  *
  * Logo left, nav centre-aligned, waitlist CTA right. Sticky, so the header
  * stays alive on every page including Inside the app. On mobile the middle
- * nav collapses to icons with tiny labels.
+ * nav collapses to icons with tiny labels and the logo to its tile.
  */
 import type { FooterNav } from './SiteFooter';
+import BrandLogo, { BrandIcon } from './BrandLogo';
 
 const C = {
   cream: '#f6f1e7', ink: '#2a2118', orange: '#e0662f', cream2: '#fdf9f0',
@@ -50,11 +51,13 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
         .pph-item svg { flex-shrink: 0; }
         .pph-cta:hover { transform: translateY(-1px); }
         .pph-cta-short { display: none; }
+        .pph-brandicon { display: none; }
         @media (max-width: 900px) {
           .pph-item { flex-direction: column; gap: 2px; padding: 5px 4px; }
           .pph-item svg { width: 16px; height: 16px; }
           .pph-item span { font-size: 8.5px !important; }
           .pph-brandname { display: none; }
+          .pph-brandicon { display: block; }
           .pph-cta { font-size: 12.5px !important; padding: 9px 13px !important; }
           .pph-cta-full { display: none; }
           .pph-cta-short { display: inline; }
@@ -63,11 +66,9 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
         }
       `}</style>
       <div className="pph-grid">
-        <div onClick={nav.toHome} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', justifySelf: 'start' }} role="link" aria-label="ProxyPaw home">
-          <span style={{ width: 36, height: 36, borderRadius: 12, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
-          </span>
-          <span className="pph-brandname" style={{ fontFamily: sora, fontWeight: 600, fontSize: 20, color: C.ink, letterSpacing: '-0.008em' }}>ProxyPaw</span>
+        <div onClick={nav.toHome} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', justifySelf: 'start' }} role="link" aria-label="ProxyPaw home">
+          <BrandLogo tile={36} className="pph-brandname" />
+          <BrandIcon size={36} className="pph-brandicon" />
         </div>
 
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }} aria-label="Main">

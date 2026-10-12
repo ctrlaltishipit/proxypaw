@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Check, Loader2 } from 'lucide-react';
 import { COMMUNITIES } from '../data/communities';
+import BrandLogo from './BrandLogo';
 
 const C = {
   cream: '#f6f1e7',
@@ -341,15 +342,8 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
 
         {/* ---- right: form ---- */}
         <div className="pp-modal-form" style={{ padding: 'clamp(28px, 4vw, 44px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 26 }}>
-            <span style={{ width: 38, height: 38, borderRadius: 13, background: C.orange, display: 'grid', placeItems: 'center' }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff">
-                <ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" />
-                <ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" />
-                <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
-              </svg>
-            </span>
-            <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 21, letterSpacing: '-0.008em', color: C.ink }}>ProxyPaw</span>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 26 }}>
+            <BrandLogo tile={38} />
           </div>
 
           {done ? (

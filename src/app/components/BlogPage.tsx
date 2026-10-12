@@ -31,20 +31,6 @@ const C = {
 const sora = "'Fredoka', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
 
-function PawMark({ size, radius }: { size: number; radius: number }) {
-  return (
-    <span style={{ width: size, height: size, borderRadius: radius, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-      <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="#fff">
-        <ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" />
-        <ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" />
-        <ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" />
-        <ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" />
-        <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
-      </svg>
-    </span>
-  );
-}
-
 interface BlogPageProps {
   onHomeClick: () => void;
   onGetStarted: () => void;

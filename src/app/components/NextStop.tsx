@@ -3,6 +3,7 @@
  * just above the main footer. One per page, pointing to the next stop on
  * the reading journey: home -> tour -> about -> blog.
  */
+import { BrandIcon } from './BrandLogo';
 
 const C = {
   card: '#fffdf8', border: '#eee3cf', ink: '#2a2118',
@@ -34,9 +35,7 @@ export default function NextStop({ eyebrow = 'NEXT STOP', label, sub, onClick }:
           cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', maxWidth: 420,
         }}
       >
-        <span className="pp-nextstop-paw" style={{ width: 36, height: 36, borderRadius: 12, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
-        </span>
+        <BrandIcon size={36} alt="" className="pp-nextstop-paw" />
         <span>
           <span style={{ display: 'block', fontFamily: heading, fontWeight: 600, fontSize: 10.5, letterSpacing: '0.12em', color: C.muted2, marginBottom: 2 }}>{eyebrow}</span>
           <span style={{ display: 'block', fontFamily: heading, fontWeight: 600, fontSize: 15.5, color: C.ink }}>{label}</span>

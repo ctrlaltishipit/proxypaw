@@ -116,7 +116,7 @@ function welcomeEmail(name: string, community: string, role: string): { subject:
 <tr><td align="center" style="padding:40px 20px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background:#fffdf8;border:1px solid #eee3cf;border-radius:16px;">
 <tr><td style="padding:40px 36px;font-family:-apple-system, BlinkMacSystemFont,'Segoe UI', Helvetica, Arial, sans-serif;color:#2a2118;">
-<div style="width:52px;height:52px;border-radius:16px;background:#e0662f;text-align:center;line-height:52px;font-size:26px;margin:0 0 24px;">&#128062;</div>
+<img src="https://www.proxypaw.com/brand/proxypaw-icon-light.png" width="52" height="52" alt="ProxyPaw" style="display:block;width:52px;height:52px;border:0;margin:0 0 24px;background:#e0662f;border-radius:17px;color:#ffffff;font-size:11px;line-height:52px;text-align:center;">
 <h1 style="margin:0 0 20px;font-size:25px;line-height:1.25;font-weight:700;color:#2a2118;">You're on the list.</h1>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">Hi ${who},</p>
 <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#4a3f33;">${walker

@@ -48,14 +48,6 @@ function PawSvg({ size = 24, color = '#fff', style }: { size?: number; color?: s
   );
 }
 
-function PawMark({ size, radius }: { size: number; radius: number }) {
-  return (
-    <span style={{ width: size, height: size, borderRadius: radius, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-      <PawSvg size={size * 0.5} />
-    </span>
-  );
-}
-
 function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);

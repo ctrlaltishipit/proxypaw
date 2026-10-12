@@ -30,10 +30,13 @@ src/app/App.tsx              screen switcher (all routing is one useState)
 src/app/components/
   LandingPage.tsx            marketing home — built from the Claude Design artifact
   BlogPage.tsx               The Paw Journal index
+  BrandLogo.tsx              the logo, shown from the files in public/brand/
   Dashboard, BookingPage, PaymentScreen, VolunteerList, ...
   ui/                        shadcn/ui primitives
 src/app/supabase/functions/  Deno edge function source (deployed separately)
 src/styles/globals.css       design tokens — the palette lives here
+public/brand/                logo files; favicon.svg, favicon.ico, favicon-96.png and
+                             apple-touch-icon.png in public/ are made from them
 design/ProxyPaw.dc.html      source design artifact
 ```
 
