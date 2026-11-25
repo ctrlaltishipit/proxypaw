@@ -1,907 +1,635 @@
 /**
- * Landing page, built from the "Proxy Paw UI redesign" Claude Design artifact,
- * with a motion-and-rhythm pass on top:
- *  - one consistent spacing scale (SECTION_PAD / uniform GRID_GAP)
- *  - pricing split into two buckets: walks & home visits, Overnight boarding
- *  - scroll reveals: cards pop in with stagger (IO-based, disabled under
- *    prefers-reduced-motion)
- *  - decorative SVG layer: drifting paw prints, soft colour blobs, a walking
- *    paw-trail divider between sections
- *  - real mobile breakpoints (nav, hero chips, pricing grids, full-width CTAs)
+ * ProxyPaw landing page, "Garden Community" redesign (see DESIGN.md).
  *
- * Photos are stand-ins (the artifact's originals were blob: URLs), swap in
- * IMAGES below.
+ * Story order: hero (towers rising, a dog on the lawn) → the communities it is
+ * built for → why it exists (founder's cats) → life in the community (photoreal
+ * scenes) → how it works → try a walk (interactive demo ending in a receipt) →
+ * services → pricing with "where your money goes" → founding perks and the
+ * volunteer path → journal → FAQ → close.
+ *
+ * Photos in /public/real are generated photoreal scenes of Hyderabad gated
+ * communities (realistic-visuals skill); they are illustrative, never presented
+ * as real customers. Sample names only appear inside the walk demo, labelled.
  */
-import { useEffect, useRef, useState } from 'react';
-import NextStop from './NextStop';
-import { BrandIcon } from './BrandLogo';
+import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import CommunityScene from './landing/CommunityScene';
+import WalkSimulator from './landing/WalkSimulator';
+import {
+  T, head, shell, SECTION, GAP, eyebrow, h2, lead, btnPrimary, btnSecondary, card,
+  Reveal, RotatingWords, GLOBAL_CSS,
+} from './landing/ui';
 
-const IMAGES = {
-  heroDog: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=1000&q=80&auto=format&fit=crop',
-  heroCat: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=400&q=80&auto=format&fit=crop',
-  catChip: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=120&q=80&auto=format&fit=crop',
-  walker: 'https://i.pravatar.cc/80?img=47',
-  walks: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1000&q=80&auto=format&fit=crop',
-  boarding: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=1000&q=80&auto=format&fit=crop',
-  ctaPuppy: 'https://images.unsplash.com/photo-1591160690555-5debfba289f0?w=240&q=80&auto=format&fit=crop',
-};
-
-const C = {
-  cream: '#f6f1e7',
-  ink: '#2a2118',
-  orange: '#e0662f',
-  orangeDark: '#c24e1d',
-  card: '#fffdf8',
-  cardBorder: '#eee3cf',
-  muted: '#8b7a63',
-  muted2: '#a08e73',
-  sub: '#6f5f4b',
-  green: '#3f6c51',
-  greenPale: '#eef0e4',
-  greenBorder: '#d9dec4',
-  greenText: '#5a6b3f',
-  dotGreen: '#7a9a4e',
-  gold: '#f0b429',
-  star: '#c9a227',
-  band: '#f1eadb',
-  bandBorder: '#e9ddc8',
-  btnBorder: '#d9cbb2',
-  peach: '#f9e7da',
-  cream2: '#fdf9f0',
-  darkSub: '#c9b799',
-};
-
-const sora = "'Fredoka', system-ui, sans-serif";
-const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
-
-/** One vertical rhythm for every section, the fix for uneven spacing. */
-const SECTION_PAD = 'clamp(52px, 7vw, 88px)';
-const SIDE_PAD = 'clamp(18px, 3vw, 28px)';
-const GRID_GAP = 'clamp(14px, 1.8vw, 20px)';
+type JoinFn = (source: string, intent?: 'owner' | 'walker') => void;
 
 const COMMUNITIES = [
-  'My Home Bhooja', 'My Home Vihanga', 'My Home Avatar', 'My Home Abhra',
-  'My Home Ankura', 'My Home Tarkshya', 'My Home Krishe', 'My Home Nishada',
-  'My Home Sayuk', 'My Home Vipina', 'Aparna Sarovar Zenith',
-  'Aparna Cyber Life', 'Aparna CyberZon', 'Aparna Luxor Park',
+  'Prestige High Fields', 'Rajapushpa Provincia', 'My Home Bhooja', 'My Home Avatar', 'My Home Vihanga',
+  'Aparna Sarovar Zenith', 'Aparna Cyber Life', 'My Home Abhra', 'My Home Tarkshya', 'Aparna Luxor Park',
+  'My Home Ankura', 'Aparna CyberZon',
 ];
 
-const STEPS = [
-  {
-    n: '1',
-    title: 'Meet your neighbours',
-    body: 'Pick your community and see its towers, the pets who live in them, and the verified neighbours who can care for them. Every profile is Aadhaar-checked and community-rated.',
-  },
-  {
-    n: '2',
-    title: 'Book in 30 seconds',
-    body: 'Pick a day, a time and a duration. Pay by UPI or card. Your first booking always starts with an in-person meet-and-greet at your door.',
-  },
-  {
-    n: '3',
-    title: 'Watch the tail wag (or the slow blink)',
-    body: 'Live GPS on every walk, photo updates from every visit and sleepover, and paw points on every booking.',
-  },
-];
-
-/** Pricing, split into the two service buckets. */
 const WALK_TIERS = [
-  { label: '30 min walk', price: '₹149', note: 'Perfect first trial', featured: false },
-  { label: '1 hour walk', price: '₹249', note: 'Most popular', featured: true },
-  { label: '1.5 hour walk', price: '₹349', note: 'For the zoomies', featured: false },
-  { label: '2 hour walk', price: '₹449', note: 'Weekend best value', featured: false },
-  { label: 'Cat home visit', price: '₹129', note: 'Feed, play, litter', featured: false },
+  { label: '30 min walk', price: 149, min: 30, note: 'A first trial' },
+  { label: '1 hour walk', price: 249, min: 60, note: 'Most popular', featured: true },
+  { label: '1.5 hour walk', price: 349, min: 90, note: 'For the zoomies' },
+  { label: '2 hour walk', price: 449, min: 120, note: 'Weekend long walk' },
 ];
-
-const BOARDING_TIERS = [
-  { label: 'Dog boarding', price: '₹549', per: '/ night', note: 'Sleepover at a vetted host', featured: true },
-  { label: 'Cat boarding', price: '₹449', per: '/ night', note: 'Quiet homes, daily photos', featured: false },
-  { label: 'Extended stay', price: '₹499', per: '/ night', note: '5+ nights, dogs & cats', featured: false },
+const VISIT_TIERS = [
+  { label: 'Cat home visit', price: 129, per: '', note: 'Feed, play, litter, photos' },
+  { label: 'Dog boarding', price: 549, per: '/ night', note: 'Sleepover at a vetted host', featured: true },
+  { label: 'Cat boarding', price: 449, per: '/ night', note: 'Quiet homes, daily photos' },
+  { label: 'Extended stay', price: 499, per: '/ night', note: '5+ nights, dogs and cats' },
+];
+const PASSES = [
+  { label: 'Day pass', price: 349, body: 'One 1-hour walk plus one home visit, same day', save: 'Save ₹29 vs booking singly' },
+  { label: 'Week pass', price: 1499, body: 'A 1-hour walk every day for 7 days', save: 'About 14% off single walks' },
+  { label: 'Month pass', price: 4999, body: '26 one-hour walks, priority booking, weekly photo report', save: 'About 23% off single walks', featured: true },
+  { label: 'Cat month pass', price: 2999, body: 'A daily visit for 26 days: feed, play, litter, photo', save: 'About 11% off single visits' },
 ];
 
 const POSTS = [
-  {
-    tag: 'grooming',
-    img: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=900&q=80&auto=format&fit=crop',
-    title: 'The apartment grooming guide for dogs & cats',
-    body: 'Brushing beats bathing, monsoon coat care, and the nail-click rule every flat-dweller should know.',
-  },
-  {
-    tag: 'cats',
-    img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=900&q=80&auto=format&fit=crop',
-    title: 'The indoor cat’s guide to a bigger life',
-    body: 'Vertical territory, window theatre and scent games that turn a flat into a kingdom.',
-  },
-  {
-    tag: 'walking',
-    img: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=900&q=80&auto=format&fit=crop',
-    title: 'Walking do’s and don’ts in a gated community',
-    body: 'Short leads in lobbies, the 7-second pavement test, and why sniffing beats marching.',
-  },
+  { tag: 'Grooming', img: '/real/grooming.jpg', pos: '60% 35%', title: 'The apartment grooming guide for dogs and cats', body: 'Brushing beats bathing, monsoon coat care, and the nail-click rule every flat-dweller should know.' },
+  { tag: 'Cats', img: '/real/cat-window.jpg', pos: '35% 45%', title: 'The indoor cat’s guide to a bigger life', body: 'Vertical territory, window theatre and scent games that turn a flat into a kingdom.' },
+  { tag: 'Walking', img: '/real/walking-guide.jpg', pos: '45% 40%', title: 'Walking do’s and don’ts in a gated community', body: 'Short leads in lobbies, the 7-second pavement test, and why sniffing beats marching.' },
 ];
 
-/* ----------------------------- SVG bits ----------------------------- */
+const FAQS = [
+  { q: 'Who exactly will care for my pet?', a: 'A neighbour from your own gated community who loves animals and has passed every ProxyPaw check. You see their profile, meet them at your door first, and keep the same person for every walk, meal and stay.' },
+  { q: 'How are volunteers checked?', a: 'Aadhaar verification, a one-on-one interview, pet-care and safety training, and an in-person meet-and-greet with you and your pet before the first booking. Community ratings keep it honest after that.' },
+  { q: 'What do I see during a walk or visit?', a: 'Live GPS on every walk, photo updates during walks, visits and sleepovers, and a short report at the end. You can try it above with Biscuit.' },
+  { q: 'Why does a 1-hour walk cost ₹249?', a: 'Because 70% of it, about ₹174, goes to your neighbour for a full hour of their time. The rest pays for verification, insurance, GPS tracking and support. Care passes bring the price down further.' },
+  { q: 'Do you care for cats too?', a: 'Yes. Cat home visits (feeding, fresh water, litter, play and photos) from ₹129, and quiet-home cat boarding from ₹449 a night.' },
+  { q: 'When can I book in my community?', a: 'ProxyPaw is opening one community at a time. Join the waitlist with your community’s name, and we will tell you the day booking opens for you.' },
+];
 
-function PawSvg({ size = 24, color = '#fff', style }: { size?: number; color?: string; style?: CSSProperties }) {
+const SHARE_URL = 'https://wa.me/?text=' + encodeURIComponent(
+  'Found this for our community: ProxyPaw, verified neighbours for dog walks, cat visits and boarding. Join the waitlist so they open here: https://www.proxypaw.com',
+);
+
+/* ------------------------------- small parts ------------------------------ */
+
+function Paw({ size = 16, color = '#fff' }: { size?: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={style} aria-hidden="true">
-      <ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" />
-      <ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" />
-      <ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" />
-      <ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" />
-      <path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" />
+      <ellipse cx="4.6" cy="12" rx="1.9" ry="2.5" /><ellipse cx="19.4" cy="12" rx="1.9" ry="2.5" />
+      <path d="M12 11.5c-2.9 0-5.6 2.6-5.6 5.2 0 1.8 1.4 2.9 3 2.9 1 0 1.7-.4 2.6-.4s1.6.4 2.6.4c1.6 0 3-1.1 3-2.9 0-2.6-2.7-5.2-5.6-5.2z" />
     </svg>
   );
 }
 
-/** Hand-drawn squiggle underline for the hero accent, drawn in on load. */
-function Squiggle() {
+function Arrow({ color = 'currentColor' }: { color?: string }) {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
+}
+
+function Section({ id, children, style, band }: { id?: string; children: ReactNode; style?: CSSProperties; band?: boolean }) {
   return (
-    <svg viewBox="0 0 220 14" aria-hidden="true" style={{ display: 'block', width: 'min(220px, 52vw)', marginTop: 6 }}>
-      <path
-        d="M3 9 C 30 3, 55 12, 82 7 S 135 3, 162 8 S 200 11, 217 6"
-        fill="none" stroke={C.orange} strokeWidth="4" strokeLinecap="round" opacity=".85"
-        style={{ strokeDasharray: 300, strokeDashoffset: 300, animation: 'pp-draw 1.1s .45s ease forwards' }}
-      />
-    </svg>
+    <section id={id} style={{ padding: `${SECTION} 0`, background: band ? T.band : undefined, scrollMarginTop: 80, ...style }}>
+      <div style={shell}>{children}</div>
+    </section>
   );
 }
 
-/** A trail of paw prints padding across the page between sections. */
-function PawTrail() {
+function Heading({ kicker, title, sub, center, action }: { kicker: string; title: ReactNode; sub?: ReactNode; center?: boolean; action?: ReactNode }) {
   return (
-    <div aria-hidden="true" style={{ display: 'flex', justifyContent: 'center', gap: 26, padding: '6px 0' }}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <span key={i} className="pp-trail-paw" style={{ animationDelay: `${i * 0.18}s`, ['--r' as string]: `${i % 2 ? 14 : -14}deg` }}>
-          <PawSvg size={15} color={C.muted2} style={{ opacity: 0.55 }} />
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/** Soft colour blobs + drifting paws behind the hero. Pure decoration. */
-function HeroDecor() {
-  return (
-    <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <div style={{ position: 'absolute', top: -140, right: -120, width: 460, height: 460, borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,102,47,.10), transparent 65%)' }} />
-      <div style={{ position: 'absolute', bottom: -180, left: -140, width: 520, height: 520, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,108,81,.09), transparent 65%)' }} />
-      {[
-        { top: '12%', left: '4%', size: 26, rot: -18, dur: 9 },
-        { top: '64%', left: '9%', size: 18, rot: 22, dur: 11 },
-        { top: '26%', left: '46%', size: 20, rot: 8, dur: 10 },
-        { top: '80%', left: '55%', size: 24, rot: -10, dur: 12 },
-      ].map((p, i) => (
-        <span key={i} style={{ position: 'absolute', top: p.top, left: p.left, transform: `rotate(${p.rot}deg)`, animation: `pp-floaty ${p.dur}s ease-in-out ${i * 0.7}s infinite` }}>
-          <PawSvg size={p.size} color={C.orange} style={{ opacity: 0.08 }} />
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/** Little line doodles that live behind the page and drift as you scroll. */
-function Doodle({ kind, size = 26, color = '#e0662f' }: { kind: 'bone' | 'fish' | 'yarn' | 'heart'; size?: number; color?: string }) {
-  const paths: Record<string, ReactNode> = {
-    bone: <path d="M7 10c-1.7 0-3-1.3-3-3s1.3-3 3-3c.8 0 1.5.3 2 .8L9.8 4A3 3 0 0 1 12 3a3 3 0 0 1 2.2 1l.8.8c.5-.5 1.2-.8 2-.8 1.7 0 3 1.3 3 3s-1.3 3-3 3c0 1.7-1.3 3-3 3-.8 0-1.5-.3-2-.8l-.8.8c.5.5.8 1.2.8 2 0 1.7-1.3 3-3 3s-3-1.3-3-3c-1.7 0-3-1.3-3-3s1.3-3 3-3z" transform="rotate(30 12 12)" fill="none" stroke={color} strokeWidth="1.6" />,
-    fish: <g fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round"><path d="M3 12c3-4 7-6 11-4 2 1 3.4 2.4 4 4-.6 1.6-2 3-4 4-4 2-8 0-11-4z" /><path d="M18 8l3-3M18 16l3 3" /><circle cx="8" cy="11" r=".8" fill={color} /></g>,
-    yarn: <g fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M5 8c4 1 8 1 12-1M4.5 12.5c4.5 1.5 9 1 13-1.5M6.5 16.5c3.5 1 7 .5 10-1.5M17 16l4 5" /></g>,
-    heart: <path d="M12 20l-7-7a4.5 4.5 0 0 1 6.4-6.4l.6.6.6-.6A4.5 4.5 0 0 1 19 13l-7 7z" fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">{paths[kind]}</svg>;
-}
-
-/** Fixed backdrop: soft blobs plus doodles that parallax against the scroll,
- *  so something is always gently moving from the top of the page to the end. */
-function Ambient() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        ref.current?.style.setProperty('--scroll', String(window.scrollY));
-      });
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
-  }, []);
-  const items: Array<{ kind: 'bone' | 'fish' | 'yarn' | 'heart'; top: string; left: string; speed: number; size: number; color: string; rot: number }> = [
-    { kind: 'bone',  top: '16%', left: '5%',  speed: 0.06,  size: 30, color: C.orange, rot: -14 },
-    { kind: 'fish',  top: '26%', left: '92%', speed: -0.05, size: 28, color: C.green,  rot: 10 },
-    { kind: 'yarn',  top: '44%', left: '3%',  speed: 0.09,  size: 26, color: C.gold,   rot: 0 },
-    { kind: 'heart', top: '58%', left: '94%', speed: -0.075, size: 24, color: C.orange, rot: 12 },
-    { kind: 'fish',  top: '72%', left: '6%',  speed: 0.055, size: 26, color: C.orange, rot: -8 },
-    { kind: 'bone',  top: '86%', left: '91%', speed: -0.06, size: 28, color: C.green,  rot: 18 },
-  ];
-  return (
-    <div ref={ref} aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
-      {items.map((d, i) => (
-        <span
-          key={i}
-          style={{
-            position: 'absolute', top: d.top, left: d.left, opacity: 0.22,
-            transform: `translateY(calc(var(--scroll, 0) * ${d.speed} * 1px)) rotate(${d.rot}deg)`,
-            animation: `pp-floaty ${8 + i}s ease-in-out ${i * 0.6}s infinite`,
-            willChange: 'transform',
-          }}
-        >
-          <Doodle kind={d.kind} size={d.size} color={d.color} />
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/* --------------------------- scroll reveal --------------------------- */
-
-function Reveal({ children, delay = 0, style }: { children: ReactNode; delay?: number; style?: CSSProperties }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setShown(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -30px 0px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        ...style,
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'none' : 'translateY(26px) scale(.975)',
-        transition: `opacity .65s cubic-bezier(.16,1,.3,1) ${delay}ms, transform .65s cubic-bezier(.16,1,.3,1) ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* --------------------------- pricing card --------------------------- */
-
-interface Tier {
-  label: string;
-  price: string;
-  per?: string;
-  note: string;
-  featured: boolean;
-}
-
-function TierCard({ t }: { t: Tier }) {
-  return (
-    <div
-      className="pp-tier"
-      style={{
-        background: t.featured ? C.gold : 'rgba(253,249,240,.06)',
-        border: `1px solid ${t.featured ? C.gold : 'rgba(253,249,240,.14)'}`,
-        borderRadius: 16, padding: '14px 14px', height: '100%', boxSizing: 'border-box',
-        position: 'relative',
-      }}
-    >
-      {t.featured && (
-        <span style={{ position: 'absolute', top: -10, right: 10, background: C.ink, color: C.gold, fontFamily: sora, fontWeight: 600, fontSize: 10, letterSpacing: '.06em', padding: '4px 10px', borderRadius: 999 }}>
-          &#9733; POPULAR
-        </span>
-      )}
-      <div style={{ fontSize: 12.5, color: t.featured ? 'rgba(42,33,24,.7)' : C.darkSub, marginBottom: 7 }}>{t.label}</div>
-      <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(22px, 2vw, 26px)', letterSpacing: '-0.008em', color: t.featured ? C.ink : C.cream2 }}>
-        {t.price}
-        {t.per && <span style={{ fontSize: 12.5, fontWeight: 500, color: t.featured ? 'rgba(42,33,24,.65)' : C.darkSub, marginLeft: 3 }}>{t.per}</span>}
+    <Reveal style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 'clamp(30px, 4vw, 52px)', textAlign: center ? 'center' : undefined }}>
+      <div style={{ maxWidth: center ? 760 : 680, margin: center ? '0 auto' : undefined }}>
+        <div style={eyebrow}>{kicker}</div>
+        <h2 style={h2}>{title}</h2>
+        {sub && <p style={{ ...lead, marginTop: 16 }}>{sub}</p>}
       </div>
-      <div style={{ fontSize: 12, color: t.featured ? 'rgba(42,33,24,.7)' : C.darkSub, marginTop: 6, lineHeight: 1.4 }}>{t.note}</div>
+      {action}
+    </Reveal>
+  );
+}
+
+/** Small custom illustrations for the three steps. */
+function StepArt({ kind }: { kind: 'meet' | 'book' | 'watch' }) {
+  if (kind === 'meet') return (
+    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
+      <rect width="220" height="120" rx="18" fill={T.leafPale} />
+      {[30, 70, 150, 190].map((x, i) => <rect key={x} x={x - 14} y={30 + (i % 2) * 8} width="28" height={70 - (i % 2) * 8} rx="5" fill="#f6f2ea" stroke="#e2dccf" />)}
+      <circle cx="110" cy="70" r="30" fill="#ffffff" />
+      <circle cx="98" cy="64" r="9" fill="#8d5a3b" /><rect x="90" y="74" width="16" height="16" rx="6" fill={T.leafBright} />
+      <circle cx="122" cy="64" r="9" fill="#6b4630" /><rect x="114" y="74" width="16" height="16" rx="6" fill={T.marigold} />
+      <path d="M104 60 q6 -8 12 0" stroke={T.marigold} strokeWidth="2.5" fill="none" />
+      <circle cx="160" cy="26" r="11" fill={T.leaf} /><path d="M155 26l4 4 7-8" stroke="#fff" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+  if (kind === 'book') return (
+    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
+      <rect width="220" height="120" rx="18" fill={T.sunPale} />
+      <rect x="70" y="14" width="80" height="106" rx="14" fill="#ffffff" stroke="#e1ecdc" />
+      <rect x="80" y="28" width="60" height="8" rx="4" fill={T.line} />
+      {[0, 1, 2].map((r) => [0, 1, 2, 3].map((c) => (
+        <rect key={`${r}${c}`} x={80 + c * 15} y={44 + r * 14} width="11" height="10" rx="3" fill={r === 1 && c === 2 ? T.marigold : T.leafPale} />
+      )))}
+      <rect x="80" y="92" width="60" height="16" rx="8" fill={T.marigold} />
+      <text x="110" y="103.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff" fontFamily="Inter, sans-serif">Confirm · ₹249</text>
+    </svg>
+  );
+  return (
+    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
+      <rect width="220" height="120" rx="18" fill="#e2f3f8" />
+      <path d="M24 90 C 60 40 100 100 130 60 S 190 40 200 30" stroke="#efe3c6" strokeWidth="12" fill="none" strokeLinecap="round" />
+      <path d="M24 90 C 60 40 100 100 130 60" stroke={T.marigold} strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray="200" className="pp-draw" />
+      <circle cx="130" cy="60" r="9" fill={T.marigold} stroke="#fff" strokeWidth="3" />
+      <rect x="146" y="70" width="58" height="36" rx="8" fill="#ffffff" />
+      <rect x="152" y="76" width="20" height="24" rx="4" fill="#9fd67f" />
+      <rect x="176" y="80" width="22" height="5" rx="2.5" fill={T.line} /><rect x="176" y="90" width="16" height="5" rx="2.5" fill={T.line} />
+    </svg>
+  );
+}
+
+/** Pricing: pick an item, see where the money goes and what the time buys. */
+function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
+  const [tab, setTab] = useState<'walks' | 'visits' | 'passes'>('walks');
+  const [pick, setPick] = useState(1);
+  const [vpick, setVpick] = useState(0);
+
+  const sel = tab === 'walks' ? WALK_TIERS[pick] : tab === 'visits' ? VISIT_TIERS[vpick] : null;
+  const price = sel?.price ?? 0;
+  const yours = Math.round(price * 0.7);
+
+  const timeline = useMemo(() => {
+    if (tab === 'walks') {
+      const m = WALK_TIERS[pick].min;
+      return [
+        { k: 'Pick-up, harness and leash check', m: 5, c: T.sun },
+        { k: `The walk: about ${((m - 12) / 60 * 3.4).toFixed(1)} km, sniff stops included`, m: m - 12, c: T.leafBright },
+        { k: 'Water break and paw wipe', m: 4, c: '#9ed6ea' },
+        { k: 'Photos and your GPS report', m: 3, c: T.marigold },
+      ];
+    }
+    if (vpick === 0) return [
+      { k: 'Fresh food and water', m: 8, c: T.sun },
+      { k: 'Litter scooped', m: 5, c: '#9ed6ea' },
+      { k: 'Play and cuddles', m: 14, c: T.leafBright },
+      { k: 'Photos, windows and lock check', m: 3, c: T.marigold },
+    ];
+    return [
+      { k: 'Evening walk or play', m: 3, c: T.leafBright },
+      { k: 'Dinner, as you noted', m: 2, c: T.sun },
+      { k: 'A night in a quiet home', m: 14, c: '#9ed6ea' },
+      { k: 'Morning walk, breakfast and photos', m: 5, c: T.marigold },
+    ];
+  }, [tab, pick, vpick]);
+  const tlTotal = timeline.reduce((a, b) => a + b.m, 0);
+
+  const tabBtn = (id: typeof tab, label: string) => (
+    <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="pp-tab"
+      style={{ border: 'none', cursor: 'pointer', fontFamily: head, fontWeight: 700, fontSize: 15, padding: '11px 18px', borderRadius: 999, minHeight: 44, background: tab === id ? T.ink : 'transparent', color: tab === id ? '#fff' : T.sub }}>
+      {label}
+    </button>
+  );
+
+  return (
+    <div>
+      <div role="tablist" aria-label="Price list" style={{ display: 'inline-flex', background: T.surface, border: `1px solid ${T.line}`, borderRadius: 999, padding: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+        {tabBtn('walks', 'Dog walks')}{tabBtn('visits', 'Visits and boarding')}{tabBtn('passes', 'Care passes')}
+      </div>
+
+      {tab !== 'passes' ? (
+        <div className="pp-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.1fr)', gap: GAP }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 10, alignContent: 'start' }}>
+            {(tab === 'walks' ? WALK_TIERS : VISIT_TIERS).map((t, i) => {
+              const on = tab === 'walks' ? pick === i : vpick === i;
+              return (
+                <button key={t.label} aria-pressed={on} onClick={() => (tab === 'walks' ? setPick(i) : setVpick(i))} className="pp-lift"
+                  style={{ textAlign: 'left', cursor: 'pointer', background: on ? T.ink : T.surface, color: on ? '#fff' : T.ink, border: `1.5px solid ${on ? T.ink : T.line}`, borderRadius: 20, padding: 18, position: 'relative', minHeight: 120 }}>
+                  {'featured' in t && t.featured && (
+                    <span style={{ position: 'absolute', top: 12, right: 12, background: T.sun, color: T.ink, fontSize: 11, fontWeight: 800, padding: '3px 9px', borderRadius: 99 }}>Popular</span>
+                  )}
+                  <div style={{ fontSize: 13.5, fontWeight: 600, opacity: .8 }}>{t.label}</div>
+                  <div style={{ fontFamily: head, fontWeight: 800, fontSize: 30, letterSpacing: '-.02em', margin: '6px 0 2px' }}>
+                    ₹{t.price}<span style={{ fontSize: 14, fontWeight: 600, opacity: .7 }}>{'per' in t ? ` ${t.per}` : ''}</span>
+                  </div>
+                  <div style={{ fontSize: 13, opacity: .75 }}>{t.note}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ ...card, padding: 'clamp(20px, 2.4vw, 30px)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.leaf, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>Where your ₹{price} goes</div>
+            <div style={{ display: 'flex', height: 14, borderRadius: 99, overflow: 'hidden', margin: '6px 0 12px' }}>
+              <div style={{ width: '70%', background: T.leafBright, transition: 'width .5s' }} />
+              <div style={{ width: '30%', background: T.marigold }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
+              <div>
+                <div style={{ fontFamily: head, fontWeight: 800, fontSize: 24, color: T.ink }}>₹{yours}</div>
+                <div style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.45 }}>to your neighbour, for their time and care</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: head, fontWeight: 800, fontSize: 24, color: T.ink }}>₹{price - yours}</div>
+                <div style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.45 }}>to ProxyPaw: checks, insurance, GPS and support</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.leaf, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 10 }}>
+              {tab === 'walks' ? `What ${WALK_TIERS[pick].min} minutes looks like` : vpick === 0 ? 'What a 30-minute visit looks like' : 'What a night looks like'}
+            </div>
+            <div style={{ display: 'flex', height: 34, borderRadius: 12, overflow: 'hidden', gap: 3 }}>
+              {timeline.map((s) => (
+                <div key={s.k} title={s.k} style={{ flex: s.m, background: s.c, transition: 'flex .6s cubic-bezier(.2,.7,.2,1)' }} />
+              ))}
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 0', display: 'grid', gap: 8 }}>
+              {timeline.map((s) => (
+                <li key={s.k} style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, color: T.sub }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: s.c, flexShrink: 0 }} />
+                  <span style={{ flex: 1 }}>{s.k}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: T.muted, fontSize: 13 }}>
+                    {tab === 'visits' && vpick > 0 ? `${s.m} h` : `${s.m} min`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div style={{ fontSize: 12.5, color: T.muted2, marginTop: 12 }}>
+              {tab === 'visits' && vpick > 0 ? `${tlTotal} hours of care, with daily photos and a vet on call.` : 'Every booking is GPS-tracked, insured and earns paw points.'}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: GAP }}>
+          {PASSES.map((p) => (
+            <div key={p.label} className="pp-lift" style={{ ...card, padding: 22, position: 'relative', border: `1.5px solid ${p.featured ? T.leaf : T.line}` }}>
+              {p.featured && <span style={{ position: 'absolute', top: 14, right: 14, background: T.leafPale, color: T.leaf, fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 99 }}>Best value</span>}
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.muted }}>{p.label}</div>
+              <div style={{ fontFamily: head, fontWeight: 800, fontSize: 32, letterSpacing: '-.02em', margin: '6px 0' }}>₹{p.price.toLocaleString('en-IN')}</div>
+              <div style={{ fontSize: 14, color: T.sub, lineHeight: 1.5, minHeight: 42 }}>{p.body}</div>
+              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: T.marigoldDark }}>{p.save}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: GAP, marginTop: GAP }}>
+        {[
+          { t: 'Free to join.', d: 'Registering and exploring costs nothing. Booking opens with early access: join the waitlist and you are first in line.' },
+          { t: 'New pet parent?', d: 'Add a coaching visit to any booking: a trained volunteer walks you through feeding, grooming and routines, in your own home.' },
+          { t: 'Priced below the market.', d: 'Passes undercut every comparable plan we found in Hyderabad, and volunteers still keep their 70%.' },
+        ].map((n) => (
+          <div key={n.t} style={{ background: T.leafPale, borderRadius: 20, padding: 18, fontSize: 14.5, color: T.sub, lineHeight: 1.55 }}>
+            <strong style={{ color: T.ink }}>{n.t}</strong> {n.d}
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 22, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('pricing')}>Lock in founding prices <Arrow /></button>
+      </div>
     </div>
   );
 }
 
-/* ------------------------------ page ------------------------------ */
+/* --------------------------------- page ---------------------------------- */
 
-const eyebrow: CSSProperties = {
-  fontSize: 13.5, fontWeight: 600, color: C.orange,
-  letterSpacing: '0.13em', marginBottom: 12, fontFamily: sora,
-};
-const h2: CSSProperties = {
-  fontFamily: sora, fontWeight: 600, letterSpacing: '-0.01em',
-  lineHeight: 1.1, margin: 0,
-};
-const bucketHead: CSSProperties = {
-  display: 'flex', alignItems: 'center', gap: 10,
-  fontFamily: sora, fontWeight: 600, fontSize: 15.5, color: C.cream2,
-  margin: '0 0 14px',
-};
-
-interface LandingPageProps {
-  /** Opens the waitlist modal. `source` records which CTA was clicked. */
-  onJoin: (source: string, intent?: 'owner' | 'walker') => void;
+export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutClick }: {
+  onJoin: JoinFn;
   onBlogClick: () => void;
   onTourClick: () => void;
   onAboutClick: () => void;
-}
+}) {
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutClick }: LandingPageProps) {
   return (
-    <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip', position: 'relative' }}>
-      <style>{`
-        @keyframes pp-fadeUp { from { opacity:0; transform:translateY(18px);} to {opacity:1;transform:translateY(0);} }
-        @keyframes pp-floaty { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-11px);} }
-        @keyframes pp-pulse  { 0%,100% { opacity:1;} 50% { opacity:.35;} }
-        @keyframes pp-drift  { from { transform:translateX(0);} to { transform:translateX(-50%);} }
-        @keyframes pp-draw   { to { stroke-dashoffset: 0; } }
-        @keyframes pp-wiggle { 0%,100% { transform:rotate(-6deg);} 50% { transform:rotate(8deg);} }
-        @keyframes pp-step   { 0%,55%,100% { opacity:.55; transform:translateY(0) rotate(var(--r,0deg)); } 25% { opacity:1; transform:translateY(-5px) rotate(var(--r,0deg)); } }
-
-        .pp-screen { animation:.5s cubic-bezier(.16,1,.3,1) both pp-fadeUp; }
-        .pp-nav:hover { color:${C.orange} !important; }
-        .pp-logo { transition: transform .3s; }
-        .pp-brand:hover .pp-logo { animation: pp-wiggle .55s ease; }
-        .pp-dark-btn:hover { background:${C.orange} !important; transform:translateY(-2px); }
-        .pp-cta:hover { transform:translateY(-2px); box-shadow:0 18px 38px rgba(224,102,47,.42) !important; }
-        .pp-ghost:hover { border-color:${C.orange} !important; color:${C.orange} !important; }
-        .pp-step-card:hover { transform:translateY(-5px); box-shadow:0 18px 40px rgba(74,52,24,.10); }
-        .pp-step-card:hover .pp-step-n { transform: rotate(-8deg) scale(1.08); }
-        .pp-step-n { transition: transform .3s cubic-bezier(.16,1,.3,1); }
-        .pp-service { transition: transform .4s cubic-bezier(.16,1,.3,1); }
-        .pp-service:hover { transform:scale(1.015); }
-        .pp-service img { transition: transform 6s ease; }
-        .pp-service:hover img { transform: scale(1.06); }
-        .pp-tier { transition: transform .25s, box-shadow .25s; }
-        .pp-tier:hover { transform:translateY(-5px); box-shadow: 0 14px 30px rgba(0,0,0,.28); }
-        .pp-post { transition: .3s; }
-        .pp-post:hover { transform:translateY(-5px); box-shadow:0 18px 40px rgba(74,52,24,.12); }
-        .pp-trail-paw { display:inline-flex; animation: pp-step 2.6s ease-in-out infinite; }
-
-        /* pricing grids: even columns at every width, uniform gap */
-        .pp-price-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; }
-        .pp-board-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
-        @media (max-width: 1020px) { .pp-price-grid { grid-template-columns:repeat(3, 1fr); } }
-        @media (max-width: 620px)  {
-          .pp-price-grid { grid-template-columns:repeat(2, 1fr); }
-          .pp-board-grid { grid-template-columns:1fr; }
-        }
-
-        /* mobile */
-        @media (max-width: 700px) {
-          .pp-nav { font-size:13.5px !important; }
-          .pp-nav-row { gap:14px !important; margin-left:0 !important; width:100%; justify-content:center; }
-          .pp-hero-img { height: clamp(300px, 78vw, 420px) !important; }
-          .pp-chip-points { right: 6px !important; bottom: 18px !important; padding:12px 15px !important; }
-          .pp-chip-live { left: 6px !important; top: 14px !important; }
-          .pp-chip-cats { display:none !important; }
-          .pp-hero-cat { width:110px !important; height:110px !important; bottom:-14px !important; left:-8px !important; }
-        }
-        @media (max-width: 480px) {
-          .pp-hero-ctas { flex-direction:column; }
-          .pp-hero-ctas button { width:100%; justify-content:center; }
-          .pp-stats { gap:22px !important; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .pp-screen, [data-floaty], [data-marquee], .pp-trail-paw { animation: none !important; }
-        }
+    <div className="pp-land">
+      <style>{GLOBAL_CSS + `
+        .pp-draw { stroke-dashoffset: 200; animation: pp-drawline 3s ease-in-out infinite alternate; }
+        @keyframes pp-drawline { to { stroke-dashoffset: 0; } }
+        .pp-mosaic { display: grid; grid-template-columns: 1.5fr 1fr 1fr; grid-template-rows: 260px 260px; gap: ${GAP}; }
+        .pp-mosaic > :first-child { grid-row: span 2; }
+        @media (max-width: 860px) { .pp-mosaic { grid-template-columns: 1fr 1fr; grid-template-rows: 300px 200px 200px; } .pp-mosaic > :first-child { grid-column: span 2; grid-row: auto; } }
+        @media (max-width: 520px) { .pp-mosaic { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 230px; } .pp-mosaic > :first-child { grid-column: auto; } }
       `}</style>
 
-      <Ambient />
-      <div className="pp-screen" style={{ position: 'relative', zIndex: 1 }}>
-        {/* ---------- header ---------- */}
-
-        {/* ---------- hero ---------- */}
-        <section
-          style={{
-            ...shell, position: 'relative',
-            padding: `clamp(26px, 4vw, 44px) ${SIDE_PAD} ${SECTION_PAD}`,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))',
-            gap: 'clamp(34px, 5vw, 56px)', alignItems: 'center',
-          }}
-        >
-          <HeroDecor />
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8, background: C.greenPale,
-                border: `1px solid ${C.greenBorder}`, color: C.greenText, padding: '8px 16px',
-                borderRadius: 999, fontSize: 13.5, fontWeight: 500, marginBottom: 24,
-              }}
-            >
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.dotGreen, animation: '2s ease infinite pp-pulse' }} />
-              Live in 10 Gachibowli communities
-            </div>
-            <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(34px, 5vw, 60px)', lineHeight: 1.06, letterSpacing: '-0.015em', margin: '0 0 6px' }}>
-              Your neighbours.<br />Your pets'<br />
-              <span style={{ color: C.orange }}>best friends.</span>
-            </h1>
-            <Squiggle />
-            <p style={{ fontSize: 'clamp(16px, 1.6vw, 18.5px)', lineHeight: 1.6, color: C.sub, maxWidth: 440, margin: '20px 0 30px', fontWeight: 400, textTransform: 'none' }}>
-              Verified neighbours for dog walks, cat home visits and overnight boarding, all inside your gated community. From &#8377;149.
-            </p>
-            <div className="pp-hero-ctas" style={{ display: 'flex', gap: 13, flexWrap: 'wrap' }}>
-              <button
-                className="pp-cta"
-                onClick={() => onJoin('hero-find-a-walker')}
-                style={{
-                  border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
-                  fontWeight: 600, fontSize: 16, padding: '16px 30px', borderRadius: 999,
-                  cursor: 'pointer', boxShadow: '0 12px 28px rgba(224,102,47,.3)', transition: '.25s',
-                }}
-              >
-                Find a walker
-              </button>
-              <button
-                className="pp-ghost"
-                onClick={() => onJoin('hero-register-volunteer', 'walker')}
-                style={{
-                  border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
-                  fontFamily: sora, fontWeight: 600, fontSize: 16, padding: '16px 30px',
-                  borderRadius: 999, cursor: 'pointer', transition: '.25s',
-                  display: 'flex', alignItems: 'center', gap: 9,
-                }}
-              >
-                Register as a volunteer
-                <span style={{ background: C.green, color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, letterSpacing: '0.04em' }}>
-                  Earn 70%
-                </span>
-              </button>
-            </div>
-            <div className="pp-stats" style={{ display: 'flex', gap: 36, marginTop: 'clamp(32px, 4vw, 48px)', flexWrap: 'wrap' }}>
-              {[
-                { big: '2,400+', small: 'Walks & visits done' },
-                { big: '4.9', star: true, small: 'Average rating' },
-                { big: '180+', small: 'Verified neighbours' },
-              ].map((s) => (
-                <div key={s.small}>
-                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(23px, 2.2vw, 28px)', letterSpacing: '-0.008em' }}>
-                    {s.big} {s.star && <span style={{ color: C.star }}>&#9733;</span>}
+      {/* ------------------------------- hero ------------------------------- */}
+      <section style={{ position: 'relative', padding: 'clamp(28px, 4vw, 56px) 0 clamp(48px, 6vw, 80px)', background: `linear-gradient(180deg, ${T.canvas} 0%, #eef7e8 100%)` }}>
+        <div style={shell}>
+          <div className="pp-hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.05fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
+            <div>
+              <div className="pp-enter" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.surface, border: `1px solid ${T.line}`, color: T.leaf, padding: '8px 14px', borderRadius: 999, fontSize: 13.5, fontWeight: 600, marginBottom: 22 }}>
+                <span className="pp-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: T.leafBright }} />
+                Waitlist open in Gachibowli and the Financial District
+              </div>
+              <h1 className="pp-enter" style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(36px, 4.4vw, 60px)', lineHeight: 1.04, letterSpacing: '-0.035em', margin: 0, color: T.ink, animationDelay: '.08s' }}>
+                Trusted neighbours<br />to <RotatingWords color={T.marigold} words={['walk your dog.', 'feed your cat.', 'host sleepovers.', 'send you photos.']} />
+              </h1>
+              <p className="pp-enter" style={{ ...lead, maxWidth: 500, margin: '22px 0 30px', animationDelay: '.16s' }}>
+                ProxyPaw matches you with verified pet lovers who live in your own gated community, for dog walks, cat home visits and overnight boarding. From ₹149.
+              </p>
+              <div className="pp-enter pp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', animationDelay: '.24s' }}>
+                <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('hero-join')}>Join the waitlist <Arrow /></button>
+                <button className="pp-btn pp-btn-secondary" style={btnSecondary} onClick={() => scrollTo('walk')}>
+                  <span style={{ width: 22, height: 22, borderRadius: '50%', background: T.leafPale, display: 'grid', placeItems: 'center' }}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill={T.leaf} /></svg>
+                  </span>
+                  Watch a walk
+                </button>
+              </div>
+              <div className="pp-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, auto)', justifyContent: 'start', gap: 'clamp(18px, 3vw, 40px)', marginTop: 34, animationDelay: '.32s' }}>
+                {[
+                  { big: '₹149', small: 'for a 30-minute walk' },
+                  { big: '70%', small: 'goes to your neighbour' },
+                  { big: '6 checks', small: 'before anyone meets your pet' },
+                ].map((s) => (
+                  <div key={s.small}>
+                    <div style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(22px, 2.2vw, 28px)', letterSpacing: '-.02em' }}>{s.big}</div>
+                    <div style={{ fontSize: 13.5, color: T.muted, marginTop: 2 }}>{s.small}</div>
                   </div>
-                  <div style={{ fontSize: 13.5, color: C.muted, marginTop: 3 }}>{s.small}</div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pp-enter" style={{ position: 'relative', animationDelay: '.2s' }}>
+              <div style={{ borderRadius: 32, overflow: 'hidden', boxShadow: '0 40px 80px rgba(28,60,40,.18)', aspectRatio: '560 / 500', background: '#dff0f4' }}>
+                <CommunityScene />
+              </div>
+              <div className="pp-float pp-hide-sm" style={{ position: 'absolute', left: -22, bottom: -26, width: 'clamp(150px, 15vw, 196px)', background: T.surface, borderRadius: 20, padding: 8, boxShadow: '0 24px 50px rgba(28,60,40,.2)' }}>
+                <img src="/real/hero.jpg" alt="A neighbour walking a golden retriever on a community lawn at sunrise" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: '72% 50%', borderRadius: 14, display: 'block' }} />
+                <div style={{ padding: '8px 4px 2px', fontSize: 12.5, fontWeight: 600, color: T.sub, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="pp-pulse" style={{ width: 7, height: 7, borderRadius: '50%', background: T.leafBright }} />
+                  7:04 am · the lawn loop
                 </div>
+              </div>
+              <div className="pp-float pp-hide-sm" style={{ position: 'absolute', right: -14, top: 26, background: T.surface, borderRadius: 18, padding: '10px 14px', boxShadow: '0 18px 40px rgba(28,60,40,.16)', display: 'flex', gap: 10, alignItems: 'center', animationDelay: '-2s' }}>
+                <img src="/real/cat-chip.jpg" alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                <div>
+                  <div style={{ fontFamily: head, fontWeight: 700, fontSize: 13.5 }}>Cat visit done</div>
+                  <div style={{ fontSize: 12, color: T.leaf, fontWeight: 600 }}>fed · litter · cuddles</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------------------- communities ---------------------------- */}
+      <div className="pp-marquee-wrap" style={{ borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, background: T.surface, padding: '18px 0', overflow: 'hidden' }}>
+        <div style={{ ...shell, display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, whiteSpace: 'nowrap' }} className="pp-hide-sm">Built for communities like</div>
+          <div style={{ overflow: 'hidden', flex: 1, maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}>
+            <div className="pp-marquee">
+              {[...COMMUNITIES, ...COMMUNITIES].map((c, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: T.leafPale, color: T.leafDeep, fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
+                  <Paw size={13} color={T.leaf} />{c}
+                </span>
               ))}
             </div>
           </div>
-
-          <div style={{ position: 'relative', minHeight: 'clamp(320px, 36vw, 440px)' }}>
-            <img
-              className="pp-hero-img"
-              src={IMAGES.heroDog}
-              alt="happy puppy running"
-              style={{ width: '100%', height: 440, objectFit: 'cover', borderRadius: 32, display: 'block', boxShadow: '0 30px 70px rgba(74,52,24,.18)' }}
-            />
-            <img
-              className="pp-hero-cat"
-              src={IMAGES.heroCat}
-              alt="curious cat"
-              style={{
-                position: 'absolute', bottom: -20, left: -16, width: 140, height: 140,
-                objectFit: 'cover', borderRadius: 26, border: `5px solid ${C.cream}`,
-                boxShadow: '0 18px 40px rgba(74,52,24,.22)', transform: 'rotate(-4deg)',
-              }}
-            />
-            <div
-              className="pp-chip-live"
-              data-floaty
-              style={{
-                position: 'absolute', top: 24, left: -12, background: C.card,
-                border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: '12px 16px',
-                display: 'flex', alignItems: 'center', gap: 11,
-                boxShadow: '0 16px 40px rgba(74,52,24,.14)', animation: '5s ease-in-out infinite pp-floaty',
-              }}
-            >
-              <img src={IMAGES.walker} alt="priya" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
-              <div>
-                <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 13.5, textTransform: 'none' }}>Priya is walking Biscuit</div>
-                <div style={{ fontSize: 12, color: C.dotGreen, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.dotGreen, animation: '1.6s ease infinite pp-pulse' }} />
-                  live &middot; tower c lawn
-                </div>
-              </div>
-            </div>
-            <div
-              className="pp-chip-points"
-              data-floaty
-              style={{
-                position: 'absolute', bottom: 32, right: -8, background: C.ink, color: C.cream2,
-                borderRadius: 20, padding: '14px 18px', boxShadow: '0 20px 44px rgba(42,33,24,.3)',
-                animation: '6s ease-in-out 1s infinite pp-floaty',
-              }}
-            >
-              <div style={{ fontSize: 12, color: C.darkSub, marginBottom: 3 }}>paw points earned</div>
-              <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 20, color: C.gold }}>
-                +25 pts <span style={{ fontSize: 12.5, fontWeight: 400, color: C.darkSub }}>per booking</span>
-              </div>
-            </div>
-            <div
-              className="pp-chip-cats"
-              data-floaty
-              style={{
-                position: 'absolute', top: '44%', right: -14, background: C.card,
-                border: `1px solid ${C.cardBorder}`, borderRadius: 999, padding: '8px 16px 8px 9px',
-                display: 'flex', alignItems: 'center', gap: 9,
-                boxShadow: '0 14px 34px rgba(74,52,24,.14)', animation: '5.5s ease-in-out .5s infinite pp-floaty',
-              }}
-            >
-              <img src={IMAGES.catChip} alt="cat" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
-              <span style={{ fontFamily: sora, fontWeight: 600, fontSize: 13 }}>cats too: visits &amp; boarding</span>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- the proxypaw difference ---------- */}
-        <section style={{ ...shell, padding: `0 ${SIDE_PAD} clamp(30px, 4vw, 46px)`, textTransform: 'none' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
-            {[
-              {
-                tile: <BrandIcon size={38} alt="" />,
-                t: 'Born in Hyderabad',
-                d: 'Built in Gachibowli for IT-corridor life, by people who live it.',
-              },
-              {
-                bg: C.green, icon: <Doodle kind="heart" size={19} color="#fff" />,
-                t: 'The same neighbour, every time',
-                d: 'One trained volunteer your pet gets to know, for every walk, meal and stay.',
-              },
-              {
-                bg: C.gold, icon: <Doodle kind="bone" size={19} color="#fff" />,
-                t: 'Trust built before the booking',
-                d: 'Aadhaar checks, one-on-one interviews, training, and a meet-and-greet first.',
-              },
-              {
-                bg: C.orangeDark, icon: <Doodle kind="yarn" size={19} color="#fff" />,
-                t: 'We speak your language',
-                d: 'Telugu, Hindi or English: volunteers from your own community, matched to your family.',
-              },
-            ].map((f) => (
-              <div key={f.t} style={{ display: 'flex', gap: 13, alignItems: 'flex-start', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: '16px 18px' }}>
-                {f.tile ?? <span style={{ width: 38, height: 38, borderRadius: 12, background: f.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{f.icon}</span>}
-                <div>
-                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 15.5, marginBottom: 3 }}>{f.t}</div>
-                  <div style={{ fontSize: 13.5, lineHeight: 1.55, color: C.muted, fontWeight: 400 }}>{f.d}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------- community marquee ---------- */}
-        <div style={{ borderTop: `1px solid ${C.bandBorder}`, borderBottom: `1px solid ${C.bandBorder}`, background: C.band, overflow: 'hidden', padding: '16px 0' }}>
-          <div data-marquee style={{ display: 'flex', gap: 52, width: 'max-content', animation: '34s linear infinite pp-drift' }}>
-            {[...COMMUNITIES, ...COMMUNITIES].map((name, i) => (
-              <span key={i} style={{ fontFamily: sora, fontWeight: 600, fontSize: 14, color: C.muted2, whiteSpace: 'nowrap', letterSpacing: '0.02em', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                <PawSvg size={10} color={C.muted2} style={{ opacity: 0.5 }} />
-                {name}
-              </span>
-            ))}
-          </div>
         </div>
-
-        {/* ---------- why we exist ---------- */}
-        <section style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD} 0` }}>
-          <Reveal>
-            <div style={eyebrow}>WHY PROXYPAW EXISTS</div>
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 12px', maxWidth: 620 }}>
-              Leaving them is the hardest part of leaving
-            </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: C.muted, maxWidth: 640, margin: '0 0 clamp(26px, 3.5vw, 40px)', textTransform: 'none' }}>
-              We are pet parents ourselves. We studied every option families have today, and kept coming back to the same three things.
-            </p>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
-            {[
-              {
-                icon: <Doodle kind="heart" size={22} color="#fff" />, bg: C.orange,
-                title: 'Every trip is a worry',
-                body: 'Pet parents travel more than ever, and every trip starts with the same question: who do we trust with them this time?',
-              },
-              {
-                icon: <PawSvg size={22} color="#fff" />, bg: C.green,
-                title: 'Strangers, however checked, are still strangers',
-                body: 'A sitter from an app is a profile on a screen. You meet them for the first time on the day you hand over your pet.',
-              },
-              {
-                icon: <Doodle kind="yarn" size={22} color="#fff" />, bg: C.gold,
-                title: 'Pets cannot tell you',
-                body: 'If care goes wrong, they carry it silently. So trust has to be built before the booking, not hoped for after it.',
-              },
-            ].map((card, i) => (
-              <Reveal key={card.title} delay={i * 110}>
-                <div className="pp-step-card" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 'clamp(18px, 2vw, 24px)', transition: '.3s', height: '100%', boxSizing: 'border-box' }}>
-                  <span style={{ width: 40, height: 40, borderRadius: 13, background: card.bg, display: 'grid', placeItems: 'center', marginBottom: 16 }}>
-                    {card.icon}
-                  </span>
-                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 17, marginBottom: 8, textTransform: 'none' }}>{card.title}</div>
-                  <div style={{ fontSize: 14.5, lineHeight: 1.6, color: C.muted, fontWeight: 400, textTransform: 'none' }}>{card.body}</div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal delay={140}>
-            <div style={{ marginTop: GRID_GAP, background: C.band, border: `1px solid ${C.bandBorder}`, borderRadius: 24, padding: 'clamp(22px, 3vw, 32px)', display: 'flex', gap: 'clamp(16px, 2.5vw, 28px)', alignItems: 'center', flexWrap: 'wrap' }}>
-              <BrandIcon size={54} alt="" />
-              <div style={{ flex: '1 1 340px', textTransform: 'none' }}>
-                <p style={{ fontSize: 15.5, lineHeight: 1.7, color: C.ink, margin: '0 0 6px', fontWeight: 400 }}>
-                  &ldquo;I have two cats I am hopelessly in love with, and leaving them even for a weekend was
-                  hard enough that I built the app I wished existed. Neighbours who love pets, verified
-                  properly, caring for pets they will meet again in the lift tomorrow.&rdquo;
-                </p>
-                <div style={{ fontSize: 13, color: C.muted2 }}>
-                  Deekshitha, founder &middot;{' '}
-                  <span onClick={onAboutClick} style={{ color: C.orange, cursor: 'pointer', fontWeight: 700 }}>read our story</span>
-                </div>
-              </div>
-              <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(17px, 2vw, 21px)', color: C.green, flexShrink: 0, textTransform: 'none' }}>
-                We are a community of pets.
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* ---------- how it works ---------- */}
-        <section id="how" style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD} 0` }}>
-          <Reveal>
-            <div style={eyebrow}>HOW IT WORKS</div>
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 clamp(28px, 4vw, 44px)', maxWidth: 560 }}>
-              Three steps between your dog and a great day
-            </h2>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: GRID_GAP }}>
-            {STEPS.map((s, i) => (
-              <Reveal key={s.n} delay={i * 110}>
-                <div className="pp-step-card" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 'clamp(18px, 2vw, 24px)', transition: '.3s', height: '100%', boxSizing: 'border-box' }}>
-                  <div className="pp-step-n" style={{ fontFamily: sora, fontWeight: 600, fontSize: 15, color: '#fff', background: C.orange, width: 36, height: 36, borderRadius: 12, display: 'grid', placeItems: 'center', marginBottom: 18 }}>
-                    {s.n}
-                  </div>
-                  <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 17.5, marginBottom: 8 }}>{s.title}</div>
-                  <div style={{ fontSize: 14.5, lineHeight: 1.6, color: C.muted, fontWeight: 400, textTransform: 'none' }}>{s.body}</div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <div style={{ padding: 'clamp(26px, 3.5vw, 40px) 0 0' }}><PawTrail /></div>
-
-        {/* ---------- services ---------- */}
-        <section id="services" style={{ ...shell, padding: `clamp(26px, 3.5vw, 44px) ${SIDE_PAD} 0` }}>
-          <Reveal>
-            <div style={eyebrow}>SERVICES</div>
-            <h2 style={{ ...h2, fontSize: 'clamp(28px, 3.4vw, 44px)', margin: '0 0 clamp(28px, 4vw, 44px)' }}>Walks by day. Boarding by night.</h2>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: GRID_GAP }}>
-            {[
-              {
-                img: IMAGES.walks, alt: 'neighbour walking dogs', badge: null,
-                title: 'Walks & home visits',
-                body: 'A trained neighbour walks your dog, GPS-tracked with photo updates. Cats get play, feeding and litter visits at home.',
-                price: 'Dogs from ₹149 · Cats ₹129',
-                scrim: 'linear-gradient(rgba(42,33,24,0) 30%, rgba(42,33,24,.86) 100%)',
-              },
-              {
-                img: IMAGES.boarding, alt: 'dog relaxing at a host home', badge: 'NEW',
-                title: 'Overnight boarding',
-                body: "Travelling? Your dog or cat sleeps over at a vetted host's home in your community, daily photos, vet on call.",
-                price: 'Dogs & cats · From ₹449',
-                scrim: 'linear-gradient(rgba(30,42,33,0) 30%, rgba(24,36,27,.88) 100%)',
-              },
-            ].map((s, i) => (
-              <Reveal key={s.title} delay={i * 130}>
-                <div
-                  className="pp-service"
-                  onClick={() => onJoin(`service-${s.title}`)}
-                  style={{ position: 'relative', borderRadius: 28, overflow: 'hidden', cursor: 'pointer', minHeight: 'clamp(250px, 27vw, 330px)', height: '100%' }}
-                >
-                  <img src={s.img} alt={s.alt} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: s.scrim }} />
-                  {s.badge && (
-                    <div style={{ position: 'absolute', top: 20, left: 20, background: C.green, color: '#fff', fontFamily: sora, fontWeight: 600, fontSize: 12, padding: '6px 14px', borderRadius: 999, letterSpacing: '0.06em' }}>
-                      {s.badge}
-                    </div>
-                  )}
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(20px, 2.6vw, 30px)' }}>
-                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(20px, 2.1vw, 25px)', color: '#fff', letterSpacing: '-0.008em', marginBottom: 7 }}>{s.title}</div>
-                    <div style={{ fontSize: 15, color: 'rgba(255,251,242,.85)', maxWidth: 380, lineHeight: 1.55, marginBottom: 14, textTransform: 'none' }}>{s.body}</div>
-                    <div style={{ display: 'inline-flex', background: 'rgba(255,253,248,.16)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,253,248,.3)', color: '#fff', padding: '8px 16px', borderRadius: 999, fontFamily: sora, fontWeight: 600, fontSize: 14 }}>
-                      {s.price}
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------- pricing: two buckets ---------- */}
-        <section id="pricing" style={{ ...shell, padding: `${SECTION_PAD} ${SIDE_PAD} 0` }}>
-          <Reveal>
-            <div style={{ background: C.ink, borderRadius: 28, padding: 'clamp(22px, 3.4vw, 44px)', color: C.cream2, position: 'relative', overflow: 'hidden' }}>
-              <span aria-hidden="true" style={{ position: 'absolute', top: -18, right: -14, transform: 'rotate(18deg)' }}>
-                <PawSvg size={120} color={C.cream2} style={{ opacity: 0.05 }} />
-              </span>
-
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 'clamp(26px, 3.4vw, 40px)' }}>
-                <div>
-                  <div style={{ ...eyebrow, color: C.gold }}>SIMPLE PRICING</div>
-                  <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 38px)' }}>Longer walks,<br />Better value.</h2>
-                </div>
-                <div style={{ fontSize: 14.5, color: C.darkSub, maxWidth: 300, lineHeight: 1.55, textTransform: 'none' }}>
-                  Every booking is insured, GPS-tracked and earns paw points. Walkers keep 70%.
-                </div>
-              </div>
-
-              {/* bucket 1: walks & home visits */}
-              <div style={bucketHead}>
-                <BrandIcon size={26} alt="" />
-                Walks &amp; home visits
-                <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
-              </div>
-              <div className="pp-price-grid" style={{ marginBottom: 'clamp(26px, 3.4vw, 38px)' }}>
-                {WALK_TIERS.map((t, i) => (
-                  <Reveal key={t.label} delay={i * 70}><TierCard t={t} /></Reveal>
-                ))}
-              </div>
-
-              {/* bucket 2: overnight boarding */}
-              <div style={bucketHead}>
-                <span style={{ width: 26, height: 26, borderRadius: 9, background: C.green, display: 'grid', placeItems: 'center' }}>
-                  {/* tiny moon for the overnight bucket */}
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-                    <path d="M20.6 14.5A8.6 8.6 0 0 1 9.5 3.4 8.9 8.9 0 1 0 20.6 14.5z" />
-                  </svg>
-                </span>
-                Overnight boarding
-                <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
-              </div>
-              <div className="pp-board-grid">
-                {BOARDING_TIERS.map((t, i) => (
-                  <Reveal key={t.label} delay={i * 70}><TierCard t={t} /></Reveal>
-                ))}
-              </div>
-
-              {/* care passes */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 'clamp(26px, 3.4vw, 40px) 0 18px', fontFamily: sora, fontWeight: 600, fontSize: 15, color: C.gold, letterSpacing: '0.06em' }}>
-                <span style={{ width: 26, height: 26, borderRadius: 9, background: 'rgba(240,180,41,.16)', display: 'grid', placeItems: 'center' }}>
-                  <PawSvg size={13} color={C.gold} />
-                </span>
-                Care passes: book once, covered all month
-                <span style={{ flex: 1, height: 1, background: 'rgba(253,249,240,.12)' }} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 14, textTransform: 'none' }}>
-                {[
-                  { label: 'Day pass', price: '\u20b9349', note: 'One 1-hour walk plus one home visit, same day', save: 'Save \u20b929 vs booking singly' },
-                  { label: 'Week pass', price: '\u20b91,499', note: 'A 1-hour walk every day for 7 days', save: 'About 14% off single walks' },
-                  { label: 'Month pass', price: '\u20b94,999', note: '26 one-hour walks, priority booking, weekly photo report', save: 'About 23% off single walks' },
-                  { label: 'Cat month pass', price: '\u20b92,999', note: 'A daily visit for 26 days: feed, play, litter, photo', save: 'About 11% off single visits' },
-                ].map((t) => (
-                  <div key={t.label} style={{ border: '1px solid rgba(253,249,240,.16)', borderRadius: 18, padding: '18px 20px' }}>
-                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 14.5, color: C.darkSub, marginBottom: 6 }}>{t.label}</div>
-                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 26, marginBottom: 6 }}>{t.price}</div>
-                    <div style={{ fontSize: 13, color: C.darkSub, lineHeight: 1.55, marginBottom: 8 }}>{t.note}</div>
-                    <div style={{ fontSize: 12, color: C.gold, fontWeight: 700 }}>{t.save}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, marginTop: 18, textTransform: 'none' }}>
-                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
-                  <span style={{ color: C.cream2, fontWeight: 700 }}>Free to join.</span> Registering and
-                  exploring the app costs nothing. Booking opens with early access: join the waitlist
-                  and you are first in line when we go live.
-                </div>
-                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
-                  <span style={{ color: C.cream2, fontWeight: 700 }}>New pet parent?</span> Add a coaching
-                  visit to any booking: a trained volunteer walks you through feeding, grooming and
-                  routines, with your own pet, in your own home.
-                </div>
-                <div style={{ background: 'rgba(253,249,240,.05)', border: '1px solid rgba(253,249,240,.12)', borderRadius: 16, padding: '14px 18px', fontSize: 13.5, lineHeight: 1.6, color: C.darkSub }}>
-                  <span style={{ color: C.cream2, fontWeight: 700 }}>Priced to be a no-brainer.</span> Passes
-                  undercut every comparable plan we found in Hyderabad, volunteers still keep their
-                  70%, and we trim our share instead.
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
-        <div style={{ padding: 'clamp(26px, 3.5vw, 40px) 0 0' }}><PawTrail /></div>
-
-        {/* ---------- the paw journal ---------- */}
-        <section id="blog" style={{ ...shell, padding: `clamp(26px, 3.5vw, 44px) ${SIDE_PAD} 0` }}>
-          <Reveal>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', marginBottom: 'clamp(24px, 3vw, 34px)' }}>
-              <div>
-                <div style={eyebrow}>THE PAW JOURNAL</div>
-                <h2 style={{ ...h2, fontSize: 'clamp(26px, 3vw, 40px)' }}>Care guides for dogs and cats</h2>
-              </div>
-              <button
-                className="pp-ghost"
-                onClick={onBlogClick}
-                style={{ border: `1.5px solid ${C.btnBorder}`, background: 'transparent', color: C.ink, fontFamily: sora, fontWeight: 600, fontSize: 14.5, padding: '12px 24px', borderRadius: 999, cursor: 'pointer', transition: '.25s' }}
-              >
-                Read all guides &rarr;
-              </button>
-            </div>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: GRID_GAP }}>
-            {POSTS.map((p, i) => (
-              <Reveal key={p.tag} delay={i * 110}>
-                <article className="pp-post" onClick={onBlogClick} style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, overflow: 'hidden', cursor: 'pointer', height: '100%', boxSizing: 'border-box' }}>
-                  <div style={{ width: '100%', height: 140, backgroundImage: `url("${p.img}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                  <div style={{ padding: 16 }}>
-                    <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 11 }}>
-                      {p.tag}
-                    </div>
-                    <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 16.5, lineHeight: 1.3, marginBottom: 8 }}>{p.title}</div>
-                    <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.55, textTransform: 'none' }}>{p.body}</div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------- closing cta: one contained band, no floating orphans ---------- */}
-        <section style={{ ...shell, padding: `clamp(40px, 5.5vw, 72px) ${SIDE_PAD}` }}>
-          <Reveal>
-            <div style={{ background: '#fdf6ec', border: `1px solid ${C.cardBorder}`, borderRadius: 28, padding: 'clamp(30px, 4.5vw, 56px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-              <span aria-hidden="true" style={{ position: 'absolute', top: -22, right: -18, transform: 'rotate(18deg)' }}>
-                <PawSvg size={110} color={C.orange} style={{ opacity: 0.07 }} />
-              </span>
-              <h2 style={{ ...h2, fontSize: 'clamp(26px, 3.4vw, 42px)', margin: '0 0 12px' }}>Ready when your pets are!</h2>
-              <p style={{ fontSize: 16, color: C.muted, margin: '0 auto 26px', fontWeight: 400, textTransform: 'none', maxWidth: 460 }}>
-                Join your community's pack in under a minute. Somewhere in your tower, a wagging
-                tail is already waiting!
-              </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: C.greenPale, border: '1px solid #dfe4cf', color: C.green, borderRadius: 999, padding: '9px 18px', fontFamily: sora, fontWeight: 600, fontSize: 13.5, margin: '0 0 24px', maxWidth: '94%', textTransform: 'none' }}>
-                <PawSvg size={15} color={C.green} />
-                <span style={{ textAlign: 'left' }}>Founding 1,000 perk: a free onboarding session for your pet, plus &#8377;100 off your first booking!</span>
-              </div>
-              <div className="pp-hero-ctas" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button
-                  className="pp-cta"
-                  onClick={() => onJoin('closing-cta')}
-                  style={{
-                    border: 'none', background: C.orange, color: '#fff', fontFamily: sora,
-                    fontWeight: 600, fontSize: 16, padding: '16px 34px', borderRadius: 999,
-                    cursor: 'pointer', boxShadow: '0 14px 32px rgba(224,102,47,.32)', transition: '.25s',
-                  }}
-                >
-                  Get started, it's free
-                </button>
-                <button
-                  className="pp-ghost"
-                  onClick={onTourClick}
-                  style={{
-                    border: `1.5px solid ${C.btnBorder}`, background: C.card, color: C.ink,
-                    fontFamily: sora, fontWeight: 600, fontSize: 16, padding: '16px 34px',
-                    borderRadius: 999, cursor: 'pointer', transition: '.25s',
-                  }}
-                >
-                  Peek inside the app &rarr;
-                </button>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
       </div>
+
+      {/* ------------------------------- story ------------------------------- */}
+      <Section>
+        <div className="pp-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(28px, 5vw, 72px)', alignItems: 'center' }}>
+          <Reveal>
+            <div style={eyebrow}>Why ProxyPaw exists</div>
+            <h2 style={h2}>It started with two cats and a weekend away.</h2>
+            <div style={{ marginTop: 28, display: 'grid', gap: 18 }}>
+              {[
+                { n: '01', t: 'Every trip is a worry', d: 'Pet parents travel more than ever, and every trip starts with the same question: who do we trust with them this time?' },
+                { n: '02', t: 'Strangers are still strangers', d: 'A sitter from an app is a profile on a screen. You meet them for the first time on the day you hand over your pet.' },
+                { n: '03', t: 'So we asked the neighbours', d: 'Pets cannot tell you when care goes wrong, so trust has to be built before the booking. The safest person is the one you will meet in the lift tomorrow.' },
+              ].map((b) => (
+                <div key={b.n} style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ fontFamily: head, fontWeight: 800, color: T.marigold, fontSize: 15, paddingTop: 3, minWidth: 26 }}>{b.n}</div>
+                  <div>
+                    <div style={{ fontFamily: head, fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{b.t}</div>
+                    <div style={{ fontSize: 15.5, color: T.sub, lineHeight: 1.6 }}>{b.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={120}>
+            <figure style={{ margin: 0, position: 'relative' }}>
+              <div className="pp-zoom" style={{ borderRadius: 28, boxShadow: '0 30px 70px rgba(28,60,40,.16)' }}>
+                <img src="/founder/pablo-leo.jpg" alt="Pablo and Leo, the founder's two cats" loading="lazy" style={{ width: '100%', aspectRatio: '4 / 3.4', objectFit: 'cover', display: 'block', filter: 'saturate(1.05) contrast(1.03)' }} />
+              </div>
+              <blockquote style={{ margin: '-60px 18px 0', position: 'relative', background: T.surface, borderRadius: 22, padding: 'clamp(18px, 2.4vw, 26px)', boxShadow: '0 20px 50px rgba(28,60,40,.14)' }}>
+                <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: T.ink }}>
+                  “I have two cats I am hopelessly in love with, and leaving them even for a weekend was hard enough that I built the app I wished existed. Neighbours who love pets, verified properly, caring for pets they will meet again in the lift tomorrow.”
+                </p>
+                <footer style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 14, color: T.muted }}><strong style={{ color: T.ink }}>Deekshitha</strong>, founder, with Pablo and Leo</span>
+                  <button onClick={onAboutClick} className="pp-btn" style={{ border: 'none', background: 'none', color: T.marigoldDark, fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 0', minHeight: 44 }}>
+                    Read her story <Arrow />
+                  </button>
+                </footer>
+              </blockquote>
+            </figure>
+          </Reveal>
+        </div>
+      </Section>
+
+      {/* ----------------------------- community ----------------------------- */}
+      <Section band>
+        <Heading
+          kicker="Life in your community"
+          title="Your neighbours already know your pet’s name."
+          sub="Morning loops on the lawn, the evening dog-park hour, a quiet cat visit while you are at work. ProxyPaw turns the care that already happens between neighbours into something you can book and trust."
+        />
+        <div className="pp-mosaic">
+          {[
+            { src: '/real/community.jpg', alt: 'A Hyderabad gated community at sunrise: towers around a big central garden, one still under construction', label: 'Towers rising, gardens growing', pos: '50% 60%' },
+            { src: '/real/dogpark.jpg', alt: 'Three neighbours chatting at the community dog park with a beagle, an indie dog and a black labrador', label: 'The 6 pm dog-park hour', pos: '40% 50%' },
+            { src: '/real/meet-greet.jpg', alt: 'A volunteer greeting a golden retriever at an apartment door', label: 'Meet-and-greet at your door', pos: '45% 50%' },
+            { src: '/real/cat-visit.jpg', alt: 'A volunteer petting a fluffy grey cat during a home visit', label: 'Cat visits, in your own home', pos: '55% 45%' },
+            { src: '/real/walks.jpg', alt: 'A neighbour walking an indie dog down the tree-lined community road', label: 'The tree-lined evening walk', pos: '70% 55%' },
+          ].map((p, i) => (
+            <Reveal key={p.src} delay={i * 90} className="pp-zoom" style={{ position: 'relative', borderRadius: 24, minHeight: 200 }}>
+              <img src={p.src} alt={p.alt} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: p.pos }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(20,48,31,0) 55%, rgba(20,48,31,.55))' }} />
+              <span style={{ position: 'absolute', left: 14, bottom: 14, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(6px)', color: T.ink, fontWeight: 700, fontSize: 13.5, padding: '8px 13px', borderRadius: 999 }}>{p.label}</span>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+
+      {/* ------------------------------ how it works ------------------------------ */}
+      <Section id="how">
+        <Heading kicker="How it works" title="Three steps between your dog and a great day." />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: GAP }}>
+          {[
+            { k: 'meet' as const, n: '1', t: 'Meet your neighbours', d: 'Pick your community and see its towers, the pets who live there and the verified neighbours who can care for them. Every profile is Aadhaar-checked and community-rated.' },
+            { k: 'book' as const, n: '2', t: 'Book in 30 seconds', d: 'Pick a day, a time and a duration. Pay by UPI or card. Your first booking always starts with an in-person meet-and-greet at your door.' },
+            { k: 'watch' as const, n: '3', t: 'Watch the tail wag', d: 'Live GPS on every walk, photo updates from every visit and sleepover, and paw points on every booking. (Or the slow blink, for cats.)' },
+          ].map((s, i) => (
+            <Reveal key={s.n} delay={i * 110}>
+              <div className="pp-lift" style={{ ...card, padding: 18, height: '100%', boxSizing: 'border-box' }}>
+                <StepArt kind={s.k} />
+                <div style={{ padding: '18px 6px 6px' }}>
+                  <div style={{ display: 'inline-grid', placeItems: 'center', width: 30, height: 30, borderRadius: 10, background: T.marigold, color: '#fff', fontFamily: head, fontWeight: 800, fontSize: 14, marginBottom: 12 }}>{s.n}</div>
+                  <h3 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 8px' }}>{s.t}</h3>
+                  <p style={{ margin: 0, fontSize: 15, color: T.sub, lineHeight: 1.6 }}>{s.d}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+
+      {/* ------------------------------ try a walk ------------------------------ */}
+      <Section id="walk" band>
+        <Heading
+          kicker="Try it now"
+          title="Take Biscuit for a walk. It takes 20 seconds."
+          sub="Pick a length and press start. Watch an hour of a ProxyPaw walk: the route, the updates on your phone, and the receipt at the end. Or switch to a cat visit."
+        />
+        <Reveal><WalkSimulator onJoin={onJoin} /></Reveal>
+      </Section>
+
+      {/* ------------------------------- services ------------------------------- */}
+      <Section id="services">
+        <Heading kicker="Services" title="Walks by day. Visits at home. Boarding by night." />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: GAP }}>
+          {[
+            { img: '/real/walks.jpg', pos: '70% 55%', alt: 'A neighbour walking an indie dog on the community road', t: 'Dog walks', d: 'A trained neighbour walks your dog, GPS-tracked, with photo updates.', p: 'From ₹149' },
+            { img: '/real/cat-visit.jpg', pos: '58% 40%', alt: 'A volunteer petting a grey cat at home', t: 'Cat home visits', d: 'Feeding, fresh water, litter and play, in your cat’s own home.', p: 'From ₹129' },
+            { img: '/real/boarding.jpg', pos: '75% 70%', alt: 'A beagle asleep on a rug at a host home while a cat watches', t: 'Overnight boarding', d: 'Your dog or cat sleeps over at a vetted host’s home in your community. Daily photos, vet on call.', p: 'From ₹449 a night', badge: 'New' },
+          ].map((s, i) => (
+            <Reveal key={s.t} delay={i * 110}>
+              <button onClick={() => onJoin(`service-${s.t}`)} className="pp-lift pp-zoom" style={{ ...card, padding: 0, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+                  <img src={s.img} alt={s.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: s.pos, display: 'block' }} />
+                  {s.badge && <span style={{ position: 'absolute', top: 14, left: 14, background: T.leaf, color: '#fff', fontWeight: 800, fontSize: 12, padding: '5px 12px', borderRadius: 99 }}>{s.badge}</span>}
+                </div>
+                <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                  <h3 style={{ margin: 0, fontSize: 21, fontWeight: 800, letterSpacing: '-.02em', color: T.ink }}>{s.t}</h3>
+                  <p style={{ margin: 0, fontSize: 15, color: T.sub, lineHeight: 1.55, flex: 1 }}>{s.d}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <span style={{ fontFamily: head, fontWeight: 800, color: T.ink }}>{s.p}</span>
+                    <span style={{ color: T.marigoldDark, fontWeight: 700, fontSize: 14, display: 'inline-flex', gap: 6, alignItems: 'center' }}>Get early access <Arrow /></span>
+                  </div>
+                </div>
+              </button>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+
+      {/* -------------------------------- pricing -------------------------------- */}
+      <Section id="pricing" band>
+        <Heading
+          kicker="Pricing"
+          title="Clear prices. Your neighbour keeps 70%."
+          sub="Tap any price to see exactly where the money goes and what that time with your pet looks like."
+        />
+        <Reveal><PriceExplainer onJoin={onJoin} /></Reveal>
+      </Section>
+
+      {/* ---------------------------- founding + volunteer ---------------------------- */}
+      <Section>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: GAP }}>
+          <Reveal>
+            <div style={{ borderRadius: 28, padding: 'clamp(26px, 3.4vw, 40px)', background: `linear-gradient(140deg, ${T.marigold}, #ef8a4a)`, color: '#fff', height: '100%', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -30, bottom: -40, opacity: .14 }}><Paw size={220} /></div>
+              <div style={{ ...eyebrow, color: '#fff', opacity: .9 }}>Founding 1,000</div>
+              <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(26px, 2.8vw, 36px)', letterSpacing: '-.025em', lineHeight: 1.1, margin: '0 0 12px' }}>
+                Be one of the first 1,000 pet parents.
+              </h3>
+              <p style={{ margin: '0 0 22px', fontSize: 16, lineHeight: 1.6, opacity: .95, maxWidth: 440 }}>
+                A free onboarding session for your pet, plus ₹100 off your first booking. ProxyPaw opens one community at a time, so tell your tower.
+              </p>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button className="pp-btn" onClick={() => onJoin('founding-1000')} style={{ ...btnPrimary, background: '#fff', color: T.marigoldDark, boxShadow: 'none' }}>Claim my founding spot</button>
+                <a className="pp-btn" href={SHARE_URL} target="_blank" rel="noreferrer" style={{ ...btnSecondary, background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,.6)', textDecoration: 'none' }}>Share with your tower</a>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={120}>
+            <div className="pp-zoom" style={{ borderRadius: 28, position: 'relative', minHeight: 360, height: '100%', color: '#fff' }}>
+              <img src="/real/meet-greet.jpg" alt="A volunteer kneeling to greet a golden retriever at a neighbour's door" loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '40% 50%' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(20,48,31,.88) 0%, rgba(20,48,31,.55) 55%, rgba(20,48,31,.1) 100%)' }} />
+              <div style={{ position: 'relative', padding: 'clamp(26px, 3.4vw, 40px)', maxWidth: 380 }}>
+                <div style={{ ...eyebrow, color: '#b9d3c0' }}>Love animals?</div>
+                <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(26px, 2.8vw, 36px)', letterSpacing: '-.025em', lineHeight: 1.1, margin: '0 0 12px' }}>
+                  Earn 70% caring for pets in your own community.
+                </h3>
+                <p style={{ margin: '0 0 22px', fontSize: 16, lineHeight: 1.6, opacity: .92 }}>
+                  Walk dogs before work, visit cats after class. Training, insurance and a steady set of furry regulars, a lift ride from home.
+                </p>
+                <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('volunteer-band', 'walker')}>Become a volunteer <Arrow /></button>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </Section>
+
+      {/* -------------------------------- journal -------------------------------- */}
+      <Section id="blog" band>
+        <Heading
+          kicker="The Paw Journal"
+          title="Care guides for dogs and cats."
+          action={<button className="pp-btn pp-btn-secondary" style={btnSecondary} onClick={onBlogClick}>Read all guides <Arrow /></button>}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: GAP }}>
+          {POSTS.map((p, i) => (
+            <Reveal key={p.tag} delay={i * 100}>
+              <button onClick={onBlogClick} className="pp-lift pp-zoom" style={{ ...card, padding: 0, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', width: '100%', height: '100%' }}>
+                <div style={{ aspectRatio: '16 / 10', overflow: 'hidden' }}>
+                  <img src={p.img} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: p.pos, display: 'block' }} />
+                </div>
+                <div style={{ padding: 20 }}>
+                  <span style={{ display: 'inline-block', background: T.leafPale, color: T.leaf, fontSize: 12, fontWeight: 700, padding: '5px 11px', borderRadius: 99, marginBottom: 12 }}>{p.tag}</span>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 800, letterSpacing: '-.015em', color: T.ink, lineHeight: 1.3 }}>{p.title}</h3>
+                  <p style={{ margin: 0, fontSize: 14.5, color: T.sub, lineHeight: 1.55 }}>{p.body}</p>
+                </div>
+              </button>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+
+      {/* ---------------------------------- FAQ ---------------------------------- */}
+      <Section id="faq">
+        <div className="pp-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, .8fr) minmax(0, 1.2fr)', gap: 'clamp(24px, 5vw, 72px)' }}>
+          <Reveal>
+            <div style={eyebrow}>Questions</div>
+            <h2 style={h2}>What pet parents ask first.</h2>
+            <p style={{ ...lead, marginTop: 16 }}>Anything else? The founder reads every waitlist note herself.</p>
+          </Reveal>
+          <Reveal delay={100}>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {FAQS.map((f, i) => (
+                <details key={f.q} className="pp-faq" open={i === 0} style={{ ...card, padding: '4px 20px' }}>
+                  <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '16px 0', fontFamily: head, fontWeight: 700, fontSize: 17, color: T.ink, minHeight: 44 }}>
+                    {f.q}
+                    <span className="pp-faq-plus" aria-hidden="true" style={{ width: 30, height: 30, borderRadius: '50%', background: T.leafPale, display: 'grid', placeItems: 'center', flexShrink: 0, color: T.leaf, fontSize: 20, fontWeight: 600 }}>+</span>
+                  </summary>
+                  <p style={{ margin: '0 0 18px', fontSize: 15.5, color: T.sub, lineHeight: 1.65 }}>{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </Section>
+
+      {/* --------------------------------- close --------------------------------- */}
+      <section style={{ padding: `0 0 ${SECTION}` }}>
+        <div style={shell}>
+          <Reveal>
+            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 32, minHeight: 420, display: 'grid', alignItems: 'end' }}>
+              <img src="/real/community.jpg" alt="" loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 70%' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(20,48,31,.15) 0%, rgba(20,48,31,.82) 100%)' }} />
+              <div style={{ position: 'relative', padding: 'clamp(28px, 5vw, 64px)', color: '#fff', maxWidth: 720 }}>
+                <h2 style={{ ...h2, color: '#fff' }}>Your community’s pack is forming.</h2>
+                <p style={{ ...lead, color: 'rgba(255,255,255,.9)', marginTop: 14 }}>
+                  Join in under a minute. Somewhere in your tower, a wagging tail is already waiting.
+                </p>
+                <div className="pp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 26 }}>
+                  <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('closing-cta')}>Join the waitlist, it’s free <Arrow /></button>
+                  <button className="pp-btn" style={{ ...btnSecondary, background: 'rgba(255,255,255,.12)', color: '#fff', borderColor: 'rgba(255,255,255,.5)' }} onClick={onTourClick}>See inside the app</button>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+          <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 16, textAlign: 'center' }}>
+            Photographs are illustrative scenes of Hyderabad gated communities. Community names show where ProxyPaw is built for, not partnerships.
+          </p>
+        </div>
+      </section>
     </div>
   );
-}
-
-function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

@@ -36,9 +36,9 @@ export default function CommunityList({ communities, isLightMode, onCommunitySel
     );
   }, [communities, query]);
 
-  const card = isLightMode ? 'bg-white border-[#eee3cf]' : 'bg-[#1a1410] border-[#3a2f24]';
-  const text = isLightMode ? 'text-[#2a2118]' : 'text-white';
-  const sub = isLightMode ? 'text-[#8b7a63]' : 'text-[#a08e73]';
+  const card = isLightMode ? 'bg-white border-[#e1ecdc]' : 'bg-[#1a1410] border-[#3a2f24]';
+  const text = isLightMode ? 'text-[#14301f]' : 'text-white';
+  const sub = isLightMode ? 'text-[#5e7266]' : 'text-[#7c8f83]';
 
   return (
     <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
@@ -70,8 +70,8 @@ export default function CommunityList({ communities, isLightMode, onCommunitySel
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.walkerCount} walkers</span>
               <span className="flex items-center gap-1"><Star className="w-3 h-3" />{c.rating}</span>
               {c.activeWalks > 0 && (
-                <span className="flex items-center gap-1 text-[#3f6c51]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#7a9a4e]" />
+                <span className="flex items-center gap-1 text-[#2e7d4f]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#49a85a]" />
                   {c.activeWalks} walking now
                 </span>
               )}

@@ -149,7 +149,7 @@ export default function App() {
           <Route
             path="/admin"
             element={
-              <Suspense fallback={<div style={{ minHeight: '100vh', background: '#f6f1e7' }} />}>
+              <Suspense fallback={<div style={{ minHeight: '100vh', background: '#f4f8ef' }} />}>
                 <AdminPage />
               </Suspense>
             }

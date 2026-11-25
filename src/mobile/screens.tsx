@@ -1,32 +1,42 @@
 /**
  * ProxyPaw mobile app UI — display mockups for the "Inside the app" page.
  *
- * Seven phone screens (390x844) in the site's design system: cream ground,
- * orange primary, ink, forest green and gold accents, Fredoka headings and
- * Nunito body. Captured as uniform screenshots by tools at /mshots.html.
- * Display-only: no live logic, sample data throughout. No fake iOS status
- * bar or keyboard, per mobile-mockup rules — the real device draws those.
+ * Ten phone screens (390x844) in the "Garden Community" system (DESIGN.md):
+ * garden-mist canvas, white hairline cards, leaf-green accents, marigold as
+ * the one primary action, sun for highlights, Plus Jakarta Sans headings and
+ * Inter body. Captured as uniform screenshots by the harness at /mshots.html.
+ * Display-only: no live logic, sample data throughout (demo community
+ * Prestige High Fields). No fake iOS status bar or keyboard, per
+ * mobile-mockup rules — the real device draws those.
  */
 import type { CSSProperties, ReactNode } from 'react';
 
 export const C = {
-  cream: '#f6f1e7', card: '#fffdf8', ink: '#2a2118', orange: '#e0662f',
-  orangeDark: '#c24e1d', green: '#3f6c51', greenPale: '#eef0e4', gold: '#f0b429',
-  band: '#f1eadb', border: '#eee3cf', muted: '#8b7a63', muted2: '#a08e73',
-  sub: '#6f5f4b', btnBorder: '#d9cbb2', peach: '#f9e7da', cream2: '#fdf9f0',
+  canvas: '#f4f8ef', canvas2: '#fbfdf8', card: '#ffffff', ink: '#14301f',
+  orange: '#e0662f', orangeDark: '#c24e1d', green: '#2e7d4f', greenBright: '#49a85a',
+  greenPale: '#e7f4e4', greenChip: '#cfe5cb', gold: '#f0b429', sunPale: '#fff5dc',
+  sunBorder: '#f5e2a6', band: '#eaf3e4', border: '#e1ecdc', bandBorder: '#d8e8d2',
+  muted: '#5e7266', muted2: '#7c8f83', sub: '#3f5547', btnBorder: '#c9dcc4',
+  sky: '#dcf0f6', onDark: '#b9d3c0',
+  /* legacy aliases, kept for any importer */
+  cream: '#f4f8ef', cream2: '#fbfdf8', peach: '#fff5dc',
 };
-const F = "'Fredoka', system-ui, sans-serif";
+const F = "'Plus Jakarta Sans', system-ui, sans-serif";
+const BODY = "'Inter', system-ui, sans-serif";
 
+/* Local photoreal crops live in public/real/app/ (illustrative, generated).
+   Unsplash only where no local image fits. */
 const IMG = {
-  biscuit: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&q=80&auto=format&fit=crop',
-  momo: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&q=80&auto=format&fit=crop',
-  walkPhoto: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80&auto=format&fit=crop',
-  boarding: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=500&q=80&auto=format&fit=crop',
-  sitting: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=500&q=80&auto=format&fit=crop',
-  walking: 'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=500&q=80&auto=format&fit=crop',
+  biscuit: '/real/app/biscuit.jpg',
+  momo: '/real/app/momo.jpg',
+  walkPhoto: '/real/app/walk-photo.jpg',
+  boarding: '/real/app/boarding-sq.jpg',
+  sitting: '/real/app/sitting.jpg',
+  walking: '/real/app/walking.jpg',
+  priya: '/real/walker-avatar.jpg',
+  lily: '/real/app/lily.jpg',
+  lolio: '/real/app/lolio.jpg',
   chai: 'https://images.unsplash.com/photo-1518288774672-b94e808873ff?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
-  lily: 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
-  lolio: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
   donut: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=300&q=75&auto=format&fit=crop&crop=faces',
   rhea: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&q=75&auto=format&fit=crop&crop=faces',
   arjun: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&q=75&auto=format&fit=crop&crop=faces',
@@ -60,6 +70,8 @@ const paths = {
   star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
   cash: 'M2 7h20v10H2zM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
   swap: 'M17 1l4 4-4 4M21 5H9a4 4 0 0 0-4 4v2M7 23l-4-4 4-4M3 19h12a4 4 0 0 0 4-4v-2',
+  msg: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
+  leaf: 'M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10zM2 21c0-3 1.85-5.36 5.08-6',
 };
 function Paw({ size = 18, color = '#fff' }: { size?: number; color?: string }) {
   return (
@@ -71,11 +83,28 @@ function Paw({ size = 18, color = '#fff' }: { size?: number; color?: string }) {
   );
 }
 
+/* ------------------------------ tokens ------------------------------ */
+
+const H = (size: number, weight = 700): CSSProperties => ({ fontFamily: F, fontWeight: weight, fontSize: size, letterSpacing: '-0.02em' });
+const card: CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, boxShadow: '0 6px 18px rgba(28,60,40,.05)' };
+const field: CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 16 };
+const label: CSSProperties = { ...H(13.5, 700), color: C.ink, marginBottom: 7, display: 'block' };
+const hint: CSSProperties = { fontSize: 11, color: C.muted2, lineHeight: 1.45 };
+const eyebrow: CSSProperties = { fontFamily: F, fontWeight: 700, fontSize: 11, letterSpacing: '0.14em', color: C.green, textTransform: 'uppercase' };
+const primary: CSSProperties = { ...H(15.5, 700), letterSpacing: '-0.01em', textAlign: 'center', background: C.orange, color: '#fff', borderRadius: 999, padding: '15px 0', boxShadow: '0 12px 28px rgba(224,102,47,.3)' };
+const ghost: CSSProperties = { ...H(12.5, 700), letterSpacing: '-0.01em', background: C.card, border: `1.5px solid ${C.btnBorder}`, color: C.ink, borderRadius: 999, padding: '8px 15px' };
+const chip = (bg = C.greenPale, fg = C.green): CSSProperties => ({ fontFamily: F, fontWeight: 700, fontSize: 10.5, background: bg, color: fg, borderRadius: 999, padding: '4px 10px', whiteSpace: 'nowrap' });
+const pill = (sel: boolean): CSSProperties => ({
+  background: sel ? C.orange : C.card, color: sel ? '#fff' : C.ink,
+  border: `1px solid ${sel ? C.orange : C.border}`,
+  boxShadow: sel ? '0 8px 18px rgba(224,102,47,.26)' : 'none',
+});
+
 /* ------------------------------ shell ------------------------------ */
 
 function Phone({ children, nav }: { children: ReactNode; nav?: 'home' | 'bookings' | 'community' | 'profile' }) {
   return (
-    <div style={{ width: 390, height: 844, background: C.cream, color: C.ink, fontFamily: "'Nunito', system-ui, sans-serif", position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 390, height: 844, background: `linear-gradient(180deg, ${C.greenPale} 0%, ${C.canvas} 220px)`, color: C.ink, fontFamily: BODY, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', WebkitFontSmoothing: 'antialiased' }}>
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>{children}</div>
       {nav && <BottomNav active={nav} />}
     </div>
@@ -91,16 +120,17 @@ function BottomNav({ active }: { active: string }) {
     { key: 'profile', label: 'Profile', d: paths.user },
   ];
   return (
-    <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '10px 8px 22px', flexShrink: 0 }}>
+    <div style={{ position: 'absolute', left: 14, right: 14, bottom: 16, background: 'rgba(255,255,255,.96)', border: `1px solid ${C.border}`, borderRadius: 26, boxShadow: '0 14px 34px rgba(28,60,40,.14)', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '9px 6px 8px' }}>
       {items.map((it) =>
         it.key === 'book' ? (
-          <div key={it.key} style={{ width: 54, height: 54, borderRadius: 20, background: C.orange, display: 'grid', placeItems: 'center', boxShadow: '0 10px 22px rgba(224,102,47,.35)', marginTop: -26 }}>
-            <Ic d={it.d} size={24} color="#fff" sw={2.4} />
+          <div key={it.key} style={{ width: 50, height: 50, borderRadius: 999, background: C.orange, display: 'grid', placeItems: 'center', boxShadow: '0 10px 22px rgba(224,102,47,.38)', marginTop: -24, border: `4px solid ${C.canvas}` }}>
+            <Ic d={it.d} size={22} color="#fff" sw={2.4} />
           </div>
         ) : (
           <div key={it.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 58 }}>
-            <Ic d={it.d} size={21} color={active === it.key ? C.orange : C.muted2} sw={active === it.key ? 2.1 : 1.7} />
-            <span style={{ fontFamily: F, fontWeight: 500, fontSize: 10.5, color: active === it.key ? C.orange : C.muted2 }}>{it.label}</span>
+            <Ic d={it.d} size={20} color={active === it.key ? C.green : C.muted2} sw={active === it.key ? 2.1 : 1.7} />
+            <span style={{ fontFamily: F, fontWeight: active === it.key ? 700 : 600, fontSize: 10.5, color: active === it.key ? C.green : C.muted2 }}>{it.label}</span>
+            <span style={{ width: 4, height: 4, borderRadius: 99, background: active === it.key ? C.green : 'transparent' }} />
           </div>
         ),
       )}
@@ -111,18 +141,24 @@ function BottomNav({ active }: { active: string }) {
 function Header({ title, right }: { title: string; right?: ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 14px', flexShrink: 0 }}>
-      <span style={{ width: 38, height: 38, borderRadius: 13, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center' }}>
+      <span style={{ width: 40, height: 40, borderRadius: 999, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(28,60,40,.06)' }}>
         <Ic d={paths.back} size={18} />
       </span>
-      <span style={{ fontFamily: F, fontWeight: 600, fontSize: 18, flex: 1, whiteSpace: 'nowrap' }}>{title}</span>
+      <span style={{ ...H(19), flex: 1, whiteSpace: 'nowrap' }}>{title}</span>
       {right}
     </div>
   );
 }
 
-const card: CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 20 };
-const label: CSSProperties = { fontFamily: F, fontWeight: 600, fontSize: 13.5, color: C.ink, marginBottom: 6, display: 'block' };
-const hint: CSSProperties = { fontSize: 11, color: C.muted2, lineHeight: 1.45 };
+function Avatar({ src, size, radius = 999, ring = false }: { src: string; size: number; radius?: number; ring?: boolean }) {
+  return <img src={src} alt="" style={{ width: size, height: size, borderRadius: radius, objectFit: 'cover', flexShrink: 0, border: ring ? `2.5px solid ${C.card}` : 'none', boxShadow: ring ? '0 4px 12px rgba(28,60,40,.14)' : 'none' }} />;
+}
+
+function Initial({ n, bg, size = 46 }: { n: string; bg: string; size?: number }) {
+  return (
+    <span style={{ width: size, height: size, borderRadius: 999, background: bg, display: 'grid', placeItems: 'center', color: '#fff', ...H(size * 0.38), flexShrink: 0 }}>{n}</span>
+  );
+}
 
 /* ------------------------------ 1. HOME ------------------------------ */
 
@@ -130,79 +166,88 @@ function Home() {
   return (
     <Phone nav="home">
       <div style={{ padding: '22px 20px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-          <div>
-            <div style={{ fontSize: 13, color: C.muted }}>Good morning</div>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22 }}>Ananya · Prestige High Fields</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.green, fontWeight: 600, marginBottom: 2 }}>
+              <Ic d={paths.pin} size={12} color={C.green} sw={2} /> Prestige High Fields
+            </div>
+            <div style={{ ...H(23, 800) }}>Good morning, Ananya</div>
           </div>
-          <span style={{ width: 42, height: 42, borderRadius: 15, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center', position: 'relative' }}>
+          <span style={{ width: 42, height: 42, borderRadius: 999, background: C.card, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center', position: 'relative' }}>
             <Ic d={paths.bell} size={19} />
             <span style={{ position: 'absolute', top: 9, right: 10, width: 8, height: 8, borderRadius: 99, background: C.orange, border: `2px solid ${C.card}` }} />
           </span>
         </div>
 
         {/* pets */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 9, marginBottom: 16 }}>
           {[{ n: 'Biscuit', img: IMG.biscuit, on: true }, { n: 'Momo', img: IMG.momo, on: false }].map((p) => (
-            <div key={p.n} style={{ display: 'flex', alignItems: 'center', gap: 8, background: p.on ? C.ink : C.card, color: p.on ? C.cream2 : C.ink, border: `1px solid ${p.on ? C.ink : C.border}`, borderRadius: 99, padding: '6px 14px 6px 6px' }}>
-              <img src={p.img} alt={p.n} style={{ width: 30, height: 30, borderRadius: 99, objectFit: 'cover' }} />
-              <span style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5 }}>{p.n}</span>
+            <div key={p.n} style={{ display: 'flex', alignItems: 'center', gap: 8, background: p.on ? C.green : C.card, color: p.on ? '#fff' : C.ink, border: `1px solid ${p.on ? C.green : C.border}`, borderRadius: 99, padding: '5px 15px 5px 5px', boxShadow: p.on ? '0 8px 18px rgba(46,125,79,.25)' : 'none' }}>
+              <img src={p.img} alt={p.n} style={{ width: 32, height: 32, borderRadius: 99, objectFit: 'cover', border: p.on ? '2px solid rgba(255,255,255,.7)' : 'none' }} />
+              <span style={{ ...H(13.5) }}>{p.n}</span>
             </div>
           ))}
-          <div style={{ display: 'grid', placeItems: 'center', width: 42, height: 42, borderRadius: 99, border: `1.5px dashed ${C.btnBorder}`, color: C.muted2 }}>
-            <Ic d={paths.plus} size={16} color={C.muted2} />
+          <div style={{ display: 'grid', placeItems: 'center', width: 44, height: 44, borderRadius: 99, border: `1.5px dashed ${C.btnBorder}`, background: C.canvas2 }}>
+            <Ic d={paths.plus} size={16} color={C.muted} />
           </div>
         </div>
 
-        {/* next booking */}
-        <div style={{ ...card, background: C.ink, color: C.cream2, border: 'none', padding: 18, marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
-          <span style={{ position: 'absolute', right: -14, top: -12, opacity: 0.08 }}><Paw size={90} /></span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#c9b799', marginBottom: 6 }}>
-            <span style={{ width: 7, height: 7, borderRadius: 99, background: '#7a9a4e' }} />
-            NEXT UP · TODAY 7:00 AM
+        {/* next booking: photo card */}
+        <div style={{ ...card, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ position: 'relative', height: 118 }}>
+            <img src={IMG.walkPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(20,48,31,0) 30%, rgba(20,48,31,.7) 100%)' }} />
+            <span style={{ position: 'absolute', left: 12, top: 12, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.94)', borderRadius: 99, padding: '5px 11px', fontFamily: F, fontWeight: 700, fontSize: 10.5, letterSpacing: '0.08em', color: C.green }}>
+              <span style={{ width: 7, height: 7, borderRadius: 99, background: C.greenBright }} /> NEXT UP · TODAY 7:00 AM
+            </span>
+            <div style={{ position: 'absolute', left: 14, bottom: 11, right: 14, display: 'flex', alignItems: 'center', gap: 9 }}>
+              <Avatar src={IMG.priya} size={30} ring />
+              <span style={{ ...H(16.5), color: '#fff' }}>1 hour walk with Priya</span>
+            </div>
           </div>
-          <div style={{ fontFamily: F, fontWeight: 600, fontSize: 18, marginBottom: 3 }}>1 hour walk with Priya</div>
-          <div style={{ fontSize: 12.5, color: '#c9b799', marginBottom: 12 }}>Tower C lawn loop · Photo updates every 15 min</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <span style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, background: C.orange, color: '#fff', borderRadius: 99, padding: '8px 16px' }}>Track live</span>
-            <span style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, border: '1.2px solid rgba(253,249,240,.3)', borderRadius: 99, padding: '8px 16px' }}>Reschedule</span>
+          <div style={{ padding: '11px 14px 13px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ flex: 1, fontSize: 11.5, color: C.muted, lineHeight: 1.4 }}>Tower C lawn loop · photo every 15 min</span>
+            <span style={{ ...H(12.5), background: C.orange, color: '#fff', borderRadius: 99, padding: '8px 14px', boxShadow: '0 8px 18px rgba(224,102,47,.28)' }}>Track live</span>
           </div>
         </div>
 
         {/* paw points */}
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', marginBottom: 16 }}>
-          <span style={{ width: 36, height: 36, borderRadius: 12, background: C.gold, display: 'grid', placeItems: 'center' }}><Paw size={17} color={C.ink} /></span>
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', marginBottom: 16, background: C.sunPale, borderColor: C.sunBorder, boxShadow: 'none' }}>
+          <span style={{ width: 36, height: 36, borderRadius: 999, background: C.gold, display: 'grid', placeItems: 'center' }}><Paw size={17} color={C.ink} /></span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>250 Paw Points</div>
-            <div style={{ fontSize: 11.5, color: C.muted }}>+25 on every booking · redeem on your next walk</div>
+            <div style={{ ...H(14.5) }}>250 Paw Points</div>
+            <div style={{ fontSize: 11.5, color: C.sub }}>+25 on every booking · redeem on your next walk</div>
           </div>
-          <Ic d={paths.chevR} size={16} color={C.muted2} />
+          <Ic d={paths.chevR} size={16} color={C.muted} />
         </div>
 
         {/* services */}
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 16.5, marginBottom: 10 }}>Book a service</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ ...H(16.5) }}>Book a service</div>
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: C.green }}>See all</span>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9, marginBottom: 16 }}>
           {[
             { t: 'Dog walking', p: 'from ₹149', img: IMG.walking },
             { t: 'Home boarding', p: 'from ₹449', img: IMG.boarding },
             { t: 'Pet sitting', p: '₹129 / visit', img: IMG.sitting },
           ].map((s) => (
-            <div key={s.t} style={{ ...card, overflow: 'hidden' }}>
-              <img src={s.img} alt="" style={{ width: '100%', height: 64, objectFit: 'cover' }} />
+            <div key={s.t} style={{ ...card, overflow: 'hidden', borderRadius: 18 }}>
+              <img src={s.img} alt="" style={{ width: '100%', height: 66, objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '8px 9px 10px' }}>
-                <div style={{ fontFamily: F, fontWeight: 600, fontSize: 12, lineHeight: 1.2 }}>{s.t}</div>
-                <div style={{ fontSize: 10.5, color: C.orangeDark, fontWeight: 700 }}>{s.p}</div>
+                <div style={{ ...H(12), lineHeight: 1.2 }}>{s.t}</div>
+                <div style={{ fontSize: 10.5, color: C.orangeDark, fontWeight: 700, marginTop: 2 }}>{s.p}</div>
               </div>
             </div>
           ))}
         </div>
 
         {/* update feed */}
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 16.5, marginBottom: 10 }}>From your last booking</div>
-        <div style={{ ...card, display: 'flex', gap: 12, padding: 12 }}>
-          <img src={IMG.walkPhoto} alt="" style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover' }} />
+        <div style={{ ...H(16.5), marginBottom: 10 }}>From your last booking</div>
+        <div style={{ ...card, display: 'flex', gap: 12, padding: 11 }}>
+          <img src={IMG.biscuit} alt="" style={{ width: 62, height: 62, borderRadius: 16, objectFit: 'cover' }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5 }}>Priya sent 4 photos</div>
+            <div style={{ ...H(13.5) }}>Priya sent 4 photos</div>
             <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.45 }}>"Biscuit made a new friend near Tower B. 2.1 km, all zoomies."</div>
             <div style={{ fontSize: 10.5, color: C.muted2, marginTop: 3 }}>Yesterday · 5:12 PM</div>
           </div>
@@ -236,31 +281,27 @@ function Services() {
     <Phone nav="bookings">
       <Header title="Book a service" />
       <div style={{ padding: '2px 20px 20px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
           {rows.map((r) => (
-            <div key={r.t} style={{ ...card, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', gap: 12, padding: 12 }}>
-                <img src={r.img} alt="" style={{ width: 86, height: 86, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, marginBottom: 2 }}>{r.t}</div>
-                  <div style={{ fontSize: 11.5, color: C.orangeDark, fontWeight: 700, marginBottom: 5 }}>{r.price}</div>
-                  <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.45 }}>{r.d}</div>
-                  <div style={{ display: 'flex', gap: 6, marginTop: 7 }}>
-                    {r.tags.map((tg) => (
-                      <span key={tg} style={{ fontSize: 10, fontWeight: 700, background: C.greenPale, color: C.green, borderRadius: 99, padding: '3px 9px' }}>{tg}</span>
-                    ))}
-                  </div>
+            <div key={r.t} style={{ ...card, display: 'flex', gap: 12, padding: 11 }}>
+              <img src={r.img} alt="" style={{ width: 88, height: 104, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ ...H(15.5), marginBottom: 2 }}>{r.t}</div>
+                <div style={{ fontSize: 11.5, color: C.orangeDark, fontWeight: 700, marginBottom: 5 }}>{r.price}</div>
+                <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.45 }}>{r.d}</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 7 }}>
+                  {r.tags.map((tg) => <span key={tg} style={chip()}>{tg}</span>)}
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ ...card, background: C.peach, borderColor: '#f4d9c4', padding: 14, marginTop: 14 }}>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <span style={{ width: 34, height: 34, borderRadius: 12, background: C.orange, display: 'grid', placeItems: 'center', flexShrink: 0 }}><Paw size={16} /></span>
+        <div style={{ ...card, background: C.sunPale, borderColor: C.sunBorder, boxShadow: 'none', padding: 14, marginTop: 13 }}>
+          <div style={{ display: 'flex', gap: 11 }}>
+            <span style={{ width: 34, height: 34, borderRadius: 999, background: C.gold, display: 'grid', placeItems: 'center', flexShrink: 0 }}><Paw size={16} color={C.ink} /></span>
             <div>
-              <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5, marginBottom: 3 }}>Need something extra?</div>
+              <div style={{ ...H(13.5), marginBottom: 3 }}>Need something extra?</div>
               <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.5 }}>
                 Missing food, medicine or equipment at home? Ask in your booking. If your volunteer accepts, they bring it at MRP, no markup.
               </div>
@@ -268,8 +309,8 @@ function Services() {
           </div>
         </div>
 
-        <div style={{ ...card, background: C.greenPale, borderColor: '#d9dec4', padding: '11px 14px', marginTop: 12, textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.green }}>
-          We only list what we can actually deliver. Grooming add-ons are next.
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: C.greenPale, border: `1px solid ${C.greenChip}`, borderRadius: 999, padding: '10px 14px', marginTop: 11, fontSize: 11.5, fontWeight: 600, color: C.green }}>
+          <Ic d={paths.leaf} size={13} color={C.green} sw={2} /> We only list what we can deliver. Grooming is next.
         </div>
       </div>
     </Phone>
@@ -283,30 +324,32 @@ function Pet() {
   const on = ['Active & zoomy', 'Friendly with dogs', 'Loves cuddles', 'Food motivated'];
   return (
     <Phone>
-      <Header title="Your pet" />
+      <Header title="Your pet" right={<span style={chip()}>Dog · Golden retriever</span>} />
       <div style={{ padding: '0 20px 30px', overflow: 'hidden' }}>
         {/* photo + name */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
           <div style={{ position: 'relative' }}>
-            <img src={IMG.biscuit} alt="Biscuit" style={{ width: 76, height: 76, borderRadius: 26, objectFit: 'cover', border: `3px solid ${C.card}`, boxShadow: '0 8px 20px rgba(74,52,24,.16)' }} />
-            <span style={{ position: 'absolute', right: -5, bottom: -5, width: 27, height: 27, borderRadius: 10, background: C.orange, display: 'grid', placeItems: 'center', border: `2px solid ${C.cream}` }}>
+            <img src={IMG.biscuit} alt="Biscuit" style={{ width: 78, height: 78, borderRadius: 999, objectFit: 'cover', border: `3px solid ${C.card}`, boxShadow: '0 10px 24px rgba(28,60,40,.18)' }} />
+            <span style={{ position: 'absolute', right: -3, bottom: -3, width: 28, height: 28, borderRadius: 999, background: C.orange, display: 'grid', placeItems: 'center', border: `2.5px solid ${C.canvas}` }}>
               <Ic d={paths.camera} size={13} color="#fff" />
             </span>
           </div>
           <div style={{ flex: 1 }}>
             <span style={label}>Name <span style={{ color: C.orangeDark }}>*</span></span>
-            <div style={{ ...card, borderRadius: 14, padding: '10px 14px', fontSize: 15, fontWeight: 700 }}>Biscuit</div>
+            <div style={{ ...field, padding: '10px 14px', fontSize: 15, fontWeight: 600 }}>Biscuit</div>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1 }}>
             <span style={label}>Birth date <span style={{ color: C.orangeDark }}>*</span></span>
-            <div style={{ ...card, borderRadius: 14, padding: '10px 14px', fontSize: 14 }}>12 Mar 2024</div>
+            <div style={{ ...field, padding: '10px 14px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              12 Mar 2024 <Ic d={paths.calendar} size={15} color={C.muted2} />
+            </div>
           </div>
           <div style={{ width: 96 }}>
             <span style={label}>Age</span>
-            <div style={{ borderRadius: 14, padding: '10px 14px', fontSize: 14, background: C.greenPale, border: '1px solid #d9dec4', color: C.green, fontWeight: 700 }}>2 yrs</div>
+            <div style={{ borderRadius: 16, padding: '10px 14px', fontSize: 14, background: C.greenPale, border: `1px solid ${C.greenChip}`, color: C.green, fontWeight: 700 }}>2 yrs</div>
           </div>
         </div>
 
@@ -316,20 +359,20 @@ function Pet() {
           {traits.map((t) => {
             const sel = on.includes(t);
             return (
-              <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, borderRadius: 99, padding: '6px 11px', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.sub, border: `1px solid ${sel ? C.orange : C.border}` }}>
+              <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, borderRadius: 99, padding: '6px 11px', background: sel ? C.green : C.card, color: sel ? '#fff' : C.sub, border: `1px solid ${sel ? C.green : C.border}` }}>
                 {sel && <Ic d={paths.check} size={11} color="#fff" sw={3} />}{t}
               </span>
             );
           })}
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, borderRadius: 99, padding: '6px 11px', background: C.card, border: `1.5px dashed ${C.btnBorder}`, color: C.muted }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 600, borderRadius: 99, padding: '6px 11px', background: C.canvas2, border: `1.5px dashed ${C.btnBorder}`, color: C.muted }}>
             Other: <em style={{ fontStyle: 'normal', color: C.ink }}>gentle giant energy</em>
           </span>
         </div>
         <div style={{ ...hint, marginBottom: 12 }}>Other: 5 words max.</div>
 
         {/* medical */}
-        <span style={label}>Medical & care <span style={{ fontWeight: 400, color: C.muted2 }}>(optional)</span></span>
-        <div style={{ ...card, borderRadius: 14, padding: '10px 14px', fontSize: 12.5, color: C.sub, lineHeight: 1.5, marginBottom: 4 }}>
+        <span style={label}>Medical & care <span style={{ fontWeight: 500, color: C.muted2 }}>(optional)</span></span>
+        <div style={{ ...field, padding: '10px 14px', fontSize: 12.5, color: C.sub, lineHeight: 1.5, marginBottom: 4 }}>
           Monthly deworming on the 5th. Fish-oil capsule with dinner. Mild chicken allergy, no chicken treats.
         </div>
         <div style={{ ...hint, display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -337,17 +380,16 @@ function Pet() {
         </div>
 
         {/* instructions */}
-        <span style={label}>Instructions for your volunteer <span style={{ fontWeight: 400, color: C.muted2 }}>(optional)</span></span>
-        <div style={{ ...card, borderRadius: 14, padding: '10px 14px', fontSize: 12.5, color: C.sub, lineHeight: 1.5, marginBottom: 4 }}>
+        <span style={label}>Instructions for your volunteer <span style={{ fontWeight: 500, color: C.muted2 }}>(optional)</span></span>
+        <div style={{ ...field, padding: '10px 14px', fontSize: 12.5, color: C.sub, lineHeight: 1.5, marginBottom: 4 }}>
           Photo update every 15 minutes on walks. For boarding: dinner at 8 PM, one scoop, and he sleeps with the hallway light on.
         </div>
-        <div style={{ ...hint, marginBottom: 16 }}>
-          Keep it practical: only requests our volunteers can actually carry out. 200 words max. Only your booked volunteer sees this.
+        <div style={{ ...hint, marginBottom: 16, display: 'flex', gap: 6 }}>
+          <Ic d={paths.shield} size={12} color={C.green} sw={2} />
+          <span>Keep it practical: only requests our volunteers can actually carry out. 200 words max. Only your booked volunteer sees this.</span>
         </div>
 
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, textAlign: 'center', background: C.orange, color: '#fff', borderRadius: 99, padding: '15px 0', boxShadow: '0 10px 24px rgba(224,102,47,.3)', marginBottom: 6 }}>
-          Save Biscuit's profile
-        </div>
+        <div style={{ ...primary, marginBottom: 6 }}>Save Biscuit's profile</div>
       </div>
     </Phone>
   );
@@ -357,51 +399,54 @@ function Pet() {
 
 function Walkers() {
   const vols = [
-    { n: 'Priya S.', tower: 'Tower C · 2 min away', rating: '4.9', walks: 98, badge: 'Walks Biscuit weekly', top: true },
+    { n: 'Priya S.', tower: 'Tower C · 2 min away', rating: '4.9', walks: 98, badge: 'Walks Biscuit weekly', top: true, img: IMG.priya },
     { n: 'Marcus R.', tower: 'Tower A · 4 min away', rating: '5.0', walks: 127, badge: 'Boarding host', top: true },
     { n: 'Ananya M.', tower: 'Tower B · 3 min away', rating: '4.9', walks: 84, badge: 'Great with cats', top: false },
     { n: 'Rahul K.', tower: 'Tower D · 6 min away', rating: '4.7', walks: 63, badge: 'Weekend sitter', top: false },
   ];
-  const colors = [C.orange, C.green, C.gold, C.orangeDark];
+  const colors = [C.green, C.green, C.greenBright, '#1f6b3a'];
   return (
     <Phone>
-      <Header title="Volunteers nearby" right={<span style={{ fontFamily: F, fontWeight: 600, fontSize: 10.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '5px 10px', whiteSpace: 'nowrap' }}>Prestige High Fields</span>} />
+      <Header title="Volunteers nearby" right={<span style={chip()}>Prestige High Fields</span>} />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
         <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 12, lineHeight: 1.5 }}>
           Every volunteer lives in your community: Aadhaar-verified, background-checked and safety-trained before their first booking.
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {vols.map((v, i) => (
-            <div key={v.n} style={{ ...card, padding: 14 }}>
+            <div key={v.n} style={{ ...card, padding: 13 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <span style={{ width: 48, height: 48, borderRadius: 17, background: colors[i], display: 'grid', placeItems: 'center', color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 17 }}>
-                  {v.n[0]}
-                </span>
+                <div style={{ position: 'relative' }}>
+                  {v.img ? <Avatar src={v.img} size={48} /> : <Initial n={v.n[0]} bg={colors[i]} size={48} />}
+                  <span style={{ position: 'absolute', right: -2, bottom: -2, width: 18, height: 18, borderRadius: 99, background: C.card, display: 'grid', placeItems: 'center' }}>
+                    <span style={{ width: 14, height: 14, borderRadius: 99, background: C.green, display: 'grid', placeItems: 'center' }}><Ic d={paths.check} size={8} color="#fff" sw={3.5} /></span>
+                  </span>
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontFamily: F, fontWeight: 600, fontSize: 15 }}>{v.n}</span>
-                    {v.top && <span style={{ fontSize: 9.5, fontWeight: 800, background: C.gold, color: C.ink, borderRadius: 99, padding: '2px 8px' }}>TOP RATED</span>}
+                    <span style={{ ...H(15) }}>{v.n}</span>
+                    {v.top && <span style={{ ...chip(C.gold, C.ink), fontSize: 9, padding: '2px 8px', letterSpacing: '0.04em' }}>TOP RATED</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: C.muted, marginTop: 2 }}>
                     <Ic d={paths.pin} size={11} color={C.muted2} /> {v.tower}
                   </div>
                 </div>
-                <span style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5, background: C.orange, color: '#fff', borderRadius: 99, padding: '9px 16px' }}>Book</span>
+                <span style={{ ...H(13), background: C.orange, color: '#fff', borderRadius: 99, padding: '9px 17px', boxShadow: '0 8px 18px rgba(224,102,47,.25)' }}>Book</span>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.band}`, fontSize: 11.5, color: C.sub, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Ic d={paths.star} size={12} color={C.gold} fill={C.gold} /> {v.rating} · {v.walks} bookings</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: C.green, fontWeight: 700 }}><Ic d={paths.shield} size={12} color={C.green} /> Verified</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Ic d={paths.star} size={12} color={C.gold} fill={C.gold} /> <b style={{ fontWeight: 700, color: C.ink }}>{v.rating}</b> · {v.walks} bookings</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: C.green, fontWeight: 600 }}><Ic d={paths.shield} size={12} color={C.green} /> Verified</span>
                 <span style={{ color: C.muted2 }}>{v.badge}</span>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ ...card, background: C.greenPale, borderColor: '#dfe4cf', padding: 14, marginTop: 14, display: 'flex', gap: 11, alignItems: 'center' }}>
-          <span style={{ width: 40, height: 40, borderRadius: 14, background: C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-            <Ic d={paths.shield} size={19} color="#fff" />
+        <div style={{ ...card, background: C.greenPale, borderColor: C.greenChip, boxShadow: 'none', padding: 13, marginTop: 13, display: 'flex', gap: 11, alignItems: 'center' }}>
+          <span style={{ width: 38, height: 38, borderRadius: 999, background: C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Ic d={paths.shield} size={18} color="#fff" />
           </span>
-          <div style={{ fontSize: 12, color: C.green, lineHeight: 1.5 }}>
-            <span style={{ fontFamily: F, fontWeight: 600 }}>Meet them first, always.</span> Every first booking starts with a free meet-and-greet at your door, and volunteers keep 70% of what you pay.
+          <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.5 }}>
+            <span style={{ ...H(12.5), color: C.green }}>Meet them first, always.</span> Every first booking starts with a free meet-and-greet at your door, and volunteers keep 70% of what you pay.
           </div>
         </div>
       </div>
@@ -414,57 +459,67 @@ function Walkers() {
 function Booking() {
   return (
     <Phone>
-      <Header title="Book a walk" />
+      <Header title="Book a walk" right={<span style={chip()}>Step 2 of 3</span>} />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
         {/* pet */}
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 11, marginBottom: 14 }}>
-          <img src={IMG.biscuit} alt="" style={{ width: 44, height: 44, borderRadius: 15, objectFit: 'cover' }} />
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 10, marginBottom: 16 }}>
+          <Avatar src={IMG.biscuit} size={46} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Biscuit</div>
+            <div style={{ ...H(14.5) }}>Biscuit</div>
             <div style={{ fontSize: 11.5, color: C.muted }}>Golden retriever · 2 yrs · Active & zoomy</div>
           </div>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.orangeDark }}>Change</span>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.green, paddingRight: 6 }}>Change</span>
         </div>
 
         <span style={label}>Duration</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
-          {[['30 min', '₹149', false], ['1 hour', '₹249', true], ['1.5 hrs', '₹349', false], ['2 hrs', '₹449', false]].map(([t, p, sel]) => (
-            <div key={t as string} style={{ textAlign: 'center', borderRadius: 15, padding: '10px 0', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.ink, border: `1px solid ${sel ? C.orange : C.border}` }}>
-              <div style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5 }}>{t}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
+          {([['30 min', '₹149', false], ['1 hour', '₹249', true], ['1.5 hrs', '₹349', false], ['2 hrs', '₹449', false]] as const).map(([t, p, sel]) => (
+            <div key={t} style={{ textAlign: 'center', borderRadius: 16, padding: '10px 0', ...pill(sel) }}>
+              <div style={{ ...H(12.5) }}>{t}</div>
               <div style={{ fontSize: 11, color: sel ? '#ffe4d2' : C.orangeDark, fontWeight: 700 }}>{p}</div>
             </div>
           ))}
         </div>
 
-        <span style={label}>Day</span>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-          {[['Mon', '8', false], ['Tue', '9', true], ['Wed', '10', false], ['Thu', '11', false], ['Fri', '12', false]].map(([d, n, sel]) => (
-            <div key={d as string} style={{ flex: 1, textAlign: 'center', borderRadius: 14, padding: '9px 0', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.ink, border: `1px solid ${sel ? C.orange : C.border}` }}>
+        <span style={label}>Day · September</span>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {([['Mon', '8', false], ['Tue', '9', true], ['Wed', '10', false], ['Thu', '11', false], ['Fri', '12', false]] as const).map(([d, n, sel]) => (
+            <div key={d} style={{ flex: 1, textAlign: 'center', borderRadius: 16, padding: '9px 0', ...pill(sel) }}>
               <div style={{ fontSize: 10.5, opacity: 0.8 }}>{d}</div>
-              <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15 }}>{n}</div>
+              <div style={{ ...H(15.5) }}>{n}</div>
             </div>
           ))}
         </div>
 
         <span style={label}>Time</span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-          {[['6:30 AM', false], ['7:00 AM', true], ['7:30 AM', false], ['6:00 PM', false], ['6:30 PM', false]].map(([t, sel]) => (
-            <span key={t as string} style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 99, padding: '8px 15px', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.sub, border: `1px solid ${sel ? C.orange : C.border}` }}>{t}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          {([['6:30 AM', false], ['7:00 AM', true], ['7:30 AM', false], ['6:00 PM', false], ['6:30 PM', false]] as const).map(([t, sel]) => (
+            <span key={t} style={{ ...H(12.5, 600), letterSpacing: 0, borderRadius: 99, padding: '8px 15px', ...pill(sel) }}>{t}</span>
           ))}
         </div>
 
-        <span style={label}>Anything extra? <span style={{ fontWeight: 400, color: C.muted2 }}>(optional)</span></span>
-        <div style={{ ...card, borderRadius: 14, padding: '10px 14px', fontSize: 12.5, color: C.sub, marginBottom: 4 }}>
+        <span style={label}>Anything extra? <span style={{ fontWeight: 500, color: C.muted2 }}>(optional)</span></span>
+        <div style={{ ...field, padding: '10px 14px', fontSize: 12.5, color: C.sub, marginBottom: 5 }}>
           We're out of poop bags, please bring a roll.
         </div>
-        <div style={{ ...hint, marginBottom: 16 }}>If your volunteer accepts, they bring it at MRP, added to the bill.</div>
+        <div style={{ ...hint, marginBottom: 18 }}>If your volunteer accepts, they bring it at MRP, added to the bill.</div>
 
-        <div style={{ ...card, display: 'flex', alignItems: 'center', padding: '13px 16px', marginBottom: 12 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11.5, color: C.muted }}>Tuesday 9 Sep · 7:00 AM · Priya S.</div>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 17 }}>₹249 <span style={{ fontSize: 11, color: C.green, fontWeight: 700 }}>· earns 25 Paw Points</span></div>
+        <div style={{ ...card, padding: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 12, borderBottom: `1px dashed ${C.bandBorder}` }}>
+            <Avatar src={IMG.priya} size={34} />
+            <div style={{ flex: 1, fontSize: 11.5, color: C.muted, lineHeight: 1.4 }}>
+              <div style={{ ...H(13), color: C.ink }}>Priya S. · Tower C</div>
+              Tuesday 9 Sep · 7:00 AM · 1 hour
+            </div>
+            <span style={chip()}>+25 Paw Points</span>
           </div>
-          <span style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5, background: C.orange, color: '#fff', borderRadius: 99, padding: '13px 24px', boxShadow: '0 10px 24px rgba(224,102,47,.3)' }}>Confirm</span>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: C.muted2 }}>Total</div>
+              <div style={{ ...H(21, 800) }}>₹249</div>
+            </div>
+            <span style={{ ...H(14.5), background: C.orange, color: '#fff', borderRadius: 99, padding: '13px 30px', boxShadow: '0 12px 28px rgba(224,102,47,.3)' }}>Confirm</span>
+          </div>
         </div>
       </div>
     </Phone>
@@ -477,52 +532,57 @@ function Payment() {
   return (
     <Phone>
       {/* dimmed booking behind the sheet */}
-      <div style={{ filter: 'blur(2px)', opacity: 0.28, pointerEvents: 'none' }}>
+      <div style={{ filter: 'blur(2px)', opacity: 0.35, pointerEvents: 'none' }}>
         <Header title="Book a walk" />
         <div style={{ padding: '0 20px' }}>
-          <div style={{ ...card, padding: 14, marginBottom: 12 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15 }}>Biscuit · 1 hour walk</div>
-            <div style={{ fontSize: 12, color: C.muted }}>Tuesday 9 Sep · 7:00 AM · Priya S.</div>
+          <div style={{ ...card, padding: 14, marginBottom: 12, display: 'flex', gap: 11, alignItems: 'center' }}>
+            <Avatar src={IMG.biscuit} size={44} />
+            <div>
+              <div style={{ ...H(15) }}>Biscuit · 1 hour walk</div>
+              <div style={{ fontSize: 12, color: C.muted }}>Tuesday 9 Sep · 7:00 AM · Priya S.</div>
+            </div>
           </div>
         </div>
       </div>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,48,31,.28)' }} />
 
       {/* bottom sheet */}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: C.card, borderRadius: '26px 26px 0 0', boxShadow: '0 -18px 50px rgba(42,33,24,.25)', padding: '10px 20px 24px' }}>
-        <div style={{ width: 42, height: 5, borderRadius: 99, background: C.band, margin: '0 auto 14px' }} />
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 18, marginBottom: 2 }}>₹249 · How would you like to pay?</div>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: C.card, borderRadius: '28px 28px 0 0', boxShadow: '0 -18px 50px rgba(20,48,31,.2)', padding: '10px 20px 26px' }}>
+        <div style={{ width: 42, height: 5, borderRadius: 99, background: C.bandBorder, margin: '0 auto 16px' }} />
+        <div style={{ ...eyebrow, marginBottom: 4 }}>Checkout · ₹249</div>
+        <div style={{ ...H(20), marginBottom: 2 }}>How would you like to pay?</div>
         <div style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>Pay now online, or after the service.</div>
 
         {/* pay now (selected) */}
-        <div style={{ border: `1.5px solid ${C.orange}`, background: '#fdf4ec', borderRadius: 18, padding: 13, marginBottom: 10 }}>
+        <div style={{ border: `1.5px solid ${C.orange}`, background: '#fff8f3', borderRadius: 20, padding: 13, marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
             <span style={{ width: 19, height: 19, borderRadius: 99, border: `6px solid ${C.orange}`, background: '#fff' }} />
-            <span style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Pay now</span>
+            <span style={{ ...H(14.5) }}>Pay now</span>
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 13, padding: '10px 0', background: C.card, border: `1px solid ${C.border}`, color: C.sub }}>
+            <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, ...H(12.5, 600), letterSpacing: 0, borderRadius: 999, padding: '10px 0', background: C.card, border: `1px solid ${C.border}`, color: C.sub }}>
               <Ic d={paths.card} size={15} color={C.muted} /> Pay online (via card)
             </span>
-            <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 13, padding: '10px 0', background: C.ink, color: C.cream2 }}>
-              <Ic d={paths.qr} size={15} color={C.gold} /> Pay by UPI
+            <span style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, ...H(12.5, 700), letterSpacing: 0, borderRadius: 999, padding: '10px 0', background: C.green, color: '#fff' }}>
+              <Ic d={paths.qr} size={15} color="#fff" /> Pay by UPI
             </span>
           </div>
           {/* QR */}
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center', background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 12 }}>
-            <img src="/mobile/upi-qr.png" alt="UPI QR" style={{ width: 108, height: 108, borderRadius: 10 }} />
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 12 }}>
+            <img src="/mobile/upi-qr.png" alt="UPI QR" style={{ width: 104, height: 104, borderRadius: 10 }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5, marginBottom: 2 }}>Scan with any UPI app</div>
-              <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700, marginBottom: 7 }}>proxypaw•••@upi · ₹249</div>
-              <span style={{ fontSize: 10.5, fontWeight: 800, background: C.greenPale, color: C.green, borderRadius: 99, padding: '4px 10px' }}>GPay · PhonePe · Paytm</span>
+              <div style={{ ...H(13.5), marginBottom: 2 }}>Scan with any UPI app</div>
+              <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 600, marginBottom: 8 }}>proxypaw•••@upi · ₹249</div>
+              <span style={chip()}>GPay · PhonePe · Paytm</span>
             </div>
           </div>
         </div>
 
         {/* pay after */}
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 18, padding: 13, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 9 }}>
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 20, padding: 13, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 9 }}>
           <span style={{ width: 19, height: 19, borderRadius: 99, border: `1.5px solid ${C.btnBorder}`, background: '#fff' }} />
           <div style={{ flex: 1 }}>
-            <span style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Pay after the service</span>
+            <span style={{ ...H(14.5) }}>Pay after the service</span>
             <div style={{ fontSize: 11.5, color: C.muted }}>UPI or cash, once the booking is done</div>
           </div>
           <Ic d={paths.cash} size={18} color={C.muted2} />
@@ -531,9 +591,7 @@ function Payment() {
         <div style={{ fontSize: 11, color: C.muted2, lineHeight: 1.55, textAlign: 'center', marginBottom: 12 }}>
           Pay with a card or with UPI, before or after the service. Pay before using these two online methods, or pay after the service using UPI or cash.
         </div>
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, textAlign: 'center', background: C.orange, color: '#fff', borderRadius: 99, padding: '15px 0', boxShadow: '0 10px 24px rgba(224,102,47,.3)' }}>
-          Confirm booking
-        </div>
+        <div style={primary}>Confirm booking</div>
       </div>
     </Phone>
   );
@@ -541,30 +599,77 @@ function Payment() {
 
 /* ------------------------------ 7. LIVE WALK ------------------------------ */
 
+/** Top-down garden-community map: lawn, path loop, towers, trees, pond. */
+function CommunityMap() {
+  const tower = (x: number, y: number, w: number, h: number, name: string) => (
+    <g key={name}>
+      <rect x={x + 3} y={y + 4} width={w} height={h} rx="7" fill="#1f6b3a" opacity=".14" />
+      <rect x={x} y={y} width={w} height={h} rx="7" fill="#f3efe6" stroke="#dcd6c8" />
+      <rect x={x + 6} y={y + 6} width={w - 12} height={h - 12} rx="4" fill="#dcd6c8" opacity=".55" />
+      {[0, 1, 2].map((r) => (
+        <rect key={r} x={x + 10} y={y + 11 + r * ((h - 22) / 3)} width={w - 20} height="3" rx="1.5" fill="#ffd978" opacity=".8" />
+      ))}
+      <rect x={x + w / 2 - 17} y={y + h + 5} width="34" height="15" rx="7.5" fill="#fff" stroke="#e1ecdc" />
+      <text x={x + w / 2} y={y + h + 15.5} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#3f5547" fontFamily="Inter, sans-serif">{name}</text>
+    </g>
+  );
+  const tree = (x: number, y: number, r: number, k: string) => (
+    <g key={k}>
+      <circle cx={x + 2} cy={y + 3} r={r} fill="#1f6b3a" opacity=".18" />
+      <circle cx={x} cy={y} r={r} fill="#49a85a" />
+      <circle cx={x - r * 0.3} cy={y - r * 0.3} r={r * 0.55} fill="#8bc34a" opacity=".75" />
+    </g>
+  );
+  const trees: [number, number, number][] = [
+    [22, 128, 10], [30, 152, 8], [128, 22, 9], [150, 30, 7], [330, 130, 10], [318, 156, 8],
+    [196, 20, 8], [128, 282, 9], [206, 286, 8], [228, 274, 6], [120, 106, 7], [236, 100, 8],
+    [104, 196, 6], [268, 214, 7], [176, 92, 5],
+  ];
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 350 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="350" height="300" fill="#cfe8c4" />
+      {/* lawn texture */}
+      {Array.from({ length: 40 }).map((_, i) => (
+        <circle key={i} cx={(i * 83) % 350} cy={(i * 47) % 300} r="1.4" fill="#8bc34a" opacity=".35" />
+      ))}
+      {/* central lawn */}
+      <ellipse cx="176" cy="160" rx="78" ry="56" fill="#b9dca8" />
+      <ellipse cx="176" cy="160" rx="78" ry="56" fill="none" stroke="#a6d18f" strokeWidth="2" strokeDasharray="2 5" />
+      {/* pond */}
+      <ellipse cx="196" cy="168" rx="26" ry="15" fill="#9ed6ea" />
+      <ellipse cx="190" cy="164" rx="9" ry="3" fill="#fff" opacity=".5" />
+      {/* walking path loop */}
+      <path d="M58 104 C 110 70, 240 66, 290 104 S 310 230, 250 244 S 90 250, 66 210 S 30 130, 58 104 Z" fill="none" stroke="#dfe9d8" strokeWidth="15" strokeLinejoin="round" />
+      <path d="M58 104 C 110 70, 240 66, 290 104 S 310 230, 250 244 S 90 250, 66 210 S 30 130, 58 104 Z" fill="none" stroke="#eef6e9" strokeWidth="11" strokeLinejoin="round" />
+      {/* towers */}
+      {tower(20, 22, 76, 56, 'Tower C')}
+      {tower(258, 18, 74, 60, 'Tower A')}
+      {tower(14, 228, 72, 44, 'Tower B')}
+      {tower(270, 226, 66, 46, 'Tower D')}
+      {trees.map(([x, y, r], i) => tree(x, y, r, `t${i}`))}
+      <text x="176" y="128" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1f6b3a" fontFamily="Inter, sans-serif" letterSpacing="1">CENTRAL LAWN</text>
+      {/* walked route */}
+      <path d="M62 102 C 110 72, 240 68, 288 104 S 312 200, 296 218" fill="none" stroke="#e0662f" strokeWidth="4" strokeLinecap="round" strokeDasharray="0.5 8" />
+      <circle cx="62" cy="102" r="7" fill="#2e7d4f" stroke="#fff" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
 function Track() {
   return (
     <Phone>
-      <Header title="Live walk" right={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}><span style={{ width: 7, height: 7, borderRadius: 99, background: '#7a9a4e' }} />LIVE</span>} />
+      <Header title="Live walk" right={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...chip(), fontSize: 11.5, padding: '6px 12px' }}><span style={{ width: 7, height: 7, borderRadius: 99, background: C.greenBright, boxShadow: '0 0 0 3px rgba(73,168,90,.25)' }} />LIVE</span>} />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
-        {/* stylised community map */}
-        <div style={{ position: 'relative', borderRadius: 22, overflow: 'hidden', border: `1px solid ${C.border}`, background: '#f1ede1', height: 300, marginBottom: 14 }}>
-          <svg width="100%" height="100%" viewBox="0 0 350 300" aria-hidden="true">
-            <rect x="24" y="26" width="84" height="60" rx="8" fill="#e6dfd0" />
-            <rect x="240" y="30" width="80" height="70" rx="8" fill="#e6dfd0" />
-            <rect x="30" y="200" width="90" height="66" rx="8" fill="#e6dfd0" />
-            <rect x="236" y="196" width="86" height="70" rx="8" fill="#e6dfd0" />
-            <circle cx="176" cy="150" r="52" fill="#dde5cf" />
-            <text x="152" y="154" fontSize="11" fontWeight="700" fill="#5a6b3f" fontFamily="Nunito">Lawn</text>
-            <path d="M60 100 C 90 140, 120 110, 150 130 S 210 190, 250 170" fill="none" stroke="#e0662f" strokeWidth="4" strokeLinecap="round" strokeDasharray="1 9" />
-            <circle cx="60" cy="100" r="7" fill="#3f6c51" />
-          </svg>
-          <div style={{ position: 'absolute', left: 218, top: 148, width: 40, height: 40, borderRadius: 99, background: C.orange, display: 'grid', placeItems: 'center', border: '3px solid #fff', boxShadow: '0 8px 22px rgba(224,102,47,.45)' }}>
+        {/* garden community map */}
+        <div style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', border: `1px solid ${C.border}`, height: 318, marginBottom: 12, boxShadow: '0 12px 30px rgba(28,60,40,.10)' }}>
+          <CommunityMap />
+          <div style={{ position: 'absolute', left: 264, top: 210, width: 42, height: 42, borderRadius: 99, background: C.orange, display: 'grid', placeItems: 'center', border: '3px solid #fff', boxShadow: '0 0 0 8px rgba(224,102,47,.18), 0 8px 22px rgba(224,102,47,.45)' }}>
             <Paw size={19} />
           </div>
           <div style={{ position: 'absolute', left: 12, bottom: 12, right: 12, display: 'flex', gap: 8 }}>
             {[['18 min', 'elapsed'], ['1.2 km', 'walked'], ['2', 'photos sent']].map(([v, k]) => (
-              <div key={k} style={{ flex: 1, background: 'rgba(255,253,248,.94)', border: `1px solid ${C.border}`, borderRadius: 14, padding: '8px 0', textAlign: 'center' }}>
-                <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15 }}>{v}</div>
+              <div key={k} style={{ flex: 1, background: 'rgba(255,255,255,.95)', border: `1px solid ${C.border}`, borderRadius: 16, padding: '8px 0', textAlign: 'center', boxShadow: '0 6px 16px rgba(28,60,40,.08)' }}>
+                <div style={{ ...H(15.5, 800) }}>{v}</div>
                 <div style={{ fontSize: 10, color: C.muted }}>{k}</div>
               </div>
             ))}
@@ -572,39 +677,42 @@ function Track() {
         </div>
 
         {/* walker strip */}
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 12, marginBottom: 14 }}>
-          <span style={{ width: 42, height: 42, borderRadius: 15, background: C.orange, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 16 }}>P</span>
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 11, marginBottom: 10 }}>
+          <Avatar src={IMG.priya} size={44} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Priya is walking Biscuit</div>
+            <div style={{ ...H(14.5) }}>Priya is walking Biscuit</div>
             <div style={{ fontSize: 11.5, color: C.muted }}>Photo updates every 15 min, as you asked</div>
           </div>
-          <span style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, border: `1.2px solid ${C.btnBorder}`, borderRadius: 99, padding: '8px 15px' }}>Message</span>
+          <span style={{ width: 40, height: 40, borderRadius: 999, background: C.greenPale, display: 'grid', placeItems: 'center' }}><Ic d={paths.msg} size={17} color={C.green} sw={2} /></span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 12 }}>
-          <Ic d={paths.swap} size={12} color={C.orange} />
-          <span style={{ fontSize: 11.5, color: C.orange, fontWeight: 700 }}>Not working out? Request a change, no questions asked</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
+          <Ic d={paths.swap} size={12} color={C.orangeDark} />
+          <span style={{ fontSize: 11.5, color: C.orangeDark, fontWeight: 600 }}>Not working out? Request a change, no questions asked</span>
         </div>
 
         {/* timeline */}
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, marginBottom: 10 }}>Walk updates</div>
+        <div style={{ ...H(15.5), marginBottom: 10 }}>Walk updates</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {[
-            ['7:02 AM', 'Picked up Biscuit, towel and poop bags packed', true],
-            ['7:09 AM', 'Photo update sent · lawn zoomies in progress', true],
-            ['7:15 AM', 'Water break at Tower C gate', true],
-            ['7:20 AM', 'Heading back via the shaded path', false],
-          ].map(([t, txt, done], i, arr) => (
-            <div key={t as string} style={{ display: 'flex', gap: 12 }}>
+          {([
+            ['7:02 AM', 'Picked up Biscuit, towel and poop bags packed', true, null],
+            ['7:09 AM', 'Photo update sent · lawn zoomies in progress', true, IMG.walkPhoto],
+            ['7:15 AM', 'Water break at Tower C gate', true, null],
+            ['7:20 AM', 'Heading back via the shaded path', false, null],
+          ] as const).map(([t, txt, done, img], i, arr) => (
+            <div key={t} style={{ display: 'flex', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <span style={{ width: 22, height: 22, borderRadius: 99, background: done ? C.green : C.card, border: `1.5px solid ${done ? C.green : C.btnBorder}`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                   {done ? <Ic d={paths.check} size={11} color="#fff" sw={3} /> : <Ic d={paths.clock} size={11} color={C.muted2} />}
                 </span>
-                {i < arr.length - 1 && <span style={{ width: 2, flex: 1, background: C.band, minHeight: 16 }} />}
+                {i < arr.length - 1 && <span style={{ width: 2, flex: 1, background: done ? C.greenChip : C.band, minHeight: 14 }} />}
               </div>
-              <div style={{ paddingBottom: 14 }}>
-                <div style={{ fontSize: 10.5, color: C.muted2, fontWeight: 700 }}>{t}</div>
-                <div style={{ fontSize: 13, color: C.sub }}>{txt}</div>
+              <div style={{ paddingBottom: 12, flex: 1, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10.5, color: C.muted2, fontWeight: 600 }}>{t}</div>
+                  <div style={{ fontSize: 13, color: C.sub }}>{txt}</div>
+                </div>
+                {img && <img src={img} alt="" style={{ width: 46, height: 46, borderRadius: 12, objectFit: 'cover' }} />}
               </div>
             </div>
           ))}
@@ -622,53 +730,51 @@ function Switch() {
       <Header title="Request a change" />
       <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
         {/* current volunteer */}
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 13, marginBottom: 16 }}>
-          <span style={{ width: 44, height: 44, borderRadius: 15, background: C.orange, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 16 }}>P</span>
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 11, padding: 12, marginBottom: 18 }}>
+          <Avatar src={IMG.priya} size={46} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>Priya S. · walking Biscuit</div>
+            <div style={{ ...H(14.5) }}>Priya S. · walking Biscuit</div>
             <div style={{ fontSize: 11.5, color: C.muted }}>Your current volunteer for this booking</div>
           </div>
-          <span style={{ fontSize: 10.5, fontWeight: 800, background: C.greenPale, color: C.green, borderRadius: 99, padding: '4px 11px' }}>ACTIVE</span>
+          <span style={chip()}>ACTIVE</span>
         </div>
 
         {/* reason */}
         <span style={label}>What is not working?</span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          {[['Late or missed visits', true], ['Instructions not followed', false], ['My pet seems uneasy', false], ['Something else', false]].map(([t, sel]) => (
-            <span key={t as string} style={{ fontFamily: F, fontWeight: 600, fontSize: 12.5, borderRadius: 99, padding: '9px 15px', background: sel ? C.orange : C.card, color: sel ? '#fff' : C.ink, border: `1.2px solid ${sel ? C.orange : C.btnBorder}` }}>{t}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+          {([['Late or missed visits', true], ['Instructions not followed', false], ['My pet seems uneasy', false], ['Something else', false]] as const).map(([t, sel]) => (
+            <span key={t} style={{ ...H(12.5, 600), letterSpacing: 0, borderRadius: 99, padding: '9px 15px', ...pill(sel) }}>{t}</span>
           ))}
         </div>
 
         {/* what happens next */}
-        <div style={{ ...card, padding: 14, marginBottom: 12 }}>
-          <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5, marginBottom: 10 }}>What happens next</div>
+        <div style={{ ...card, padding: 15, marginBottom: 12 }}>
+          <div style={{ ...eyebrow, marginBottom: 11 }}>What happens next</div>
           {[
             'Your ticket reaches our team instantly',
             'The next best verified volunteer is assigned right away',
             'Your current volunteer continues until the new one arrives, so care never pauses',
           ].map((t, i) => (
-            <div key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < 2 ? 9 : 0 }}>
-              <span style={{ width: 20, height: 20, borderRadius: 99, background: C.peach, color: C.orangeDark, display: 'grid', placeItems: 'center', fontFamily: F, fontWeight: 600, fontSize: 11, flexShrink: 0 }}>{i + 1}</span>
+            <div key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < 2 ? 10 : 0 }}>
+              <span style={{ width: 22, height: 22, borderRadius: 99, background: C.greenPale, color: C.green, display: 'grid', placeItems: 'center', ...H(11, 800), flexShrink: 0 }}>{i + 1}</span>
               <span style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.5 }}>{t}</span>
             </div>
           ))}
         </div>
 
         {/* no awkwardness */}
-        <div style={{ ...card, background: C.greenPale, borderColor: '#dfe4cf', padding: 13, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 12, background: C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+        <div style={{ ...card, background: C.greenPale, borderColor: C.greenChip, boxShadow: 'none', padding: 13, marginBottom: 18, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 999, background: C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
             <Ic d={paths.shield} size={16} color="#fff" />
           </span>
-          <div style={{ fontSize: 11.5, color: C.green, lineHeight: 1.55 }}>
-            <span style={{ fontFamily: F, fontWeight: 600 }}>Switch until it feels right.</span> Volunteers
+          <div style={{ fontSize: 11.5, color: C.sub, lineHeight: 1.55 }}>
+            <span style={{ ...H(12.5), color: C.green }}>Switch until it feels right.</span> Volunteers
             stay professional and will not ask why: our team has that conversation for you. Once
             you are happy, the same volunteer comes for every booking after.
           </div>
         </div>
 
-        <div style={{ background: C.orange, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: 15.5, textAlign: 'center', borderRadius: 18, padding: '15px 0', boxShadow: '0 12px 26px rgba(224,102,47,.35)' }}>
-          Raise ticket and switch
-        </div>
+        <div style={primary}>Raise ticket and switch</div>
         <div style={{ textAlign: 'center', fontSize: 11, color: C.muted2, marginTop: 9 }}>
           Your replacement is arranged immediately, no questions asked.
         </div>
@@ -690,23 +796,23 @@ function Community() {
     <Phone nav="community">
       <div style={{ padding: '22px 20px 96px', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22 }}>Your community</div>
-          <span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.greenPale, color: C.green, borderRadius: 99, padding: '6px 12px' }}>Prestige High Fields</span>
+          <div style={{ ...H(23, 800) }}>Your community</div>
+          <span style={{ ...chip(), fontSize: 11 }}>Prestige High Fields</span>
         </div>
-        <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>Every pet in your towers, and what they are looking for.</div>
+        <div style={{ fontSize: 12, color: C.muted, marginBottom: 13 }}>Every pet in your towers, and what they are looking for.</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 12 }}>
           {pets.map((pt) => (
-            <div key={pt.n} style={{ ...card, padding: 11, display: 'flex', alignItems: 'center', gap: 11 }}>
-              <img src={pt.img} alt={pt.n} style={{ width: 46, height: 46, borderRadius: 16, objectFit: 'cover' }} />
+            <div key={pt.n} style={{ ...card, padding: 10, display: 'flex', alignItems: 'center', gap: 11 }}>
+              <img src={pt.img} alt={pt.n} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <span style={{ fontFamily: F, fontWeight: 600, fontSize: 14 }}>{pt.n}</span>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, background: C.peach, color: C.orangeDark, borderRadius: 99, padding: '2px 9px' }}>{pt.tower}</span>
+                  <span style={{ ...H(14) }}>{pt.n}</span>
+                  <span style={{ ...chip(), fontSize: 10, padding: '2px 8px' }}>{pt.tower}</span>
                 </div>
-                <div style={{ fontSize: 11, color: C.muted }}>{pt.breed} &middot; {pt.need}</div>
+                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>{pt.breed} &middot; {pt.need}</div>
               </div>
-              <span style={{ fontFamily: F, fontWeight: 600, fontSize: 11.5, background: C.orange, color: '#fff', borderRadius: 99, padding: '8px 13px', flexShrink: 0 }}>Raise a request</span>
+              <span style={{ ...H(11.5), letterSpacing: '-0.01em', background: C.orange, color: '#fff', borderRadius: 99, padding: '8px 12px', flexShrink: 0 }}>Raise a request</span>
             </div>
           ))}
         </div>
@@ -715,7 +821,7 @@ function Community() {
           Requests reach our team instantly. Smart volunteer auto-assign is on the way.
         </div>
 
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 15.5, marginBottom: 10 }}>What neighbours say</div>
+        <div style={{ ...H(15.5), marginBottom: 10 }}>What neighbours say</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {[
             { n: 'Rhea M.', t: 'Tower 5', img: IMG.rhea, q: 'Donut waits at the door for his walker now. I get photos before I even think to ask.' },
@@ -725,7 +831,7 @@ function Community() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
                 <img src={r.img} alt={r.n} style={{ width: 32, height: 32, borderRadius: 99, objectFit: 'cover' }} />
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontFamily: F, fontWeight: 600, fontSize: 13 }}>{r.n}</span>
+                  <span style={{ ...H(13) }}>{r.n}</span>
                   <span style={{ fontSize: 11, color: C.muted2 }}> &middot; {r.t}</span>
                 </div>
                 <span style={{ display: 'inline-flex', gap: 2 }}>
@@ -747,21 +853,30 @@ function Bookings() {
   return (
     <Phone nav="bookings">
       <div style={{ padding: '22px 20px 0', overflow: 'hidden' }}>
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 22, marginBottom: 14 }}>Your bookings</div>
+        <div style={{ ...H(23, 800), marginBottom: 12 }}>Your bookings</div>
+        <div style={{ display: 'flex', gap: 6, background: C.card, border: `1px solid ${C.border}`, borderRadius: 999, padding: 4, marginBottom: 16 }}>
+          {['All', 'Walks', 'Boarding', 'Sitting'].map((t, i) => (
+            <span key={t} style={{ flex: 1, textAlign: 'center', ...H(12, 700), letterSpacing: 0, borderRadius: 999, padding: '7px 0', background: i === 0 ? C.green : 'transparent', color: i === 0 ? '#fff' : C.muted }}>{t}</span>
+          ))}
+        </div>
 
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13, color: C.muted, letterSpacing: '0.08em', marginBottom: 8 }}>UPCOMING</div>
-        <div style={{ ...card, padding: 14, marginBottom: 16, borderLeft: `4px solid ${C.orange}` }}>
+        <div style={{ ...eyebrow, marginBottom: 8 }}>Upcoming</div>
+        <div style={{ ...card, padding: 14, marginBottom: 16, background: `linear-gradient(135deg, #ffffff 55%, ${C.greenPale})` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src={IMG.biscuit} alt="" style={{ width: 40, height: 40, borderRadius: 14, objectFit: 'cover' }} />
+            <Avatar src={IMG.biscuit} size={42} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F, fontWeight: 600, fontSize: 14.5 }}>1 hour walk · Biscuit</div>
+              <div style={{ ...H(14.5) }}>1 hour walk · Biscuit</div>
               <div style={{ fontSize: 11.5, color: C.muted }}>Today 7:00 AM · Priya S. · ₹249</div>
             </div>
-            <span style={{ fontSize: 10.5, fontWeight: 800, background: C.greenPale, color: C.green, borderRadius: 99, padding: '4px 11px' }}>CONFIRMED</span>
+            <span style={chip()}>CONFIRMED</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <span style={{ flex: 1, textAlign: 'center', ...H(12.5), background: C.orange, color: '#fff', borderRadius: 99, padding: '9px 0', boxShadow: '0 8px 18px rgba(224,102,47,.25)' }}>Track live</span>
+            <span style={{ flex: 1, textAlign: 'center', ...ghost }}>Reschedule</span>
           </div>
         </div>
 
-        <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13, color: C.muted, letterSpacing: '0.08em', marginBottom: 8 }}>EARLIER</div>
+        <div style={{ ...eyebrow, marginBottom: 8 }}>Earlier</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
             { t: 'Overnight boarding · Momo', d: 'Sat 30 Aug · 2 nights · Marcus R. · ₹898', ph: '6 photos', img: IMG.momo },
@@ -770,17 +885,17 @@ function Bookings() {
           ].map((b) => (
             <div key={b.d} style={{ ...card, padding: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img src={b.img} alt="" style={{ width: 40, height: 40, borderRadius: 14, objectFit: 'cover' }} />
+                <Avatar src={b.img} size={42} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: F, fontWeight: 600, fontSize: 13.5 }}>{b.t}</div>
+                  <div style={{ ...H(13.5) }}>{b.t}</div>
                   <div style={{ fontSize: 11, color: C.muted }}>{b.d}</div>
                 </div>
-                <span style={{ fontFamily: F, fontWeight: 600, fontSize: 12, border: `1.2px solid ${C.btnBorder}`, borderRadius: 99, padding: '7px 14px' }}>Rebook</span>
+                <span style={ghost}>Rebook</span>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 9, paddingTop: 9, borderTop: `1px solid ${C.band}`, fontSize: 11, color: C.sub, alignItems: 'center' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Ic d={paths.star} size={11} color={C.gold} fill={C.gold} /> Rated 5.0</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Ic d={paths.camera} size={11} color={C.muted2} /> {b.ph}</span>
-                <span style={{ marginLeft: 'auto', color: C.green, fontWeight: 700 }}>+25 Paw Points</span>
+                <span style={{ marginLeft: 'auto', color: C.green, fontWeight: 600 }}>+25 Paw Points</span>
               </div>
             </div>
           ))}

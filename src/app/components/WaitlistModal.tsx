@@ -15,23 +15,23 @@ import { COMMUNITIES } from '../data/communities';
 import BrandLogo from './BrandLogo';
 
 const C = {
-  cream: '#f6f1e7',
-  ink: '#2a2118',
+  cream: '#f4f8ef',
+  ink: '#14301f',
   orange: '#e0662f',
   orangeDark: '#c24e1d',
-  card: '#fffdf8',
-  cardBorder: '#eee3cf',
-  muted: '#8b7a63',
-  muted2: '#a08e73',
-  sub: '#6f5f4b',
-  band: '#f1eadb',
-  btnBorder: '#d9cbb2',
-  green: '#3f6c51',
+  card: '#ffffff',
+  cardBorder: '#e1ecdc',
+  muted: '#5e7266',
+  muted2: '#7c8f83',
+  sub: '#3f5547',
+  band: '#eaf3e4',
+  btnBorder: '#c9dcc4',
+  green: '#2e7d4f',
 };
-const sora = "'Fredoka', system-ui, sans-serif";
+const sora = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 const HERO_IMG =
-  'https://images.unsplash.com/photo-1552053831-71594a27632d?w=900&q=80&auto=format&fit=crop';
+  '/real/hero.jpg';
 
 const ID_PROOFS = [
   { value: 'aadhaar', label: 'Aadhaar Card' },
@@ -81,7 +81,7 @@ function FeedbackForm({ email, volunteer, source }: { email: string; volunteer: 
 
   if (state === 'sent') {
     return (
-      <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 18, padding: '16px 20px', marginTop: 24, fontSize: 14, lineHeight: 1.55, color: '#5a6b3f' }}>
+      <div style={{ background: '#e7f4e4', border: '1px solid #cfe5cb', borderRadius: 18, padding: '16px 20px', marginTop: 24, fontSize: 14, lineHeight: 1.55, color: '#2e6b43' }}>
         Thank you, we've received it and we read every message.
       </div>
     );
@@ -269,7 +269,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
       className="pp-modal-overlay"
       style={{
-        position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(42,33,24,.55)',
+        position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(20,48,31,.55)',
         backdropFilter: 'blur(4px)', display: 'flex', padding: 20,
         overflowY: 'auto', textTransform: 'none',
       }}
@@ -305,7 +305,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         style={{
           width: 'min(1000px, 100%)', margin: 'auto', background: C.card, borderRadius: 32,
           overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr',
-          boxShadow: '0 40px 90px rgba(42,33,24,.35)', position: 'relative',
+          boxShadow: '0 40px 90px rgba(20,48,31,.35)', position: 'relative',
         }}
       >
         <button
@@ -326,10 +326,10 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
         <div className="pp-modal-photo" style={{ position: 'relative', minHeight: 560 }}>
           <img
             src={HERO_IMG}
-            alt="A golden retriever waiting by the gate"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            alt="A neighbour walking a golden retriever across a community lawn at sunrise"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '74% 50%' }}
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(42,33,24,0) 40%, rgba(42,33,24,.85) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(20,48,31,0) 40%, rgba(20,48,31,.85) 100%)' }} />
           <blockquote
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, margin: 0, padding: 34,
@@ -369,7 +369,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               <button
                 onClick={onClose}
                 style={{
-                  border: 'none', background: C.ink, color: '#fffdf8', fontFamily: sora,
+                  border: 'none', background: C.ink, color: '#ffffff', fontFamily: sora,
                   fontWeight: 600, fontSize: 15.5, padding: '15px 30px', borderRadius: 999, cursor: 'pointer',
                 }}
               >
@@ -392,7 +392,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       fontFamily: sora, fontWeight: 600, fontSize: 15.5, transition: '.2s',
                       background: mode === m ? C.card : 'transparent',
                       color: mode === m ? C.ink : C.muted,
-                      boxShadow: mode === m ? '0 2px 8px rgba(74,52,24,.10)' : 'none',
+                      boxShadow: mode === m ? '0 2px 8px rgba(28,60,40,.10)' : 'none',
                     }}
                   >
                     {m === 'login' ? 'Log In' : 'Sign Up'}
@@ -401,7 +401,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
               </div>
 
               {mode === 'signup' && (
-                <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 11.5, lineHeight: 1.55, color: '#5a6b3f' }}>
+                <div style={{ background: '#e7f4e4', border: '1px solid #cfe5cb', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 11.5, lineHeight: 1.55, color: '#2e6b43' }}>
                   <strong style={{ fontFamily: sora }}>A quick note:</strong> we're live only in Hyderabad,
                   gated communities first. Pick your community to sign up as an owner, or register as a
                   volunteer from that same community: if you live in a community and want to walk, care for,
@@ -508,7 +508,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       ]).map((d) => (
                         <label key={d.kind} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.cream, border: `1px dashed ${files[d.kind] ? C.green : C.btnBorder}`, borderRadius: 16, padding: '9px 13px', marginBottom: 7, cursor: 'pointer' }}>
                           <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={pickFile(d.kind)} style={{ display: 'none' }} />
-                          <span style={{ width: 30, height: 30, borderRadius: 10, background: files[d.kind] ? C.green : '#e9ddc8', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#fff', fontSize: 15 }}>
+                          <span style={{ width: 30, height: 30, borderRadius: 10, background: files[d.kind] ? C.green : '#d8e8d2', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#fff', fontSize: 15 }}>
                             {files[d.kind] ? <Check size={15} strokeWidth={3} /> : '+'}
                           </span>
                           <span style={{ minWidth: 0 }}>
@@ -565,7 +565,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                       onBlur={() => setTimeout(() => setCommunityOpen(false), 150)}
                     />
                     {communityOpen && (
-                      <div style={{ position: 'absolute', zIndex: 5, left: 0, right: 0, top: '100%', marginTop: 6, background: C.card, border: `1px solid ${C.btnBorder}`, borderRadius: 16, boxShadow: '0 18px 40px rgba(42,33,24,.18)', maxHeight: 208, overflowY: 'auto' }}>
+                      <div style={{ position: 'absolute', zIndex: 5, left: 0, right: 0, top: '100%', marginTop: 6, background: C.card, border: `1px solid ${C.btnBorder}`, borderRadius: 16, boxShadow: '0 18px 40px rgba(20,48,31,.18)', maxHeight: 208, overflowY: 'auto' }}>
                         {communityMatches().slice(0, 40).map((c) => (
                           <button
                             key={c}

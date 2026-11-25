@@ -9,10 +9,10 @@ import NextStop from './NextStop';
 import { useSeo } from '../lib/seo';
 
 const C = {
-  cream: '#f6f1e7', ink: '#2a2118', orange: '#e0662f', card: '#fffdf8',
-  border: '#eee3cf', muted: '#8b7a63', muted2: '#a08e73', sub: '#6f5f4b', cream2: '#fdf9f0',
+  cream: '#f4f8ef', ink: '#14301f', orange: '#e0662f', card: '#ffffff',
+  border: '#e1ecdc', muted: '#5e7266', muted2: '#7c8f83', sub: '#3f5547', cream2: '#fbfdf8',
 };
-const heading = "'Fredoka', system-ui, sans-serif";
+const heading = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 interface Section { h: string; p: string[] }
 interface Doc { title: string; intro: string; updated: string; sections: Section[] }
