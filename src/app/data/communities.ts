@@ -7,7 +7,32 @@
  * us where to expand next.
  */
 
-export const COMMUNITIES: string[] = [
+/**
+ * Pet-friendly communities ProxyPaw is building for first (researched 2026-11-26). These are the only
+ * names shown on the marketing pages. Each is here for one of two reasons, and the site says so:
+ *   plan    the developer's own brochure, master plan or site lists a pet park, pet garden or pet zone
+ *   founder the founder knows first-hand that pets are welcome (no public statement was found)
+ * A pet park on a plan is not a society's pet policy, so never write "allows pets" about a named community.
+ * Left out on purpose: projects with a pet park that are not occupied yet (Rajapushpa Skyra, Godrej Madison
+ * Avenue, Godrej Epoque, SAS Crown). Occupancy of ASBL Loft, Rajapushpa Pristinia and My Home 99 was not checked.
+ */
+export const PET_FRIENDLY: { name: string; area: string; basis: 'plan' | 'founder'; note: string }[] = [
+  { name: 'Prestige High Fields', area: 'Financial District', basis: 'plan', note: 'Brochure master plan: "Pet Garden"' },
+  { name: 'Myscape Courtyard', area: 'Puppalaguda', basis: 'founder', note: 'Founder: ProxyPaw operates here. No public pet statement found' },
+  { name: 'The Olympus', area: 'Nanakramguda', basis: 'plan', note: 'Sumadhura brochure legend: "Pet\'s Park"' },
+  { name: 'My Home Vihanga', area: 'Gachibowli', basis: 'founder', note: 'Founder: pets are welcome. No public pet statement found' },
+  { name: 'ASBL Spectra', area: 'Financial District', basis: 'plan', note: 'Developer amenities page: "Pet Park"' },
+  { name: 'ASBL Loft', area: 'Financial District', basis: 'plan', note: 'Master plan legend: "Pet\'s Park"' },
+  { name: 'Rajapushpa Provincia', area: 'Financial District', basis: 'plan', note: 'Brochure: "Exclusive Pet Park"' },
+  { name: 'Rajapushpa Pristinia', area: 'Kokapet', basis: 'plan', note: 'Developer amenity list: "Pet Park"' },
+  { name: 'Aparna Zenon', area: 'Puppalaguda', basis: 'plan', note: 'Developer blog calls it ideal for "pet-friendly living" (no amenity listed)' },
+  { name: 'My Home 99', area: 'Kokapet', basis: 'plan', note: 'Brochure legend: "Pet Zone"' },
+];
+
+/** The two communities the founder says ProxyPaw operates in today, plus the third she added to the explorer. */
+export const EXPLORER_COMMUNITIES = ['Prestige High Fields', 'Myscape Courtyard', 'The Olympus'];
+
+const REST: string[] = [
   // My Home
   'My Home Bhooja',
   'My Home Vihanga',
@@ -106,3 +131,13 @@ export const COMMUNITIES: string[] = [
 ];
 
 export const OTHER_COMMUNITY = 'Other, not listed yet';
+
+/**
+ * The signup picker: the pet-friendly communities first, then every other community we know of, then "Other".
+ * The long tail stays so that a signup from an unlisted tower still tells us where to open next.
+ * "Sumadhura Olympus" is the older spelling of The Olympus and is dropped from the tail.
+ */
+export const COMMUNITIES: string[] = [
+  ...PET_FRIENDLY.map((c) => c.name),
+  ...REST.filter((c) => c !== 'Sumadhura Olympus' && !PET_FRIENDLY.some((x) => x.name === c)),
+];

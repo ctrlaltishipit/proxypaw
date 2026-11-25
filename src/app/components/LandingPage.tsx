@@ -22,6 +22,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import WalkSimulator from './landing/WalkSimulator';
 import AppWalkthrough from './landing/AppWalkthrough';
 import Trail, { stopLabel } from './landing/Trail';
+import { PET_FRIENDLY } from '../data/communities';
 import { MOBILE_SCREENS } from '../../mobile/screens';
 const CommunityWorld = lazy(() => import('./landing/CommunityWorld'));
 import {
@@ -31,11 +32,8 @@ import {
 
 type JoinFn = (source: string, intent?: 'owner' | 'walker') => void;
 
-const COMMUNITIES = [
-  'Prestige High Fields', 'Rajapushpa Provincia', 'My Home Bhooja', 'My Home Avatar', 'My Home Vihanga',
-  'Aparna Sarovar Zenith', 'Aparna Cyber Life', 'My Home Abhra', 'My Home Tarkshya', 'Aparna Luxor Park',
-  'My Home Ankura', 'Aparna CyberZon',
-];
+/** The marquee shows only the pet-friendly communities (data/communities.ts says why each is there). */
+const COMMUNITIES = PET_FRIENDLY.map((c) => (c.name === 'Myscape Courtyard' ? 'MyScape Courtyard' : c.name));
 
 const WALK_TIERS = [
   { label: '30 min walk', price: 149, min: 30, note: 'A first trial' },
@@ -398,7 +396,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       {/* ---------------------------- communities ---------------------------- */}
       <div className="pp-marquee-wrap" style={{ borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, background: T.surface, padding: '18px 0 calc(18px + var(--pp-r))', overflow: 'hidden' }}>
         <div style={{ ...shell, display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, whiteSpace: 'nowrap' }} className="pp-hide-sm">Built for communities like</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, whiteSpace: 'nowrap' }} className="pp-hide-sm">Built for pet-friendly communities like</div>
           <div style={{ overflow: 'hidden', flex: 1, maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}>
             <div className="pp-marquee">
               {[...COMMUNITIES, ...COMMUNITIES].map((c, i) => (
@@ -685,6 +683,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </Reveal>
           <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 16, textAlign: 'center' }}>
             Photographs are illustrative scenes of Hyderabad gated communities. Community names show where ProxyPaw is built for, not partnerships.
+            A community is named when its developer's plan shows a pet park or pet zone, or when the founder knows pets are welcome there.
           </p>
         </div>
       </section>
