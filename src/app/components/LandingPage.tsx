@@ -22,6 +22,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import WalkSimulator from './landing/WalkSimulator';
 import AppWalkthrough from './landing/AppWalkthrough';
 import Trail, { stopLabel } from './landing/Trail';
+import { MOBILE_SCREENS } from '../../mobile/screens';
 const CommunityWorld = lazy(() => import('./landing/CommunityWorld'));
 import {
   T, head, shell, SECTION, GAP, eyebrow, h2, lead, btnPrimary, btnSecondary, card,
@@ -144,41 +145,33 @@ function Heading({ kicker, title, sub, center, action, stop }: { kicker: string;
   );
 }
 
-/** Small custom illustrations for the three steps. */
+/**
+ * What each step looks like: two photographs and the real booking screen.
+ * (No flat illustrations of places, people or pets: see DESIGN.md, Imagery.)
+ */
 function StepArt({ kind }: { kind: 'meet' | 'book' | 'watch' }) {
-  if (kind === 'meet') return (
-    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
-      <rect width="220" height="120" rx="18" fill={T.leafPale} />
-      {[30, 70, 150, 190].map((x, i) => <rect key={x} x={x - 14} y={30 + (i % 2) * 8} width="28" height={70 - (i % 2) * 8} rx="5" fill="#f6f2ea" stroke="#e2dccf" />)}
-      <circle cx="110" cy="70" r="30" fill="#ffffff" />
-      <circle cx="98" cy="64" r="9" fill="#8d5a3b" /><rect x="90" y="74" width="16" height="16" rx="6" fill={T.leafBright} />
-      <circle cx="122" cy="64" r="9" fill="#6b4630" /><rect x="114" y="74" width="16" height="16" rx="6" fill={T.marigold} />
-      <path d="M104 60 q6 -8 12 0" stroke={T.marigold} strokeWidth="2.5" fill="none" />
-      <circle cx="160" cy="26" r="11" fill={T.leaf} /><path d="M155 26l4 4 7-8" stroke="#fff" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-    </svg>
-  );
-  if (kind === 'book') return (
-    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
-      <rect width="220" height="120" rx="18" fill={T.sunPale} />
-      <rect x="70" y="14" width="80" height="106" rx="14" fill="#ffffff" stroke="#e1ecdc" />
-      <rect x="80" y="28" width="60" height="8" rx="4" fill={T.line} />
-      {[0, 1, 2].map((r) => [0, 1, 2, 3].map((c) => (
-        <rect key={`${r}${c}`} x={80 + c * 15} y={44 + r * 14} width="11" height="10" rx="3" fill={r === 1 && c === 2 ? T.marigold : T.leafPale} />
-      )))}
-      <rect x="80" y="92" width="60" height="16" rx="8" fill={T.marigold} />
-      <text x="110" y="103.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff" fontFamily="Inter, sans-serif">Confirm · ₹249</text>
-    </svg>
-  );
+  const frame: CSSProperties = { position: 'relative', height: 'clamp(150px, 16vw, 190px)', borderRadius: 18, overflow: 'hidden', background: T.leafPale };
+  const chip: CSSProperties = { position: 'absolute', left: 10, bottom: 10, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: T.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 11px', borderRadius: 999 };
+  if (kind === 'book') {
+    const Screen = MOBILE_SCREENS.booking;
+    return (
+      <div style={frame} aria-hidden="true">
+        {/* The live booking screen, cropped to the part where you pick a time */}
+        <div style={{ position: 'absolute', left: '50%', top: -232, width: 390, height: 844, marginLeft: -195, transform: 'scale(.86)', transformOrigin: '50% 0', pointerEvents: 'none' }}>
+          <Screen />
+        </div>
+        <span style={chip}>The real booking screen</span>
+      </div>
+    );
+  }
+  const photo = kind === 'meet'
+    ? { src: '/real/meet-greet.jpg', alt: 'A neighbour kneeling to greet a golden retriever at the door of a flat', pos: '42% 42%', label: 'Meet-and-greet at your door' }
+    : { src: '/real/hero.jpg', alt: 'A neighbour walking a golden retriever across the community lawn at sunrise', pos: '72% 50%', label: 'Live GPS and photo updates' };
   return (
-    <svg viewBox="0 0 220 120" width="100%" height="120" aria-hidden="true">
-      <rect width="220" height="120" rx="18" fill="#e2f3f8" />
-      <path d="M24 90 C 60 40 100 100 130 60 S 190 40 200 30" stroke="#efe3c6" strokeWidth="12" fill="none" strokeLinecap="round" />
-      <path d="M24 90 C 60 40 100 100 130 60" stroke={T.marigold} strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray="200" className="pp-draw" />
-      <circle cx="130" cy="60" r="9" fill={T.marigold} stroke="#fff" strokeWidth="3" />
-      <rect x="146" y="70" width="58" height="36" rx="8" fill="#ffffff" />
-      <rect x="152" y="76" width="20" height="24" rx="4" fill="#9fd67f" />
-      <rect x="176" y="80" width="22" height="5" rx="2.5" fill={T.line} /><rect x="176" y="90" width="16" height="5" rx="2.5" fill={T.line} />
-    </svg>
+    <div style={frame} className="pp-zoom">
+      <img src={photo.src} alt={photo.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photo.pos, display: 'block' }} />
+      <span style={chip}>{photo.label}</span>
+    </div>
   );
 }
 
@@ -336,8 +329,6 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
   return (
     <div className="pp-land">
       <style>{GLOBAL_CSS + `
-        .pp-draw { stroke-dashoffset: 200; animation: pp-drawline 3s ease-in-out infinite alternate; }
-        @keyframes pp-drawline { to { stroke-dashoffset: 0; } }
         .pp-mosaic { display: grid; grid-template-columns: 1.5fr 1fr 1fr; grid-template-rows: 260px 260px; gap: ${GAP}; }
         .pp-mosaic > :first-child { grid-row: span 2; }
         @media (max-width: 860px) { .pp-mosaic { grid-template-columns: 1fr 1fr; grid-template-rows: 300px 200px 200px; } .pp-mosaic > :first-child { grid-column: span 2; grid-row: auto; } }
