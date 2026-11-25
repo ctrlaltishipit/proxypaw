@@ -259,7 +259,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             See what you're joining.
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, color: C.sub, maxWidth: 560, margin: '0 auto 10px', fontWeight: 400 }}>
-            ProxyPaw is a mobile app, and these are its real screens, the same on Android and iOS. Keep scrolling: the phone stays where it is, and a cursor clicks through a whole booking for you, from your pet's profile to payment to live tracking.
+            ProxyPaw is a mobile app, and these are its real screens, the same on Android and iOS. It plays by itself: the phone stays where it is, and a cursor clicks through a whole booking for you, from your pet's profile to payment to live tracking. Scroll any time to take over.
           </p>
         </Reveal>
       </section>

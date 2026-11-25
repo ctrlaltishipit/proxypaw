@@ -138,12 +138,22 @@ turn round when the visitor scrolls back.
 - **Inside the app** (`landing/AppWalkthrough.tsx`): the live app screens operated by a cursor.
   Auto-plays on the landing page; on `/tour` it is scroll-driven (phone pinned, text cards scroll,
   the cursor clicks the button that leads to the next screen).
-- Everything respects `prefers-reduced-motion` and works by touch at phone width.
+- **Everything plays by itself, like a video.** A visible cursor runs each demo while it is on screen (the
+  walk tracker, the app screens on the home page, the scroll tour on `/tour`, the 3D stories). A real tap,
+  click, scroll or key hands control to the visitor; a words-only "Pause" / "Play" control is always there.
+  Self-playing runs never open pop-ups (the walk tracker shows its receipt on the map instead).
+- Everything respects `prefers-reduced-motion` (no autoplay) and works by touch at phone width.
 
 ## Imagery
 - Real-looking photographs of Hyderabad gated communities (generated with the realistic-visuals skill;
   illustrative, never presented as real customers) in `public/real/`.
-- Custom SVG scenes for the hero (rising towers), the walk simulator (community map) and cat visits.
+- **Places, people and pets are photographs, never flat illustration** (her words, 2026-11-26: "I do not
+  like this animated version ... very realistic to the real world"). The hero is `hero-track.jpg` (a neighbour
+  and a golden retriever on the black jogging track), the walk tracker runs on `track-aerial.jpg` (the aerial
+  photograph with its path repainted as charcoal asphalt with white stripes; the GPS route in
+  `WalkSimulator.tsx` is traced along it), and the cat visit runs on `cat-visit.jpg`. Photographs get a very
+  slow push-in (`.pp-kenburns`). Flat drawing is kept only for small UI diagrams, map pins and the walk-bar
+  avatars.
 - No text, logos or real brand marks inside any image.
 
 ## Content rules

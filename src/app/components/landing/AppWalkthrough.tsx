@@ -1,11 +1,13 @@
 /**
  * The real app screens, operated by a cursor.
  *
- * Two ways to watch the same thing:
- *   AppWalkthrough  auto-plays on the landing page (hover to pause, pick a step).
- *   AppScrollTour   is scroll-driven for "Inside the app": the phone stays put,
- *                   the text cards scroll past, and each new card makes the
- *                   cursor click the button that leads to the next screen.
+ * Both play by themselves, like a video, and both can be taken over:
+ *   AppWalkthrough  loops on the landing page (Pause, or pick a step).
+ *   AppScrollTour   is "Inside the app": the phone stays put, the text cards
+ *                   scroll past, and each new card makes the cursor click the
+ *                   button that leads to the next screen. Left alone, the page
+ *                   moves itself from card to card; scrolling, touching or a
+ *                   key press hands control to the visitor, and Play resumes.
  *
  * Screens are the live components from src/mobile, not screenshots. Tap points
  * are in the screens' own 390 x 844 space. Reduced motion skips the cursor and
@@ -14,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { MOBILE_SCREENS } from '../../../mobile/screens';
-import { T, head, body, usePrefersReducedMotion, useInView } from './ui';
+import { T, head, body, usePrefersReducedMotion, useInView, useOnScreen } from './ui';
 
 export interface DemoStep {
   screen: string;
@@ -164,10 +166,13 @@ const DWELL = 3600;
 export default function AppWalkthrough() {
   const steps = LANDING_STEPS;
   const [ref, seen] = useInView<HTMLDivElement>(0.25);
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const onScreen = useOnScreen(phoneRef, 0.35);
   const [target, setTarget] = useState(0);
   const [paused, setPaused] = useState(false);
   const run = useStepRunner(steps, target, seen);
   const [w, setW] = useState(300);
+  const playing = seen && onScreen && !paused && !run.reduced;
 
   useEffect(() => {
     const fit = () => setW(Math.round(Math.min(300, Math.max(220, window.innerWidth - 90))));
@@ -175,13 +180,13 @@ export default function AppWalkthrough() {
     return () => window.removeEventListener('resize', fit);
   }, []);
   useEffect(() => {
-    if (!seen || paused || run.reduced) return;
+    if (!playing) return;
     const t = window.setTimeout(() => setTarget((n) => (n + 1) % steps.length), DWELL);
     return () => window.clearTimeout(t);
-  }, [seen, paused, target, run.reduced, steps.length]);
+  }, [playing, target, steps.length]);
 
   return (
-    <div ref={ref} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} className="pp-split"
+    <div ref={ref} className="pp-split"
       style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 'clamp(28px, 5vw, 72px)', alignItems: 'center' }}>
       <style>{`
         .pp-aw-step { transition: background .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
@@ -209,16 +214,19 @@ export default function AppWalkthrough() {
                     <span style={{ overflow: 'hidden', fontSize: 14.5, lineHeight: 1.6, color: T.sub }}><span style={{ display: 'block', paddingTop: 6 }}>{st.text}</span></span>
                   </span>
                 </span>
-                {on && !paused && !run.reduced && seen && <span key={target} className="pp-aw-bar" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, background: T.leafBright, transformOrigin: 'left' }} />}
+                {on && playing && <span key={target} className="pp-aw-bar" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, background: T.leafBright, transformOrigin: 'left' }} />}
               </button>
             </li>
           );
         })}
       </ol>
-      <div className="pp-aw-phone">
+      <div className="pp-aw-phone" ref={phoneRef}>
         <PhoneStage steps={steps} run={run} width={w} />
-        <div style={{ textAlign: 'center', fontFamily: body, fontSize: 12.5, color: T.muted, marginTop: 14 }}>
-          {paused ? 'Paused. Pick any step.' : 'Real app screens, clicked through for you.'}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', fontFamily: body, fontSize: 12.5, color: T.muted, marginTop: 14 }}>
+          {!run.reduced && (
+            <button className="pp-glass-btn" onClick={() => setPaused((v) => !v)} style={{ fontSize: 13, padding: '7px 14px', minHeight: 36 }}>{paused ? 'Play' : 'Pause'}</button>
+          )}
+          <span>{paused ? 'Paused. Pick any step.' : 'Real app screens, clicked through for you.'}</span>
         </div>
       </div>
     </div>
@@ -227,11 +235,20 @@ export default function AppWalkthrough() {
 
 /* ------------------------- tour page: scroll-driven ------------------------- */
 
+/** How long each screen is held before the tour moves itself on. */
+const TOUR_DWELL = 5200;
+
 export function AppScrollTour({ steps }: { steps: DemoStep[] }) {
   const [active, setActive] = useState(0);
   const run = useStepRunner(steps, active, true);
   const [dim, setDim] = useState({ w: 300, narrow: false, top: 96 });
   const refs = useRef<(HTMLElement | null)[]>([]);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const onScreen = useOnScreen(wrapRef, 0);
+  // Plays by itself until the visitor scrolls, touches or presses a key.
+  const [auto, setAuto] = useState(true);
+  const [beat, setBeat] = useState(0); // counts moves the tour has made on its own; 0 means it has not started
+  const playing = auto && onScreen && !run.reduced;
 
   useEffect(() => {
     const fit = () => {
@@ -273,13 +290,41 @@ export function AppScrollTour({ steps }: { steps: DemoStep[] }) {
     const anchor = dim.narrow ? b.top + 40 : b.top + b.height / 2;
     window.scrollBy({ top: anchor - probe, behavior: 'smooth' });
   };
+  const goRef = useRef(goTo);
+  goRef.current = goTo;
+
+  // The video: hold each screen, then move the page to the next card. The cursor does the rest.
+  useEffect(() => {
+    if (!playing) return;
+    const first = beat === 0;
+    const last = active === steps.length - 1;
+    const t = window.setTimeout(() => {
+      goRef.current(first ? 0 : last ? 0 : active + 1);
+      setBeat((n) => n + 1); // re-arms the timer even when the step did not change
+    }, first ? 1600 : last ? TOUR_DWELL + 1800 : TOUR_DWELL);
+    return () => window.clearTimeout(t);
+  }, [playing, active, beat, steps.length]);
+
+  // Real scrolling, touching or scroll keys hand control to the visitor. Our own smooth scroll fires none of these.
+  useEffect(() => {
+    if (!auto) return;
+    const stop = () => setAuto(false);
+    const key = (e: KeyboardEvent) => { if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(e.key)) stop(); };
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchmove', stop, { passive: true });
+    window.addEventListener('keydown', key);
+    return () => { window.removeEventListener('wheel', stop); window.removeEventListener('touchmove', stop); window.removeEventListener('keydown', key); };
+  }, [auto]);
 
   return (
-    <div className="pp-tour" style={{ position: 'relative', display: 'grid', gridTemplateColumns: dim.narrow ? '1fr' : 'minmax(0, 1fr) auto', gap: dim.narrow ? 0 : 'clamp(32px, 6vw, 96px)', alignItems: 'start' }}>
+    <div ref={wrapRef} className="pp-tour" style={{ position: 'relative', display: 'grid', gridTemplateColumns: dim.narrow ? '1fr' : 'minmax(0, 1fr) auto', gap: dim.narrow ? 0 : 'clamp(32px, 6vw, 96px)', alignItems: 'start' }}>
       <style>{`
         .pp-tour-card { transition: opacity .5s ease, transform .6s cubic-bezier(.2,.7,.2,1), box-shadow .5s ease, background .5s ease; }
         .pp-tour-card[data-on="false"] { opacity: .28; transform: translateY(10px) scale(.985); }
         .pp-tour-dot { transition: width .35s ease, background .35s ease; }
+        .pp-tour-bar { animation: pp-tour-fill ${TOUR_DWELL}ms linear forwards; transform-origin: left; }
+        @keyframes pp-tour-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        .pp-tour-ctl { font-size: 13px !important; padding: 7px 14px !important; min-height: 36px !important; }
         @media (prefers-reduced-motion: reduce) { .pp-tour-card { transition: none; transform: none !important; } }
       `}</style>
 
@@ -292,7 +337,12 @@ export function AppScrollTour({ steps }: { steps: DemoStep[] }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: dim.narrow ? 8 : 16 }} aria-hidden="true">
           {steps.map((s, i) => <span key={s.screen} className="pp-tour-dot" style={{ height: 5, borderRadius: 5, width: i === active ? 22 : 5, background: i === active ? T.marigold : i < active ? T.leafBright : T.line2 }} />)}
         </div>
-        {!dim.narrow && <div style={{ textAlign: 'center', fontFamily: body, fontSize: 12.5, color: T.muted, marginTop: 10 }}>Scroll, or click the glowing button on the phone.</div>}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', fontFamily: body, fontSize: 12.5, color: T.muted, marginTop: dim.narrow ? 6 : 10 }}>
+          {!run.reduced && (
+            <button className="pp-glass-btn pp-tour-ctl" onClick={() => setAuto((v) => !v)}>{auto ? 'Pause' : 'Play'}</button>
+          )}
+          {!dim.narrow && <span>{auto && !run.reduced ? 'Playing by itself. Scroll to take over.' : 'Scroll, or click the glowing button on the phone.'}</span>}
+        </div>
       </div>
 
       {/* The cards scroll */}
@@ -309,7 +359,9 @@ export function AppScrollTour({ steps }: { steps: DemoStep[] }) {
                 width: '100%', maxWidth: 560, borderRadius: 26, padding: 'clamp(20px, 2.6vw, 34px)', fontFamily: body,
                 background: i === active ? 'rgba(255,255,255,.82)' : 'rgba(255,255,255,.4)', border: '1px solid rgba(255,255,255,.9)',
                 boxShadow: i === active ? '0 24px 56px rgba(20,48,31,.10), inset 0 1px 0 #fff' : 'none', backdropFilter: 'blur(12px)',
+                position: 'relative', overflow: 'hidden',
               }}>
+              {i === active && playing && beat > 0 && <span key={`bar${active}-${beat}`} className="pp-tour-bar" aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, background: T.leafBright }} />}
               <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', marginBottom: 12 }}>
                 <span style={{ fontFamily: head, fontWeight: 800, fontSize: 14, color: T.marigold }}>{String(i + 1).padStart(2, '0')}</span>
                 <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: '0.13em', textTransform: 'uppercase', color: T.leaf }}>{st.kicker}</span>

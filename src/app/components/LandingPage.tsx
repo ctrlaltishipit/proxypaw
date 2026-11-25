@@ -9,13 +9,16 @@
  * dog and a cat walk between the stops as the visitor scrolls. Each chapter is
  * a rounded sheet that slides over the one before.
  *
+ * The hero is a photograph, not an illustration: a neighbour walking a golden
+ * retriever on the charcoal jogging track, towers, real trees and the pool
+ * behind (public/real/hero-track.jpg).
+ *
  * Photos in /public/real are generated photoreal scenes of Hyderabad gated
  * communities (realistic-visuals skill); they are illustrative, never presented
  * as real customers. Sample names only appear inside the walk demo, labelled.
  */
 import { Component, lazy, Suspense, useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import CommunityScene from './landing/CommunityScene';
 import WalkSimulator from './landing/WalkSimulator';
 import AppWalkthrough from './landing/AppWalkthrough';
 import Trail, { stopLabel } from './landing/Trail';
@@ -374,13 +377,16 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
             </div>
 
             <div className="pp-enter" style={{ position: 'relative', animationDelay: '.2s' }}>
-              <div style={{ borderRadius: 32, overflow: 'hidden', boxShadow: '0 40px 80px rgba(28,60,40,.18)', aspectRatio: '560 / 500', background: '#dff0f4' }}>
-                <CommunityScene />
+              <div style={{ borderRadius: 32, overflow: 'hidden', boxShadow: '0 40px 80px rgba(28,60,40,.18)', aspectRatio: '560 / 500', background: '#dfe9d8' }}>
+                <img className="pp-kenburns" src="/real/hero-track.jpg" width={1024} height={1024}
+                  alt="A neighbour walking a golden retriever on the community's black jogging track at sunrise, with a tree in yellow bloom, the swimming pool and four apartment towers behind them"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '62% 58%', display: 'block' }} />
               </div>
-              <div className="pp-float pp-hide-sm" style={{ position: 'absolute', left: -22, bottom: -26, width: 'clamp(150px, 15vw, 196px)', background: T.surface, borderRadius: 20, padding: 8, boxShadow: '0 24px 50px rgba(28,60,40,.2)' }}>
-                <img src="/real/hero.jpg" alt="A neighbour walking a golden retriever on a community lawn at sunrise" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: '72% 50%', borderRadius: 14, display: 'block' }} />
-                <div style={{ padding: '8px 4px 2px', fontSize: 12.5, fontWeight: 600, color: T.sub, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  7:04 am · the lawn loop
+              <div className="pp-float pp-hide-sm" style={{ position: 'absolute', left: -20, bottom: 30, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 18, padding: '10px 14px', boxShadow: '0 18px 40px rgba(28,60,40,.18)', display: 'flex', gap: 10, alignItems: 'center' }}>
+                <img src="/real/walker-avatar.jpg" alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                <div>
+                  <div style={{ fontFamily: head, fontWeight: 700, fontSize: 13.5 }}>Walk in progress</div>
+                  <div style={{ fontSize: 12, color: T.leaf, fontWeight: 600 }}>7:04 am · the jogging track</div>
                 </div>
               </div>
               <div className="pp-float pp-hide-sm" style={{ position: 'absolute', right: -14, top: 26, background: T.surface, borderRadius: 18, padding: '10px 14px', boxShadow: '0 18px 40px rgba(28,60,40,.16)', display: 'flex', gap: 10, alignItems: 'center', animationDelay: '-2s' }}>
@@ -519,7 +525,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           stop="walk"
           kicker="The parent's side"
           title="Now watch a walk the way Biscuit's parent does."
-          sub="Pick a length and press start. An hour plays in 20 seconds: the live route, the updates on your phone, and the receipt at the end. Or switch to a cat visit."
+          sub="It plays by itself: an hour in 20 seconds, with the live route, the updates on your phone and the receipt, then the cat visit. Tap anywhere on it to take over and pick a length."
         />
         <Reveal><WalkSimulator onJoin={onJoin} /></Reveal>
       </Section>
@@ -528,7 +534,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <Heading
           kicker="Inside the app"
           title="Book a walk in six steps. Watch it happen."
-          sub="These are the real ProxyPaw screens. Hover to pause, or pick any step."
+          sub="These are the real ProxyPaw screens, clicked through for you. Pause, or pick any step."
         />
         <Reveal><AppWalkthrough /></Reveal>
       </Section>
