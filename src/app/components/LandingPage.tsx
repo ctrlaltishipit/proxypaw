@@ -530,6 +530,10 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           sub="These are the real ProxyPaw screens, clicked through for you. Pause, or pick any step."
         />
         <Reveal><AppWalkthrough /></Reveal>
+        <div style={{ marginTop: 26, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button className="pp-glass-btn" style={btnSecondary} onClick={onTourClick}>Watch the whole app in 70 seconds</button>
+          <span style={{ fontSize: 14, color: T.muted }}>One video, every screen, on the Inside the app page.</span>
+        </div>
       </Section>
 
       {/* ------------------------------- services ------------------------------- */}

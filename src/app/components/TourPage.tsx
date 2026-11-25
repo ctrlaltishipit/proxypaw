@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AppScrollTour, type DemoStep } from './landing/AppWalkthrough';
+import AppFilm from './landing/AppFilm';
 
 const C = {
   cream: '#f4f8ef',
@@ -263,6 +264,11 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
           </p>
         </Reveal>
       </section>
+
+      {/* the whole app as one video */}
+      <div id="film" style={{ ...shell, padding: 'clamp(18px, 3vw, 36px) clamp(16px, 2.5vw, 28px) clamp(40px, 6vw, 80px)', scrollMarginTop: 90 }}>
+        <AppFilm />
+      </div>
 
       {/* the phone stays put, the cards scroll, the cursor clicks */}
       <div style={{ ...shell, padding: '10px clamp(16px, 2.5vw, 28px) 0' }}>
