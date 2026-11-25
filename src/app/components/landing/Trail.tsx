@@ -6,9 +6,11 @@
  * visitor scrolls, Biscuit (the dog) and Lily (the cat) walk to the right along
  * it, chasing a marigold ProxyPaw ball, from one stop to the next (one stop per
  * chapter of the page). The stop number follows them both ways: walking back from
- * stop 4 shows stop 3 again, walking on shows stop 5. Each stop shows a one-line
- * card that says what that chapter teaches, so by the last stop the visitor has
- * been told what ProxyPaw is in eight lines.
+ * stop 4 shows stop 3 again, walking on shows stop 5. There are no pop-up cards
+ * along the way (she found them unnecessary: the stops explain themselves); only
+ * the last stop shows one card, with a close button. The bar tucks itself away
+ * whenever it would cover something that has its own controls at the bottom
+ * (anything marked data-trail-avoid, such as the 3D community).
  *
  * Positions are written straight to the DOM from one rAF-throttled scroll
  * handler, so scrolling never re-renders React. Only "which stop" is state.
@@ -189,7 +191,9 @@ const CSS = `
   opacity: 0; transform: translate(-50%, 18px) scale(.94); transition: opacity .4s ease, transform .55s cubic-bezier(.34,1.56,.64,1); }
 .tr-card[data-on="1"] { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
 .tr[data-hide="1"] .tr-card { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-.tr-card-k { font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: ${T.marigoldDark}; }
+.tr-close { position: absolute; top: 10px; right: 10px; border: none; background: rgba(46,125,79,.1); color: ${T.sub}; font-family: ${head}; font-weight: 700; font-size: 12.5px; padding: 7px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; }
+.tr-close:hover { background: rgba(46,125,79,.18); color: ${T.ink}; }
+.tr-card-k { padding-right: 78px; font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: ${T.marigoldDark}; }
 .tr-card-t { font-family: ${head}; font-weight: 800; font-size: 17px; letter-spacing: -.02em; color: ${T.ink}; margin: 5px 0 4px; }
 .tr-card-d { font-size: 14.5px; line-height: 1.5; color: ${T.sub}; margin: 0; }
 .tr-pips { display: flex; gap: 5px; margin-top: 12px; }
@@ -245,9 +249,9 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
   const ballRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const [reached, setReached] = useState(0);   // the stop the walkers are at right now; it follows them both ways
-  const [card, setCard] = useState<number | null>(null);
   const prevReached = useRef(0);
   const rewarded = useRef(false);
+  const [avoid, setAvoid] = useState(false);   // tucked away because it would cover a demo's own controls
   const [reward, setReward] = useState(false);
   const [quiet, setQuiet] = useState(false);   // tucked away while the visitor plays in the 3D world
   const [min, setMin] = useState(false);       // tucked away by the visitor
@@ -290,6 +294,10 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
       lastP = p;
       setReached(Math.floor(p + 0.0001));
       setAtEnd(y + vh > document.documentElement.scrollHeight - 110);
+      // Anything marked data-trail-avoid that reaches into the strip where the bar sits gets the strip to itself.
+      let cover = false;
+      document.querySelectorAll('[data-trail-avoid]').forEach((el) => { const r = el.getBoundingClientRect(); if (r.top < vh - 170 && r.bottom > vh - 108) cover = true; });
+      setAvoid(cover);
       if (quietAt.current !== null && Math.abs(y - quietAt.current) > 160) { quietAt.current = null; setQuiet(false); }
     };
     const kick = () => { if (!raf) raf = requestAnimationFrame(measure); };
@@ -310,20 +318,12 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
     };
   }, [n]);
 
-  // The walkers reached a different stop, forwards or backwards: show that stop's card.
-  // Walking back from 4 shows stop 3; walking on shows stop 5. The last stop shows the reward, once.
+  // The last stop shows the one card there is, once.
   useEffect(() => {
     if (reached === prevReached.current) return;
     prevReached.current = reached;
-    if (reached === n && !rewarded.current) { rewarded.current = true; setCard(null); setReward(true); return; }
-    setCard(reached > 0 ? reached - 1 : null);
+    if (reached === n && !rewarded.current) { rewarded.current = true; setReward(true); }
   }, [reached, n]);
-
-  useEffect(() => {
-    if (card === null) return;
-    const t = window.setTimeout(() => setCard(null), 4200);
-    return () => window.clearTimeout(t);
-  }, [card]);
 
   // The reward steps aside on its own, and never sits on top of the footer.
   useEffect(() => {
@@ -341,27 +341,16 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
 
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const next = reached < n ? STOPS[reached] : null;
-  const shown = card !== null ? STOPS[card] : null;
-  const hidden = quiet || min || atEnd;
+  const hidden = quiet || min || atEnd || avoid;
 
   return (
     <div ref={rootRef} className="tr" data-moving="0" data-dir="r" data-ready={ready ? '1' : '0'} data-hide={hidden ? '1' : '0'} data-min={min && !atEnd ? '1' : '0'}>
       <style>{CSS}</style>
       <div className="tr-in">
-        <div className="tr-card" data-on={shown && !reward ? '1' : '0'} role="status" aria-live="polite">
-          {shown && (
-            <>
-              <div className="tr-card-k">Stop {card! + 1} of {n}</div>
-              <div className="tr-card-t">{shown.name}</div>
-              <p className="tr-card-d">{shown.line}</p>
-              <div className="tr-pips" aria-hidden="true">{STOPS.map((s, i) => <i key={s.id} data-on={i < reached ? '1' : '0'} />)}</div>
-            </>
-          )}
-        </div>
-
         <div className="tr-card" data-on={reward ? '1' : '0'} role="status" aria-live="polite">
           {reward && (
             <>
+              <button className="tr-close" onClick={() => setReward(false)} aria-label="Close">Close</button>
               <div className="tr-card-k">Walk complete · {n} of {n} stops</div>
               <div className="tr-card-t">You walked all of ProxyPaw.</div>
               <p className="tr-card-d">Verified neighbours inside your own community, live updates on every walk and visit, and 70% of every booking to the person who cares for your pet.</p>

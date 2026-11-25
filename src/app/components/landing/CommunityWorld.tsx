@@ -191,6 +191,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   const [toast, setToast] = useState<string | null>(null);
   const [night, setNight] = useState(false);
   const [webgl, setWebgl] = useState(true);
+  const [ready, setReady] = useState(false); // true once the first real frames are on the canvas
+  const dissolveRef = useRef<HTMLCanvasElement>(null);
   const [listOpen, setListOpen] = useState(true);
   // the director plays the stories and the walk by itself; `demo` is its on-screen cursor
   const [dir, setDir] = useState<'off' | 'play' | 'pause'>('off');
@@ -213,7 +215,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     } catch { setWebgl(false); return; }
     const small = wrap.clientWidth < 700;
     if (small) setListOpen(false);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -229,7 +231,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const DAY = { top: new THREE.Color('#6fb4e4'), bottom: new THREE.Color('#e6f2ee'), fog: new THREE.Color('#dcebe8') };
     const NIGHT = { top: new THREE.Color('#0c1a2e'), bottom: new THREE.Color('#2a3d4d'), fog: new THREE.Color('#1c2c38') };
     scene.fog = new THREE.Fog(DAY.fog.clone(), 120, 520);
-    const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1600);
+    const camera = new THREE.PerspectiveCamera(52, 1, 0.25, 1600);
 
     const skyU = { top: { value: DAY.top.clone() }, bottom: { value: DAY.bottom.clone() } };
     scene.add(new THREE.Mesh(
@@ -254,6 +256,9 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       sun.shadow.bias = aerial ? -0.0016 : -0.0004; sun.shadow.normalBias = aerial ? 0.6 : 0.05;
       Object.assign(sun.shadow.camera, { left: -r, right: r, top: r, bottom: -r }); sun.shadow.camera.updateProjectionMatrix();
       const f = scene.fog as THREE.Fog; f.near = aerial ? 320 : 120; f.far = aerial ? 1100 : 520;
+      // From the air everything is hundreds of metres away. A far near-plane gives the depth buffer the precision to
+      // keep lawn, roads, track and paint apart; with the ground-level near-plane they flicker and break into blocks.
+      camera.near = aerial ? 40 : 0.25; camera.updateProjectionMatrix();
     };
 
     /* ---- ground, roads, paths ---- */
@@ -282,7 +287,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
     });
     patchTex.wrapS = patchTex.wrapT = THREE.RepeatWrapping; patchTex.repeat.set(5, 5);
-    const patches = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshBasicMaterial({ map: patchTex, transparent: true, depthWrite: false }));
+    const patches = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshBasicMaterial({ map: patchTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
     patches.rotation.x = -Math.PI / 2; patches.position.y = 0.012; scene.add(patches);
 
     const asphaltTex = canvasTex(64, 256, (g) => {
@@ -292,14 +297,14 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       g.fillStyle = '#f4f2ea'; g.fillRect(30, 20, 4, 90);
     });
     asphaltTex.wrapS = asphaltTex.wrapT = THREE.RepeatWrapping;
-    const roadM = new THREE.MeshStandardMaterial({ map: asphaltTex, roughness: 0.95 });
+    const roadM = new THREE.MeshStandardMaterial({ map: asphaltTex, roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const graniteTex = canvasTex(128, 128, (g) => {
       g.fillStyle = '#c9cbc6'; g.fillRect(0, 0, 128, 128);
       const r = rand(5); for (let i = 0; i < 1600; i++) { g.fillStyle = ['#bfc1bc', '#d3d5d0', '#b4b6b1'][Math.floor(r() * 3)]; g.fillRect(r() * 128, r() * 128, 2, 2); }
       g.strokeStyle = '#aeb0ab'; g.lineWidth = 2; g.strokeRect(0, 0, 128, 128);
     });
     graniteTex.wrapS = graniteTex.wrapT = THREE.RepeatWrapping;
-    const pathM = new THREE.MeshStandardMaterial({ map: graniteTex, roughness: 0.9 });
+    const pathM = new THREE.MeshStandardMaterial({ map: graniteTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const curve = (pts: [number, number][], closed: boolean): THREE.Curve<THREE.Vector3> => pts.length === 2 ? new THREE.LineCurve3(V(pts[0][0], 0, pts[0][1]), V(pts[1][0], 0, pts[1][1])) : new THREE.CatmullRomCurve3(pts.map(([x, z]) => V(x, 0, z)), closed, 'catmullrom', 0.5);
     const ring = curve(RING, true), loop = curve(LOOP, true);
     scene.add(ribbon(ring, 7, 500, 0.03, roadM));
@@ -313,22 +318,21 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       g.fillRect(256 / 3 - 2.5, 0, 5, 256); g.fillRect((256 * 2) / 3 - 2.5, 0, 5, 256);
     });
     trackTex.wrapS = trackTex.wrapT = THREE.RepeatWrapping; trackTex.anisotropy = maxAniso;
-    const trackM = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.93 });
+    const trackM = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.93, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
     scene.add(ribbon(loop, TRACK_W, 400, 0.05, trackM));
     // painted distance marks and a start line, the way a real community track has them
     const loopLen = loop.getLength();
     let tStart = 0; { let bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - 26, p.z + 1.2); if (d < bd) { bd = d; tStart = i / 300; } } }
-    const paintMark = (text: string, t: number, wide = 2.2) => {
-      const tex2 = canvasTex(256, 96, (g) => { g.font = '800 64px Plus Jakarta Sans, Inter, sans-serif'; g.fillStyle = '#f6f5ef'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 128, 52); });
-      const p = loop.getPointAt(((t % 1) + 1) % 1), tan = loop.getTangentAt(((t % 1) + 1) % 1);
-      const d = new THREE.Mesh(new THREE.PlaneGeometry(wide, wide * 0.375), new THREE.MeshStandardMaterial({ map: tex2, transparent: true, roughness: 0.9, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
-      d.rotation.order = 'YXZ'; d.rotation.x = -Math.PI / 2; d.rotation.y = Math.atan2(tan.x, tan.z) + Math.PI;
-      d.position.set(p.x, 0.062, p.z); d.receiveShadow = true; scene.add(d);
-    };
-    for (let k = 0; k * 50 < loopLen - 20; k++) paintMark(k === 0 ? 'START' : `${k * 50} m`, tStart + (k * 50) / loopLen + (k === 0 ? -0.012 : 0));
+    // distance ticks every 50 m: short bars on the outer lane (no painted words: they read upside down from the other side)
+    for (let k = 1; k * 50 < loopLen - 20; k++) {
+      const tt = (((tStart + (k * 50) / loopLen) % 1) + 1) % 1, p = loop.getPointAt(tt), tan = loop.getTangentAt(tt);
+      const nx = tan.z, nz = -tan.x, off = TRACK_W / 2 - 0.55;
+      const tick = mesh(new THREE.PlaneGeometry(0.7, 0.16), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x + nx * off, 0.06, p.z + nz * off, false);
+      tick.rotation.order = 'YXZ'; tick.rotation.y = Math.atan2(tan.x, tan.z); tick.rotation.x = -Math.PI / 2; scene.add(tick);
+    }
     { // start line across the three lanes
       const p = loop.getPointAt(tStart), tan = loop.getTangentAt(tStart);
-      const line = mesh(new THREE.PlaneGeometry(TRACK_W - 0.5, 0.32), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }), p.x, 0.06, p.z, false);
+      const line = mesh(new THREE.PlaneGeometry(TRACK_W - 0.5, 0.32), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x, 0.06, p.z, false);
       line.rotation.order = 'YXZ'; line.rotation.y = Math.atan2(tan.x, tan.z); line.rotation.x = -Math.PI / 2; scene.add(line);
     }
     const linkCurves = LINKS.map((l) => curve(l, false));
@@ -396,7 +400,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       // lobby canopy on the north side
       t.add(mesh(new THREE.BoxGeometry(7, 0.4, 4), crownM, 0, 4.2, -11));
       t.add(mesh(new THREE.BoxGeometry(5, 3.2, 0.3), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3 }), 0, 2.6, -9.1, false));
-      const lb = label(name, { scale: 1.5 }); lb.position.set(0, 7.5, -12.5); t.add(lb);
+      const lb = label(name.replace(/^T/, 'Tower '), { scale: 1.3 }); lb.position.set(0, 7.5, -12.5); t.add(lb);
       scene.add(t); block(x, z, 19, 11, rot, 110);
     });
 
@@ -406,7 +410,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const checker = canvasTex(128, 128, (g) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#e9c9bd' : '#f6efe8'; g.fillRect(i * 16, j * 16, 16, 16); } });
     const roofTop = mesh(new THREE.PlaneGeometry(23, 17), new THREE.MeshStandardMaterial({ map: checker, roughness: 0.9 }), 0, 7.03, 0, false); roofTop.rotation.x = -Math.PI / 2; club.add(roofTop);
     club.add(mesh(new THREE.BoxGeometry(0.3, 4, 12), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.8 }), -12.1, 2.6, 0, false));
-    const clb = label('Clubhouse', { scale: 1.2 }); clb.position.set(-13, 6.5, 0); club.add(clb);
+    const clb = label('Clubhouse', { scale: 0.9 }); clb.position.set(-13, 6.5, 0); club.add(clb);
     block(56, 4, 13.5, 10.5, 0.42, 8);
     scene.add(mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.16, 20), std('#cfd6d8', 0.2, 0.9), 38, 0.08, -1.6));
     const bowlWater = mesh(new THREE.CircleGeometry(0.27, 20), new THREE.MeshStandardMaterial({ color: '#5fa8c9', roughness: 0.05 }), 38, 0.15, -1.6, false); bowlWater.rotation.x = -Math.PI / 2; scene.add(bowlWater);
@@ -493,7 +497,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     scene.add(mesh(new THREE.BoxGeometry(0.08, 0.08, pz1 - pz0), fenceM, px1, 1, (pz0 + pz1) / 2));
     for (const z of [18, 26]) { for (const x of [143, 145]) scene.add(mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), std('#e0662f', 0.7), x, 0.45, z)); scene.add(mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), std('#f0b429', 0.7), 144, 0.6, z)); }
     const tunnel = mesh(new THREE.TorusGeometry(0.7, 0.12, 8, 20, Math.PI), std('#3f9fd0', 0.6), 140, 0, 29); scene.add(tunnel);
-    const dpl = label('Pet garden', { scale: 0.8 }); dpl.position.set(141, 4, 22); scene.add(dpl);
+    const dpl = label('Pet garden', { scale: 0.5 }); dpl.position.set(141, 4, 22); scene.add(dpl);
 
     /* ---- garden: trees, palms, shrubs, beds, hedges ---- */
     const inBlock = (x: number, z: number, pad = 2) => blockers.some((b) => { const dx = x - b.x, dz = z - b.z; return Math.abs(dx * b.c - dz * b.s) < b.hw + pad && Math.abs(dx * b.s + dz * b.c) < b.hd + pad; });
@@ -532,7 +536,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     // foliage dissolves just in front of the camera, so a canopy never blocks the view of the walk
     const NEAR_FADE = `#include <clipping_planes_fragment>
       float ppD = length(vViewPosition);
-      if (ppD < 4.4) { float ppT = fract(sin(dot(floor(gl_FragCoord.xy), vec2(12.9898, 78.233))) * 43758.5453); if (ppD < 2.6 || ppT > (ppD - 2.6) / 1.8) discard; }`;
+      if (ppD < 3.9) { // an ordered 4x4 dither reads as a soft fade; random noise reads as static
+        vec2 ppA = floor(gl_FragCoord.xy), ppH = floor(ppA * 0.5);
+        float ppT = fract(ppH.x / 2.0 + ppH.y * ppH.y * 0.75) * 0.25 + fract(ppA.x / 2.0 + ppA.y * ppA.y * 0.75);
+        if (ppD < 2.9 || ppT > (ppD - 2.9)) discard;
+      }`;
     const nearFade = <M extends THREE.Material>(mat: M) => { const prev = mat.onBeforeCompile; mat.onBeforeCompile = (sh, r) => { prev.call(mat, sh, r); sh.fragmentShader = sh.fragmentShader.replace('#include <clipping_planes_fragment>', NEAR_FADE); }; return mat; };
     const leafMat = (c: string) => nearFade(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, vertexColors: true }));
     const leafMs = ['#3f8f4f', '#4c9d55', '#5aa85c', '#37834a', '#6bb05f'].map(leafMat);
@@ -879,7 +887,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const walker = AC.makePerson({ shirt: '#2e7d4f', pants: '#33424a', skin: '#c08a63', hair: '#1f1a17', style: 'pony', build: 'f', height: 1.65, lanyard: true }); walker.g.position.set(70, 0, -13); walker.c.leash = 0; scene.add(walker.g);
     const dog = AC.makeDog(); dog.g.position.set(69.5, 0, -13.8); scene.add(dog.g);
     const priya = AC.makePerson({ shirt: '#e0662f', pants: '#2c3a50', skin: '#9a6a4a', hair: '#14110f', style: 'bun', build: 'f', height: 1.6, lanyard: true }); priya.g.position.set(5, 0, -22); scene.add(priya.g);
-    const pl = label('Rhea', { scale: 0.32 }); pl.position.set(5, 2.0, -22); scene.add(pl); // the neighbour at the pool; Priya is the walker
+    const pl = label('Rhea', { scale: 0.2 }); pl.position.set(5, 2.0, -22); scene.add(pl); // the neighbour at the pool; Priya is the walker
     const jogger = AC.makePerson({ shirt: '#f0b429', pants: '#22313a', skin: '#d1a07a', hair: '#3a2a1f', style: 'crop', build: 'm', height: 1.78, shorts: true }); scene.add(jogger.g);
     const resident = AC.makePerson({ shirt: '#6fa8c9', pants: '#4a4f55', skin: '#a87656', hair: '#8f8f8c', style: 'crop', build: 'm', height: 1.7 }); resident.c.leash = 0; scene.add(resident.g);
     const dog2 = AC.makeDog({ coat: '#2f2a26', cream: '#4a423b', dark: '#1d1916', scale: 0.82, harness: '#3f9fd0' }); scene.add(dog2.g);
@@ -1044,6 +1052,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       { dur: 5, text: 'Photos sent to Meera. Visit done in 30 minutes: ₹129, and ₹90.30 of it goes to Kabir.', cam: fc(0.5, 2.3, 6.6, -0.6, 0.9, -0.3), start: () => { visitor.c.crouch = 0; visitor.c.reach[0] = 0; aVisitor.dest = L(-3.4, 1.5); } },
     ];
     function toWorld(fromFlat = true) {
+      dissolve();
       flat.visible = false; scene.add(dog.g); leashInFlat = false; dogMode = 'follow';
       if (fromFlat) { walker.g.position.set(100, 0, -8.5); walker.g.rotation.y = Math.PI; dog.g.position.set(100.8, 0, -9.1); dog.g.rotation.set(0, Math.PI, 0); yaw = Math.PI - 0.75; pitch = 0.3; }
       else { walker.g.position.set(70, 0, -13); walker.g.rotation.y = -Math.PI / 2; dog.g.position.set(69.3, 0, -13.8); dog.g.rotation.set(0, -Math.PI / 2, 0); yaw = Math.PI / 2 - 0.3; pitch = 0.3; }
@@ -1058,7 +1067,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       bi++; bt = 0;
       if (bi >= beats.length) {
         if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? 'Now the walk: four stops along the track.' : 'Your turn. Walk Biscuit to the four stops.'); }
-        else { m = 'catdone'; setMode('catdone'); setCaption(null); flat.visible = false; camSnap = true; }
+        else { dissolve(); m = 'catdone'; setMode('catdone'); setCaption(null); flat.visible = false; camSnap = true; }
         beats = []; return;
       }
       setCaption({ text: beats[bi].text, i: bi, n: beats.length, img: beats[bi].img }); beats[bi].start?.();
@@ -1071,10 +1080,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       dirStart: () => {}, dirPause: () => {},
       setNight: (n) => { nightTarget = n ? 1 : 0; },
       sync: (x) => { m = x; },
-      play: (id) => { resetWalk(); storyId = id; setStory(id); setupFlat(id); beats = id === 'dog' ? DOG_BEATS : CAT_BEATS; bi = -1; camSnap = true; setM('story'); nextBeat(); },
+      play: (id) => { dissolve(); resetWalk(); storyId = id; setStory(id); setupFlat(id); beats = id === 'dog' ? DOG_BEATS : CAT_BEATS; bi = -1; camSnap = true; setM('story'); nextBeat(); },
       skip: () => { if (storyId === 'dog') { if (flat.visible) toWorld(); bi = beats.length; nextBeat(); } else { bi = beats.length; nextBeat(); } },
       explore: () => { resetWalk(); storyId = 'dog'; setStory('dog'); toWorld(false); setCaption(null); setM('walk'); wrap.focus({ preventScroll: true }); },
-      menu: () => { flat.visible = false; if (dog.g.parent !== scene) scene.add(dog.g); beats = []; setCaption(null); camSnap = true; setM('menu'); },
+      menu: () => { dissolve(); flat.visible = false; if (dog.g.parent !== scene) scene.add(dog.g); beats = []; setCaption(null); camSnap = true; setM('menu'); },
       goTo: (id) => { const s = STOPS.find((x) => x.id === id)!; goToPoint(V(s.pos[0], 0, s.pos[1])); },
       act: (id) => {
         const s = STOPS.find((x) => x.id === id)!;
@@ -1126,11 +1135,23 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       fn(); await sleep(0.2);
       if (thenHide) { await sleep(0.5); setDemo((d) => ({ ...d, on: false })); } // the cursor steps out while a story plays
     }
+    /** Cross-dissolve: freeze the frame we are leaving on a canvas above the 3D view and fade it away over the new view. */
+    function dissolve() {
+      const dc = dissolveRef.current, g2 = dc?.getContext('2d');
+      if (!dc || !g2 || reducedMotion) return;
+      renderer.render(scene, camera); // the drawing buffer now holds exactly the frame on screen
+      dc.width = canvas.width; dc.height = canvas.height;
+      g2.drawImage(canvas, 0, 0);
+      dc.style.transition = 'none'; dc.style.opacity = '1';
+      void dc.offsetWidth; // commit the opaque state before fading
+      dc.style.transition = 'opacity .7s ease'; dc.style.opacity = '0';
+    }
     /** a film cut: jump to a few metres before a stop, so each leg of the walk is short */
     function cutTo(target: THREE.Vector3, back = 7.5) {
       const route = routeTo(walker.g.position, target);
       let total = 0; for (let i = 1; i < route.length; i++) total += route[i].distanceTo(route[i - 1]);
       if (total < back + 6) return;
+      dissolve();
       meters += total - back; minutes += (total - back) / SPEED / 3; // the ground skipped by the cut still counts as walked
       let rem = back; const p = route[route.length - 1].clone(), d = V(0, 0, 1);
       for (let i = route.length - 1; i > 0; i--) {
@@ -1380,6 +1401,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       sun.intensity = 2.6 * (1 - nightF) + 0.25 * nightF; sun.color.set(nightF > 0.5 ? '#b9c9ff' : '#fff1d6'); hemi.intensity = 0.9 - nightF * 0.6;
       windowMats.forEach((w) => (w.emissiveIntensity = nightF * 1.3)); bulbs.forEach((b) => (b.emissiveIntensity = 0.1 + nightF * 2.6));
       scene.environmentIntensity = 0.35 - nightF * 0.25;
+      if (inFlat) { sun.intensity *= 0.28; hemi.intensity *= 0.5; scene.environmentIntensity *= 0.6; }
+      renderer.toneMappingExposure = inFlat ? 0.92 : 1.05;
 
       if (m === 'walk') {
         let n: StopId | null = null;
@@ -1402,7 +1425,9 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         else t.sp.scale.setScalar(1.5 + Math.sin(time * 3 + i) * 0.2);
       });
       renderer.render(scene, camera);
+      if (frames < 3 && ++frames === 3) setReady(true); // textures and shaders are in: let the picture fade up over the poster
     };
+    let frames = 0;
     camPos.set(10, 395, 102); camLook.set(10, 0, 2);
     tick();
 
@@ -1437,9 +1462,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   ];
 
   return (
-    <div ref={wrapRef} tabIndex={-1} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#d9ebe4', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', touchAction: mode === 'walk' && dir === 'off' ? 'none' : 'pan-y', cursor: mode === 'walk' ? 'grab' : 'default' }} aria-label="3D model of a ten-tower gated community. Watch a story or walk Biscuit the dog through it." />
+    <div ref={wrapRef} tabIndex={-1} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
+      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', opacity: ready ? 1 : 0, transition: 'opacity .8s ease', touchAction: mode === 'walk' && dir === 'off' ? 'none' : 'pan-y', cursor: mode === 'walk' ? 'grab' : 'default' }} aria-label="3D model of a ten-tower gated community. Watch a story or walk Biscuit the dog through it." />
 
+      <canvas ref={dissolveRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: 1 }} />
       {!webgl && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: T.leafPale, padding: 24, textAlign: 'center', fontFamily: body, color: T.sub }}>Your browser can't show the 3D community. Try the walk tracker below instead.</div>}
 
       {/* Story cards */}
@@ -1543,7 +1569,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         </div>
       )}
 
-      {/* The director: status chip, its cursor, and the flash of a film cut */}
+      {/* The director: status chip and its cursor */}
       {webgl && (dir === 'off'
         ? <button data-pp-dir className="pp-glass-btn pp-world-dir" style={{ ...glassBtn, position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 12, zIndex: 5 }} onClick={() => api.current?.dirStart()}>Watch the story</button>
         : (
@@ -1552,7 +1578,6 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
             <button data-pp-dir className="pp-glass-btn" style={{ ...glassBtn, padding: '6px 14px', minHeight: 32, fontSize: 12.5 }} onClick={() => api.current?.dirPause(dir === 'play')}>{dir === 'play' ? 'Pause' : 'Resume'}</button>
           </div>
         ))}
-      {demo.cut > 0 && dir !== 'off' && <div key={demo.cut} className="pp-world-cut" style={{ position: 'absolute', inset: 0, background: '#f4f8ef', pointerEvents: 'none', zIndex: 4 }} />}
       {demo.on && dir !== 'off' && (
         <div aria-hidden="true" style={{ position: 'absolute', left: demo.x, top: demo.y, width: 0, height: 0, transition: 'left .5s cubic-bezier(.45,0,.2,1), top .5s cubic-bezier(.45,0,.2,1)', zIndex: 7, pointerEvents: 'none' }}>
           {demo.rip > 0 && <span key={demo.rip} className="pp-world-rip" style={{ position: 'absolute', left: 0, top: 0, width: 44, height: 44, borderRadius: '50%', background: T.marigold }} />}
@@ -1565,8 +1590,6 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       <style>{`
         .pp-world-rip { animation: pp-world-rip .6s ease-out forwards; }
         @keyframes pp-world-rip { from { transform: translate(-50%,-50%) scale(.25); opacity: .6; } to { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
-        .pp-world-cut { animation: pp-world-cut .5s ease-out forwards; }
-        @keyframes pp-world-cut { from { opacity: .85; } to { opacity: 0; } }
         .pp-world-stop:not(:disabled):hover { background: rgba(46,125,79,.1) !important; }
         @media (max-width: 860px) {
           .pp-world-cards { grid-template-columns: 1fr !important; }
