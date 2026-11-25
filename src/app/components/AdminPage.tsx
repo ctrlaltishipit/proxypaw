@@ -29,11 +29,11 @@ const supabase = createClient(SB_URL, SB_ANON, {
 const FN_URL = `${SB_URL}/functions/v1/admin-stats`;
 
 const C = {
-  cream: '#f6f1e7', ink: '#2a2118', orange: '#e0662f', card: '#fffdf8',
-  border: '#eee3cf', muted: '#8b7a63', muted2: '#a08e73', green: '#3f6c51',
-  gold: '#f0b429', band: '#f1eadb', cream2: '#fdf9f0',
+  cream: '#f4f8ef', ink: '#14301f', orange: '#e0662f', card: '#ffffff',
+  border: '#e1ecdc', muted: '#5e7266', muted2: '#7c8f83', green: '#2e7d4f',
+  gold: '#f0b429', band: '#eaf3e4', cream2: '#fbfdf8',
 };
-const heading = "'Fredoka', system-ui, sans-serif";
+const heading = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 interface Row {
   id: string; name: string; email: string; phone: string; community: string;
@@ -126,7 +126,7 @@ export default function AdminPage() {
     }
   }
 
-  const page: React.CSSProperties = { minHeight: '100vh', background: C.cream, color: C.ink, fontFamily: "'Nunito', system-ui, sans-serif", padding: 'clamp(18px, 3vw, 40px)' };
+  const page: React.CSSProperties = { minHeight: '100vh', background: C.cream, color: C.ink, fontFamily: "'Inter', system-ui, sans-serif", padding: 'clamp(18px, 3vw, 40px)' };
 
   if (!ready) return <div style={page} />;
 
@@ -141,7 +141,7 @@ export default function AdminPage() {
           </p>
           <button
             onClick={googleSignIn}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: `1.5px solid #d9cbb2`, background: '#fff', color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 15, padding: '13px 0', borderRadius: 999, cursor: 'pointer', marginBottom: 16 }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: `1.5px solid #c9dcc4`, background: '#fff', color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 15, padding: '13px 0', borderRadius: 999, cursor: 'pointer', marginBottom: 16 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.1 3.7-8.6z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-6-2.2-6.9-5.2H1.2v3C3.1 21.2 7.2 24 12 24z"/><path fill="#FBBC05" d="M5.1 14.2c-.3-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2v-3H1.2C.4 8.4 0 10.1 0 12s.4 3.6 1.2 5.2l3.9-3z"/><path fill="#EA4335" d="M12 4.7c1.8 0 3 .8 3.7 1.4l2.8-2.7C16.5 1.3 14.1 0 12 0 7.2 0 3.1 2.8 1.2 6.8l3.9 3c.9-3 3.7-5.1 6.9-5.1z"/></svg>
             Sign in with Google
@@ -150,7 +150,7 @@ export default function AdminPage() {
             <span style={{ flex: 1, height: 1, background: C.border }} />or use a sign-in link<span style={{ flex: 1, height: 1, background: C.border }} />
           </div>
           {sent ? (
-            <div style={{ background: '#eef0e4', border: '1px solid #d9dec4', borderRadius: 14, padding: '14px 16px', fontSize: 14, color: '#5a6b3f', lineHeight: 1.55 }}>
+            <div style={{ background: '#e7f4e4', border: '1px solid #cfe5cb', borderRadius: 14, padding: '14px 16px', fontSize: 14, color: '#2e6b43', lineHeight: 1.55 }}>
               Link sent. Open the email on this device and tap the link; it brings you straight back here, signed in.
             </div>
           ) : (
@@ -161,7 +161,7 @@ export default function AdminPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                style={{ width: '100%', boxSizing: 'border-box', padding: '13px 16px', borderRadius: 999, border: `1px solid #d9cbb2`, background: C.cream, fontSize: 16, outline: 'none', fontFamily: 'inherit', marginBottom: 12 }}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '13px 16px', borderRadius: 999, border: `1px solid #c9dcc4`, background: C.cream, fontSize: 16, outline: 'none', fontFamily: 'inherit', marginBottom: 12 }}
               />
               {error && <p style={{ fontSize: 13, color: '#c24e1d', margin: '0 0 10px' }}>{error}</p>}
               <button type="submit" style={{ width: '100%', border: 'none', background: C.ink, color: C.cream2, fontFamily: heading, fontWeight: 600, fontSize: 15, padding: '13px 0', borderRadius: 999, cursor: 'pointer' }}>
@@ -180,7 +180,7 @@ export default function AdminPage() {
       <div style={{ ...page, display: 'grid', placeItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: heading, fontWeight: 600, fontSize: 20, marginBottom: 8 }}>Nothing here for this account.</div>
-          <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #d9cbb2', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 999, cursor: 'pointer' }}>
+          <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #c9dcc4', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: 999, cursor: 'pointer' }}>
             Sign out
           </button>
         </div>
@@ -204,7 +204,7 @@ export default function AdminPage() {
             <a href="/" style={{ textDecoration: 'none', border: 'none', background: C.orange, color: '#fff', fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
               ← Back to proxypaw.com
             </a>
-            <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #d9cbb2', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
+            <button onClick={() => supabase.auth.signOut()} style={{ border: '1.5px solid #c9dcc4', background: C.card, color: C.ink, fontFamily: heading, fontWeight: 600, fontSize: 13, padding: '9px 18px', borderRadius: 999, cursor: 'pointer' }}>
               Sign out
             </button>
           </div>
@@ -261,7 +261,7 @@ export default function AdminPage() {
                     <td style={{ ...td, whiteSpace: 'nowrap', color: C.muted2 }}>{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{r.name}</td>
                     <td style={td}>
-                      <span style={{ background: r.role === 'walker' ? '#eef0e4' : '#f9e7da', color: r.role === 'walker' ? '#3f6c51' : '#c24e1d', fontSize: 11.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                      <span style={{ background: r.role === 'walker' ? '#e7f4e4' : '#f9e7da', color: r.role === 'walker' ? '#2e7d4f' : '#c24e1d', fontSize: 11.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
                         {r.role === 'walker' ? 'volunteer' : 'owner'}
                       </span>
                       {r.id_proof && <div style={{ fontSize: 11, color: C.muted2, marginTop: 4 }}>{r.id_proof}</div>}

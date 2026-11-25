@@ -4,59 +4,59 @@
   --font-size: 16px;
   
   /* Proxypaw Palette — from the Claude Design artifact */
-  --background: #f6f1e7; /* warm cream ground */
-  --foreground: #2a2118; /* dark cocoa ink */
-  --card: #fffdf8;
-  --card-foreground: #2a2118;
-  --popover: #fffdf8;
-  --popover-foreground: #2a2118;
+  --background: #f4f8ef; /* warm cream ground */
+  --foreground: #14301f; /* dark cocoa ink */
+  --card: #ffffff;
+  --card-foreground: #14301f;
+  --popover: #ffffff;
+  --popover-foreground: #14301f;
   --primary: #e0662f; /* signature orange */
   --primary-foreground: #ffffff;
-  --secondary: #f1eadb; /* sand band */
-  --secondary-foreground: #2a2118;
-  --muted: #f1eadb; /* sand */
-  --muted-foreground: #8b7a63; /* warm grey-brown */
-  --accent: #3f6c51; /* forest green accent */
+  --secondary: #eaf3e4; /* sand band */
+  --secondary-foreground: #14301f;
+  --muted: #eaf3e4; /* sand */
+  --muted-foreground: #5e7266; /* warm grey-brown */
+  --accent: #2e7d4f; /* forest green accent */
   --accent-foreground: #ffffff;
   --destructive: #c24e1d;
   --destructive-foreground: #ffffff;
-  --border: #eee3cf;
+  --border: #e1ecdc;
   --input: transparent;
-  --input-background: #fffdf8;
-  --switch-background: #d9cbb2;
+  --input-background: #ffffff;
+  --switch-background: #c9dcc4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --ring: #e0662f;
   
   /* Extended palette */
   --earth-brown: #e0662f;
-  --forest-green: #3f6c51;
-  --sage-green: #eef0e4;
-  --moss-green: #8b7a63;
-  --pine-green: #3f6c51;
-  --sand-light: #fdf9f0;
-  --sand-medium: #f1eadb;
-  --bark-brown: #a08e73;
-  --leaf-green: #7a9a4e;
-  --stone-gray: #d9cbb2;
+  --forest-green: #2e7d4f;
+  --sage-green: #e7f4e4;
+  --moss-green: #5e7266;
+  --pine-green: #2e7d4f;
+  --sand-light: #fbfdf8;
+  --sand-medium: #eaf3e4;
+  --bark-brown: #7c8f83;
+  --leaf-green: #49a85a;
+  --stone-gray: #c9dcc4;
   
   /* Gradients */
   --gradient-earth: linear-gradient(135deg, #e0662f 0%, #c24e1d 100%);
-  --gradient-forest: linear-gradient(135deg, #3f6c51 0%, #31502c 100%);
-  --gradient-sage: linear-gradient(135deg, #eef0e4 0%, #d9dec4 100%);
-  --gradient-sand: linear-gradient(135deg, #fdf9f0 0%, #f1eadb 100%);
-  --gradient-nature: linear-gradient(135deg, #e0662f 0%, #f0b429 50%, #3f6c51 100%);
-  --gradient-pine: linear-gradient(135deg, #3f6c51 0%, #5a6b3f 100%);
-  --gradient-moss: linear-gradient(135deg, #8b7a63 0%, #a08e73 100%);
+  --gradient-forest: linear-gradient(135deg, #2e7d4f 0%, #31502c 100%);
+  --gradient-sage: linear-gradient(135deg, #e7f4e4 0%, #cfe5cb 100%);
+  --gradient-sand: linear-gradient(135deg, #fbfdf8 0%, #eaf3e4 100%);
+  --gradient-nature: linear-gradient(135deg, #e0662f 0%, #f0b429 50%, #2e7d4f 100%);
+  --gradient-pine: linear-gradient(135deg, #2e7d4f 0%, #2e6b43 100%);
+  --gradient-moss: linear-gradient(135deg, #5e7266 0%, #7c8f83 100%);
   --gradient-warm-earth: linear-gradient(135deg, #e0662f 0%, #c24e1d 100%);
-  --gradient-deep-forest: linear-gradient(135deg, #2a2118 0%, #1a1410 100%);
+  --gradient-deep-forest: linear-gradient(135deg, #14301f 0%, #1a1410 100%);
   
   /* Shadows - Organic and Soft */
-  --shadow-soft: 0 2px 8px rgba(74, 52, 24, 0.06);
-  --shadow-medium: 0 4px 16px rgba(74, 52, 24, 0.10);
-  --shadow-large: 0 8px 32px rgba(74, 52, 24, 0.14);
-  --shadow-xl: 0 14px 48px rgba(74, 52, 24, 0.18);
-  --shadow-inner: inset 0 2px 4px rgba(74, 52, 24, 0.05);
+  --shadow-soft: 0 2px 8px rgba(28,60,40, 0.06);
+  --shadow-medium: 0 4px 16px rgba(28,60,40, 0.10);
+  --shadow-large: 0 8px 32px rgba(28,60,40, 0.14);
+  --shadow-xl: 0 14px 48px rgba(28,60,40, 0.18);
+  --shadow-inner: inset 0 2px 4px rgba(28,60,40, 0.05);
   
   /* Nature Textures (via gradients and patterns) */
   --texture-wood: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(107, 68, 35, 0.03) 2px, rgba(107, 68, 35, 0.03) 4px);
@@ -64,10 +64,10 @@
   
   /* Chart Colors */
   --chart-1: #e0662f;
-  --chart-2: #3f6c51;
+  --chart-2: #2e7d4f;
   --chart-3: #f0b429;
-  --chart-4: #8b7a63;
-  --chart-5: #a08e73;
+  --chart-4: #5e7266;
+  --chart-5: #7c8f83;
   
   /* Spacing Scale - Organic spacing */
   --spacing-xs: 0.25rem;
@@ -88,13 +88,13 @@
   --radius-full: 9999px;
   
   /* Sidebar */
-  --sidebar: #fffdf8;
-  --sidebar-foreground: #2a2118;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #14301f;
   --sidebar-primary: #e0662f;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1eadb;
-  --sidebar-accent-foreground: #2a2118;
-  --sidebar-border: #eee3cf;
+  --sidebar-accent: #eaf3e4;
+  --sidebar-accent-foreground: #14301f;
+  --sidebar-border: #e1ecdc;
   --sidebar-ring: #e0662f;
   
   /* Animation Durations - Natural, organic timing */

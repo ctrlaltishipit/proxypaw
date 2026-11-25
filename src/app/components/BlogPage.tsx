@@ -12,23 +12,23 @@ import NextStop from './NextStop';
 import { ARTICLES, type Article } from '../data/articles';
 
 const C = {
-  cream: '#f6f1e7',
-  ink: '#2a2118',
+  cream: '#f4f8ef',
+  ink: '#14301f',
   orange: '#e0662f',
   orangeDark: '#c24e1d',
-  card: '#fffdf8',
-  cardBorder: '#eee3cf',
-  muted: '#8b7a63',
-  muted2: '#a08e73',
-  sub: '#6f5f4b',
-  cream2: '#fdf9f0',
+  card: '#ffffff',
+  cardBorder: '#e1ecdc',
+  muted: '#5e7266',
+  muted2: '#7c8f83',
+  sub: '#3f5547',
+  cream2: '#fbfdf8',
   peach: '#f9e7da',
-  bandBorder: '#e9ddc8',
-  band: '#f1eadb',
-  green: '#3f6c51',
+  bandBorder: '#d8e8d2',
+  band: '#eaf3e4',
+  green: '#2e7d4f',
 };
 
-const sora = "'Fredoka', system-ui, sans-serif";
+const sora = "'Plus Jakarta Sans', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
 
 interface BlogPageProps {
@@ -58,7 +58,7 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
         @keyframes pp-fadeUp { from { opacity:0; transform:translateY(18px);} to {opacity:1;transform:translateY(0);} }
         .pp-screen { animation:.5s cubic-bezier(.16,1,.3,1) both pp-fadeUp; }
         .pp-dark-btn:hover { background:${C.orange} !important; transform:translateY(-2px); }
-        .pp-post:hover { transform:translateY(-4px); box-shadow:0 18px 40px rgba(74,52,24,.12); }
+        .pp-post:hover { transform:translateY(-4px); box-shadow:0 18px 40px rgba(28,60,40,.12); }
         .pp-post:hover .pp-read { color:${C.orange}; }
         .pp-back:hover { color:${C.orange} !important; }
         @media (prefers-reduced-motion: reduce) { .pp-screen { animation:none !important; } }
@@ -209,7 +209,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
       <img
         src={article.img}
         alt=""
-        style={{ width: '100%', height: 'min(420px, 46vw)', objectFit: 'cover', borderRadius: 24, marginBottom: 38, boxShadow: '0 20px 50px rgba(74,52,24,.14)' }}
+        style={{ width: '100%', height: 'min(420px, 46vw)', objectFit: 'cover', borderRadius: 24, marginBottom: 38, boxShadow: '0 20px 50px rgba(28,60,40,.14)' }}
       />
 
       {article.body.map((b, i) => {

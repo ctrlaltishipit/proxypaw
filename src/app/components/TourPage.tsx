@@ -14,24 +14,24 @@ import {
 } from 'lucide-react';
 
 const C = {
-  cream: '#f6f1e7',
-  ink: '#2a2118',
+  cream: '#f4f8ef',
+  ink: '#14301f',
   orange: '#e0662f',
   orangeDark: '#c24e1d',
-  card: '#fffdf8',
-  cardBorder: '#eee3cf',
-  muted: '#8b7a63',
-  muted2: '#a08e73',
-  sub: '#6f5f4b',
-  cream2: '#fdf9f0',
+  card: '#ffffff',
+  cardBorder: '#e1ecdc',
+  muted: '#5e7266',
+  muted2: '#7c8f83',
+  sub: '#3f5547',
+  cream2: '#fbfdf8',
   peach: '#f9e7da',
-  band: '#f1eadb',
-  bandBorder: '#e9ddc8',
-  green: '#3f6c51',
-  greenPale: '#eef0e4',
+  band: '#eaf3e4',
+  bandBorder: '#d8e8d2',
+  green: '#2e7d4f',
+  greenPale: '#e7f4e4',
   gold: '#f0b429',
 };
-const sora = "'Fredoka', system-ui, sans-serif";
+const sora = "'Plus Jakarta Sans', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1140, margin: '0 auto' };
 
 interface Section {
@@ -66,7 +66,7 @@ const SECTIONS: Section[] = [
     id: 'services',
     eyebrow: 'THREE SERVICES, HONESTLY',
     Icon: CalendarCheck,
-    accent: '#3f6c51',
+    accent: '#2e7d4f',
     title: 'We only list what we actually deliver.',
     body: "Dog walking and cleaning from ₹149. Home pet boarding, day or overnight, from ₹449, in your pet's own home. Pet sitting and feeding at ₹129 a visit, litter box included, for adult dogs, puppies, cats and kittens. Missing food, medicine or equipment? Ask in the booking: if your volunteer accepts, they bring it at MRP, no markup.",
     points: [
@@ -111,7 +111,7 @@ const SECTIONS: Section[] = [
     id: 'booking',
     eyebrow: 'BOOK IN 30 SECONDS',
     Icon: ClipboardList,
-    accent: '#3f6c51',
+    accent: '#2e7d4f',
     title: 'Pick a slot. Add a request. Done.',
     body: 'Duration, day, time, confirm. Out of poop bags or need something for the booking? Add it as a request: your volunteer brings it at MRP if they accept. Every booking earns Paw Points.',
     points: [
@@ -171,7 +171,7 @@ const SECTIONS: Section[] = [
     id: 'switch',
     eyebrow: 'NOT WORKING OUT? SWITCH',
     Icon: ShieldCheck,
-    accent: '#3f6c51',
+    accent: '#2e7d4f',
     title: 'Request a change, no questions asked.',
     body: 'Not happy with your volunteer? Switch! Raise a ticket right from the app and we immediately send the next best verified volunteer, with your current one continuing until they arrive, so care never pauses. Keep switching until it feels exactly right: once you are happy, the same trusted person comes for every booking after. Drama-free, always: our team talks to the volunteer, never you.',
     points: [
@@ -310,7 +310,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
       {/* sections: sticky stacked cards — each new card slides over the last */}
       <div style={{ ...shell, padding: '10px 0 40px', position: 'relative' }}>
         {SECTIONS.map((sec, i) => {
-          const tints = ['#fffdf8', '#f7f3e6', '#fdf6ec'];
+          const tints = ['#ffffff', '#eef6e9', '#f7fbf3'];
           return (
             <section
               key={sec.id}
@@ -324,7 +324,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
                   background: tints[i % tints.length],
                   border: `1px solid ${C.cardBorder}`,
                   borderRadius: 26,
-                  boxShadow: '0 -14px 40px rgba(74,52,24,.10), 0 18px 44px rgba(74,52,24,.10)',
+                  boxShadow: '0 -14px 40px rgba(28,60,40,.10), 0 18px 44px rgba(28,60,40,.10)',
                   padding: 'clamp(20px, 2.8vw, 36px)',
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
@@ -333,7 +333,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
                 }}
               >
                 <div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#f6f1e7', border: `1px solid ${C.cardBorder}`, borderRadius: 999, padding: '6px 14px 6px 7px', marginBottom: 16 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#f4f8ef', border: `1px solid ${C.cardBorder}`, borderRadius: 999, padding: '6px 14px 6px 7px', marginBottom: 16 }}>
                     <span style={{ width: 26, height: 26, borderRadius: 999, background: sec.accent, display: 'grid', placeItems: 'center' }}>
                       <sec.Icon size={14} color="#fff" />
                     </span>
@@ -359,7 +359,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ borderRadius: 34, overflow: 'hidden', border: `6px solid ${C.ink}`, boxShadow: '0 22px 50px rgba(42,33,24,.22)', background: '#fffdf8', width: 'min(280px, 72vw)' }}>
+                  <div style={{ borderRadius: 34, overflow: 'hidden', border: `6px solid ${C.ink}`, boxShadow: '0 22px 50px rgba(20,48,31,.22)', background: '#ffffff', width: 'min(280px, 72vw)' }}>
                     <img
                       src={sec.shot}
                       alt={sec.alt}
@@ -384,8 +384,8 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
             We open tower by tower, and every wagging tail brings it closer to home. Come, let's
             build this community together!
           </p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#eef0e4', border: '1px solid #dfe4cf', color: '#3f6c51', borderRadius: 999, padding: '9px 18px', fontFamily: sora, fontWeight: 600, fontSize: 13.5, margin: '0 0 26px', maxWidth: '92%' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="#3f6c51" aria-hidden="true"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#e7f4e4', border: '1px solid #d5e6cf', color: '#2e7d4f', borderRadius: 999, padding: '9px 18px', fontFamily: sora, fontWeight: 600, fontSize: 13.5, margin: '0 0 26px', maxWidth: '92%' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#2e7d4f" aria-hidden="true"><ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="4.4" cy="12.2" rx="1.9" ry="2.5" /><ellipse cx="19.6" cy="12.2" rx="1.9" ry="2.5" /><path d="M12 11c3 0 5.6 2.4 5.9 5.3.2 2-1.3 3.7-3.3 3.7-1 0-1.8-.5-2.6-.5s-1.6.5-2.6.5c-2 0-3.5-1.7-3.3-3.7C6.4 13.4 9 11 12 11z" /></svg>
             <span style={{ textAlign: 'left' }}>Founding 1,000 perk: a free onboarding session for your pet, plus &#8377;100 off your first booking!</span>
           </div>
           <br />
@@ -409,7 +409,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
         <button
           className="pp-founder-card"
           onClick={onAboutClick}
-          style={{ display: 'flex', alignItems: 'stretch', gap: 0, background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', maxWidth: 560, overflow: 'hidden' }}
+          style={{ display: 'flex', alignItems: 'stretch', gap: 0, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 22, padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', maxWidth: 560, overflow: 'hidden' }}
         >
           <img src="/founder/pablo-leo-young.jpg" alt="Pablo and Leo, the founder's Persian cats" style={{ width: 150, objectFit: 'cover', objectPosition: 'center', flexShrink: 0 }} />
           <span style={{ padding: '18px 20px', display: 'block' }}>
@@ -423,7 +423,7 @@ export default function TourPage({ onHomeClick, onJoin, onAboutClick }: TourPage
           </span>
         </button>
       </div>
-      <style>{`.pp-founder-card { transition: transform .25s, box-shadow .25s; } .pp-founder-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(74,52,24,.12); } @media (max-width: 560px) { .pp-founder-card { flex-direction: column; } .pp-founder-card img { width: 100%; height: 140px; } }`}</style>
+      <style>{`.pp-founder-card { transition: transform .25s, box-shadow .25s; } .pp-founder-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(28,60,40,.12); } @media (max-width: 560px) { .pp-founder-card { flex-direction: column; } .pp-founder-card img { width: 100%; height: 140px; } }`}</style>
 
     </div>
   );

@@ -13,26 +13,26 @@ import NextStop from './NextStop';
 import { Home, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
 
 const C = {
-  cream: '#f6f1e7',
-  ink: '#2a2118',
+  cream: '#f4f8ef',
+  ink: '#14301f',
   orange: '#e0662f',
   orangeDark: '#c24e1d',
-  card: '#fffdf8',
-  cardBorder: '#eee3cf',
-  muted: '#8b7a63',
-  muted2: '#a08e73',
-  sub: '#6f5f4b',
-  green: '#3f6c51',
-  greenPale: '#eef0e4',
+  card: '#ffffff',
+  cardBorder: '#e1ecdc',
+  muted: '#5e7266',
+  muted2: '#7c8f83',
+  sub: '#3f5547',
+  green: '#2e7d4f',
+  greenPale: '#e7f4e4',
   gold: '#f0b429',
-  band: '#f1eadb',
-  bandBorder: '#e9ddc8',
-  btnBorder: '#d9cbb2',
-  cream2: '#fdf9f0',
+  band: '#eaf3e4',
+  bandBorder: '#d8e8d2',
+  btnBorder: '#c9dcc4',
+  cream2: '#fbfdf8',
   peach: '#f9e7da',
-  darkSub: '#c9b799',
+  darkSub: '#b9d3c0',
 };
-const sora = "'Fredoka', system-ui, sans-serif";
+const sora = "'Plus Jakarta Sans', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1080, margin: '0 auto' };
 const SIDE_PAD = 'clamp(18px, 3vw, 28px)';
 
@@ -152,7 +152,7 @@ const EVANGELISTS = [
     tagline: 'The curious one',
     body: "Leo runs a strict balcony patrol: birds are monitored (never caught, the record stands at zero), insects are personally inspected, and every new smell is investigated on arrival. He is also a certified shoulder cat, he climbs up, settles in, and stays there like it's his office. Of the two, he's the clingy one, and he'd take that as a compliment.",
     facts: ['Career birds caught: 0. Enthusiasm: undented.', 'Full-time shoulder cat, no notice period', 'Inspects every insect. For science.'],
-    accent: '#3f6c51',
+    accent: '#2e7d4f',
   },
 ];
 
@@ -173,7 +173,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
         .pp-dark-btn:hover { background:${C.orange} !important; transform:translateY(-2px); }
         .pp-cta:hover { transform:translateY(-2px); box-shadow:0 18px 38px rgba(224,102,47,.42) !important; }
         .pp-ghost:hover { border-color:${C.orange} !important; color:${C.orange} !important; }
-        .pp-belief:hover { transform:translateY(-4px); box-shadow:0 18px 40px rgba(74,52,24,.10); }
+        .pp-belief:hover { transform:translateY(-4px); box-shadow:0 18px 40px rgba(28,60,40,.10); }
         @media (max-width: 480px) {
           .pp-about-ctas { flex-direction:column; }
           .pp-about-ctas button { width:100%; }
@@ -293,7 +293,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
             <img
               src="/founder/pablo-leo.jpg"
               alt="Pablo and Leo together on the balcony beside their bonsai"
-              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24, border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(74,52,24,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
+              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24, border: `1px solid ${C.cardBorder}`, boxShadow: '0 20px 48px rgba(28,60,40,.13)', marginBottom: 'clamp(14px, 1.8vw, 20px)' }}
             />
           </Reveal>
 

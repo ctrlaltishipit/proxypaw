@@ -6,10 +6,10 @@
 import { BrandIcon } from './BrandLogo';
 
 const C = {
-  card: '#fffdf8', border: '#eee3cf', ink: '#2a2118',
-  orange: '#e0662f', muted: '#8b7a63', muted2: '#a08e73',
+  card: '#ffffff', border: '#e1ecdc', ink: '#14301f',
+  orange: '#e0662f', muted: '#5e7266', muted2: '#7c8f83',
 };
-const heading = "'Fredoka', system-ui, sans-serif";
+const heading = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 export default function NextStop({ eyebrow = 'NEXT STOP', label, sub, onClick }: {
   eyebrow?: string;
@@ -21,7 +21,7 @@ export default function NextStop({ eyebrow = 'NEXT STOP', label, sub, onClick }:
     <div style={{ display: 'flex', justifyContent: 'center', padding: '0 18px clamp(40px, 5vw, 64px)', textTransform: 'none', position: 'relative', zIndex: 1 }}>
       <style>{`
         .pp-nextstop { transition: transform .25s, box-shadow .25s; }
-        .pp-nextstop:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(74,52,24,.12); }
+        .pp-nextstop:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(28,60,40,.12); }
         .pp-nextstop:hover .pp-nextstop-paw { transform: rotate(12deg) scale(1.1); }
         .pp-nextstop:hover .pp-nextstop-arrow { transform: translateX(4px); }
         .pp-nextstop-paw, .pp-nextstop-arrow { transition: transform .25s; }
