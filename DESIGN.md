@@ -81,11 +81,26 @@ hero media. No brown shadows.
   5s have a pause control or stop on reduced motion.
 
 ## Components
-- **Primary button**: marigold pill, white text, `0 12px 28px rgba(224,102,47,.3)`.
-- **Secondary button**: white pill, 1.5px `#C9DCC4` border, ink text.
-- **Chip**: leaf-pale ground, leaf text, live dot.
-- **Card**: white, 1px `#E1ECDC`, radius 24.
+- **Buttons are glass** (`.pp-glass-btn` in `src/styles/fonts.css`): translucent white pill, blur, inner
+  highlight, springy hover (`cubic-bezier(.34,1.56,.64,1)`) and a squish on press.
+  `.pp-glass-primary` is the marigold version (the one CTA colour); `.pp-glass-dark` sits on photos.
+- **No icons in front of words.** Nav items, chips, buttons, list items and badges are words only.
+  No arrows after labels either. Numbers ("01") are fine as step markers.
+- **Nav**: a glass capsule; the current page is a leaf-green pill, never an underline.
+- **Chip**: soft glass ground, leaf text, no dot.
+- **Card**: white, 1px `#E1ECDC`, radius 24. Glass cards (white 62–82% + blur) sit over the 3D world.
 - **Dark band**: forest ground, canvas-2 text, sun highlights.
+
+## Interactive worlds
+- **3D community** (`landing/CommunityWorld.tsx`, three.js, lazy-loaded): ten towers laid out from a
+  published master plan, ring road, walking loop, pools, clubhouse, pet garden. Real swaying grass
+  blades, layered planting, palms, flower beds on soil. Story cards play "the dog walk" and "the cat
+  visit" inside a flat, then hand over a free walk with a checklist, photo updates and a payment
+  summary. Always show the human, the dog and the leash together.
+- **Inside the app** (`landing/AppWalkthrough.tsx`): the live app screens operated by a cursor.
+  Auto-plays on the landing page; on `/tour` it is scroll-driven (phone pinned, text cards scroll,
+  the cursor clicks the button that leads to the next screen).
+- Everything respects `prefers-reduced-motion` and works by touch at phone width.
 
 ## Imagery
 - Real-looking photographs of Hyderabad gated communities (generated with the realistic-visuals skill;
@@ -97,3 +112,5 @@ hero media. No brown shadows.
 - No invented stats, reviews or customers on the marketing site. Sample names live only inside app
   mockups and the walk demo, labelled as a demo.
 - Community names are inspiration ("built for communities like ..."), never a claim of partnership.
+- The 3D model carries a line saying it is illustrative and not affiliated with the developer.
+- Journal articles carry a date, cite their sources, and end with "general information, not veterinary advice".

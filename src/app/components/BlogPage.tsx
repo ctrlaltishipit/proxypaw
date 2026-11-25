@@ -4,10 +4,13 @@
  * Articles live in data/articles.ts. Selecting a card swaps the index for the
  * article inline (no router yet), and the browser back affordance is a visible
  * "all guides" link instead.
+ *
+ * The index is sorted newest first on each article's `date`, so the journal
+ * reads as one release a month. Articles that carry `sources` list them at the
+ * end of the reading view.
  */
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import NextStop from './NextStop';
 import { ARTICLES, type Article } from '../data/articles';
 
@@ -31,6 +34,16 @@ const C = {
 const sora = "'Plus Jakarta Sans', system-ui, sans-serif";
 const shell: CSSProperties = { maxWidth: 1200, margin: '0 auto' };
 
+/**
+ * '2026-11-12' becomes '12 November 2026'. Parsed and printed in UTC so the
+ * day never slips with the reader's time zone.
+ */
+function formatDate(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  });
+}
+
 interface BlogPageProps {
   onHomeClick: () => void;
   onGetStarted: () => void;
@@ -45,12 +58,14 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
   const current = slug ? ARTICLES.find((a) => a.slug === slug) ?? null : null;
   const [cat, setCat] = useState('all');
   const CAT_SLUGS: Record<string, string[]> = {
-    kittens: ['kitten-care-first-year', 'litter-box-science', 'play-tails-wagging', 'how-bookings-stay-safe'],
-    'adult cats': ['adult-cat-care-guide', 'indoor-cats-bigger-life', 'litter-box-science', 'apartment-grooming-guide', 'away-for-a-month-pet-care-plan'],
-    puppies: ['puppy-care-first-year', 'feeding-right-portions-treats', 'play-tails-wagging', 'walking-gated-community'],
-    'adult dogs': ['adult-dog-care-guide', 'walking-gated-community', 'apartment-grooming-guide', 'feeding-right-portions-treats', 'away-for-a-month-pet-care-plan'],
+    kittens: ['kitten-grooming-hygiene-guide', 'kitten-vet-checklist', 'kitten-care-first-year', 'litter-box-science', 'play-tails-wagging', 'how-bookings-stay-safe'],
+    'adult cats': ['adult-cat-vet-checklist', 'adult-cat-grooming-hygiene-guide', 'adult-cat-care-guide', 'indoor-cats-bigger-life', 'litter-box-science', 'apartment-grooming-guide', 'away-for-a-month-pet-care-plan'],
+    puppies: ['puppy-vet-checklist', 'puppy-grooming-hygiene-guide', 'puppy-care-first-year', 'feeding-right-portions-treats', 'play-tails-wagging', 'walking-gated-community'],
+    'adult dogs': ['adult-dog-vet-checklist', 'adult-dog-grooming-routine', 'adult-dog-care-guide', 'walking-gated-community', 'apartment-grooming-guide', 'feeding-right-portions-treats', 'away-for-a-month-pet-care-plan'],
   };
-  const shown = cat === 'all' ? ARTICLES : CAT_SLUGS[cat].map((sl) => ARTICLES.find((a) => a.slug === sl)).filter((a): a is Article => Boolean(a));
+  const inCategory = cat === 'all' ? ARTICLES : CAT_SLUGS[cat].map((sl) => ARTICLES.find((a) => a.slug === sl)).filter((a): a is Article => Boolean(a));
+  // Newest first. ISO dates sort correctly as plain strings.
+  const shown = [...inCategory].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div style={{ minHeight: '100vh', background: C.cream, color: C.ink, overflowX: 'clip' }}>
@@ -115,13 +130,18 @@ export default function BlogPage({ onHomeClick, onGetStarted, slug, onOpenArticl
                   >
                     <div style={{ width: '100%', height: 200, backgroundImage: `url("${a.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
                     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'inline-flex', alignSelf: 'flex-start', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 14 }}>
-                        {a.tag.replace(/-/g, ' ')}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 12px', marginBottom: 14 }}>
+                        <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 11.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999, letterSpacing: '0.05em' }}>
+                          {a.tag.replace(/-/g, ' ')}
+                        </div>
+                        <time dateTime={a.date} style={{ fontSize: 12.5, color: C.muted2, textTransform: 'none', whiteSpace: 'nowrap' }}>
+                          {formatDate(a.date)}
+                        </time>
                       </div>
                       <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, lineHeight: 1.3, marginBottom: 10 }}>{a.title}</div>
                       <div style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.55, textTransform: 'none', marginBottom: 18 }}>{a.dek}</div>
                       <div className="pp-read" style={{ marginTop: 'auto', fontSize: 13.5, color: C.muted2, transition: 'color .25s' }}>
-                        {a.read} &middot; Read &rarr;
+                        {a.read} &middot; Read
                       </div>
                     </div>
                   </article>
@@ -188,22 +208,22 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
         onClick={onBack}
         className="pp-back"
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 7, border: 'none', background: 'transparent',
+          display: 'block', border: 'none', background: 'transparent',
           fontFamily: sora, fontWeight: 600, fontSize: 14, color: C.muted, cursor: 'pointer',
-          padding: 0, marginBottom: 30, transition: 'color .2s',
+          padding: 0, marginBottom: 30, transition: 'color .2s', textDecoration: 'none',
         }}
       >
-        <ArrowLeft size={16} /> All guides
+        Back to all guides
       </button>
 
       <div style={{ display: 'inline-flex', background: C.peach, color: C.orangeDark, fontSize: 12, fontWeight: 600, padding: '5px 13px', borderRadius: 999, letterSpacing: '0.05em', marginBottom: 18, textTransform: 'capitalize' }}>
-        {article.tag}
+        {article.tag.replace(/-/g, ' ')}
       </div>
       <h1 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(30px, 4vw, 46px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 14px', textTransform: 'capitalize' }}>
         {article.title}
       </h1>
       <div style={{ fontSize: 14, color: C.muted2, marginBottom: 30 }}>
-        {article.read} · The Paw Journal
+        <time dateTime={article.date}>{formatDate(article.date)}</time> · {article.read} · The Paw Journal
       </div>
 
       <img
@@ -240,7 +260,7 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
               }}
             >
               <span style={{ fontFamily: sora, fontWeight: 600, color: C.ink, display: 'block', marginBottom: 6 }}>
-                🐾 On ProxyPaw
+                On ProxyPaw
               </span>
               {b.text}
             </aside>
@@ -250,6 +270,26 @@ function ArticleView({ article, onBack, onGetStarted }: { article: Article; onBa
           <p key={i} style={{ fontSize: 16.5, lineHeight: 1.75, color: C.sub, margin: '0 0 20px' }}>{b.text}</p>
         );
       })}
+
+      {article.sources && article.sources.length > 0 && (
+        <section style={{ marginTop: 44, paddingTop: 26, borderTop: `1px solid ${C.bandBorder}` }}>
+          <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 15, letterSpacing: '-0.004em', lineHeight: 1.3, margin: '0 0 12px', color: C.ink }}>
+            Sources and further reading
+          </h2>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            {article.sources.map((s) => (
+              <li key={s.url} style={{ fontSize: 13.5, lineHeight: 1.6, color: C.muted2, marginBottom: 6 }}>
+                <a href={s.url} target="_blank" rel="noopener noreferrer" style={{ color: C.green, textDecoration: 'none' }}>
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p style={{ fontSize: 13, lineHeight: 1.6, color: C.muted2, margin: '14px 0 0' }}>
+            This guide is general information, not veterinary advice. Your vet knows your pet best.
+          </p>
+        </section>
+      )}
 
       <div style={{ marginTop: 48, paddingTop: 34, borderTop: `1px solid ${C.bandBorder}`, textAlign: 'center' }}>
         <p style={{ fontFamily: sora, fontWeight: 600, fontSize: 19, margin: '0 0 16px', color: C.ink }}>

@@ -315,9 +315,9 @@ export default function WalkSimulator({ onJoin }: { onJoin: (source: string, int
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {phase === 'running' ? (
-              <button className="pp-btn pp-btn-secondary" style={{ ...btnSecondary, flex: 1, justifyContent: 'center' }} onClick={skip}>Skip to the end</button>
+              <button className="pp-glass-btn" style={{ ...btnSecondary, flex: 1, justifyContent: 'center' }} onClick={skip}>Skip to the end</button>
             ) : (
-              <button className="pp-btn pp-btn-primary" style={{ ...btnPrimary, flex: 1, justifyContent: 'center' }} onClick={start}>
+              <button className="pp-glass-btn pp-glass-primary" style={{ ...btnPrimary, flex: 1, justifyContent: 'center' }} onClick={start}>
                 {mode === 'dog' ? `Start Biscuit’s ${WALKS[walkIdx].label} walk` : 'Start Momo’s visit'}
               </button>
             )}
@@ -384,8 +384,8 @@ export default function WalkSimulator({ onJoin }: { onJoin: (source: string, int
               </div>
               {phase === 'done' ? (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <button className="pp-btn pp-btn-primary" style={{ ...btnPrimary, justifyContent: 'center', fontSize: 15 }} onClick={() => { setPay('upi'); setPhase('paid'); }}>Pay {inr(plan.price)} by UPI</button>
-                  <button className="pp-btn pp-btn-secondary" style={{ ...btnSecondary, justifyContent: 'center', fontSize: 15 }} onClick={() => { setPay('card'); setPhase('paid'); }}>Pay by card</button>
+                  <button className="pp-glass-btn pp-glass-primary" style={{ ...btnPrimary, justifyContent: 'center', fontSize: 15 }} onClick={() => { setPay('upi'); setPhase('paid'); }}>Pay {inr(plan.price)} by UPI</button>
+                  <button className="pp-glass-btn" style={{ ...btnSecondary, justifyContent: 'center', fontSize: 15 }} onClick={() => { setPay('card'); setPhase('paid'); }}>Pay by card</button>
                 </div>
               ) : (
                 <div className="pp-fade-in">
@@ -397,12 +397,12 @@ export default function WalkSimulator({ onJoin }: { onJoin: (source: string, int
                       <strong>Paid by {pay === 'upi' ? 'UPI' : 'card'}.</strong> This was a demo, so nothing was charged. +25 paw points.
                     </div>
                   </div>
-                  <button className="pp-btn pp-btn-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }} onClick={() => { reset(); onJoin(`walk-demo-${mode}`); }}>
+                  <button className="pp-glass-btn pp-glass-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }} onClick={() => { reset(); onJoin(`walk-demo-${mode}`); }}>
                     Join the waitlist for the real thing
                   </button>
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <a className="pp-btn pp-btn-secondary" href={share} target="_blank" rel="noreferrer" style={{ ...btnSecondary, flex: 1, justifyContent: 'center', fontSize: 14, textDecoration: 'none' }}>Share with your tower</a>
-                    <button className="pp-btn pp-btn-secondary" style={{ ...btnSecondary, flex: 1, justifyContent: 'center', fontSize: 14 }} onClick={() => reset()}>Run it again</button>
+                    <a className="pp-glass-btn" href={share} target="_blank" rel="noreferrer" style={{ ...btnSecondary, flex: 1, justifyContent: 'center', fontSize: 14, textDecoration: 'none' }}>Share with your tower</a>
+                    <button className="pp-glass-btn" style={{ ...btnSecondary, flex: 1, justifyContent: 'center', fontSize: 14 }} onClick={() => reset()}>Run it again</button>
                   </div>
                 </div>
               )}

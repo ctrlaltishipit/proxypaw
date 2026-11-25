@@ -11,13 +11,15 @@
  * communities (realistic-visuals skill); they are illustrative, never presented
  * as real customers. Sample names only appear inside the walk demo, labelled.
  */
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import CommunityScene from './landing/CommunityScene';
 import WalkSimulator from './landing/WalkSimulator';
+import AppWalkthrough from './landing/AppWalkthrough';
+const CommunityWorld = lazy(() => import('./landing/CommunityWorld'));
 import {
   T, head, shell, SECTION, GAP, eyebrow, h2, lead, btnPrimary, btnSecondary, card,
-  Reveal, RotatingWords, GLOBAL_CSS,
+  Reveal, RotatingWords, GLOBAL_CSS, useInView,
 } from './landing/ui';
 
 type JoinFn = (source: string, intent?: 'owner' | 'walker') => void;
@@ -68,18 +70,11 @@ const SHARE_URL = 'https://wa.me/?text=' + encodeURIComponent(
 
 /* ------------------------------- small parts ------------------------------ */
 
-function Paw({ size = 16, color = '#fff' }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
-      <ellipse cx="8.2" cy="7.4" rx="2.1" ry="2.9" /><ellipse cx="15.8" cy="7.4" rx="2.1" ry="2.9" />
-      <ellipse cx="4.6" cy="12" rx="1.9" ry="2.5" /><ellipse cx="19.4" cy="12" rx="1.9" ry="2.5" />
-      <path d="M12 11.5c-2.9 0-5.6 2.6-5.6 5.2 0 1.8 1.4 2.9 3 2.9 1 0 1.7-.4 2.6-.4s1.6.4 2.6.4c1.6 0 3-1.1 3-2.9 0-2.6-2.7-5.2-5.6-5.2z" />
-    </svg>
-  );
-}
-
-function Arrow({ color = 'currentColor' }: { color?: string }) {
-  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
+/** Mounts the 3D world only once it is near the viewport, so three.js never slows first paint. */
+function WorldMount({ onJoin }: { onJoin: (source: string) => void }) {
+  const [ref, seen] = useInView<HTMLDivElement>(0);
+  const placeholder = <div style={{ height: 'clamp(600px, 84vh, 800px)', borderRadius: 30, background: 'linear-gradient(180deg, #cfe7f2, #e7f4e4 60%, #bfe0b0)' }} />;
+  return <div ref={ref}>{seen ? <Suspense fallback={placeholder}><CommunityWorld onJoin={onJoin} /></Suspense> : placeholder}</div>;
 }
 
 function Section({ id, children, style, band }: { id?: string; children: ReactNode; style?: CSSProperties; band?: boolean }) {
@@ -276,7 +271,7 @@ function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
         ))}
       </div>
       <div style={{ marginTop: 22, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('pricing')}>Lock in founding prices <Arrow /></button>
+        <button className="pp-glass-btn pp-glass-primary" style={btnPrimary} onClick={() => onJoin('pricing')}>Lock in founding prices</button>
       </div>
     </div>
   );
@@ -309,7 +304,6 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           <div className="pp-hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.05fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
             <div>
               <div className="pp-enter" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.surface, border: `1px solid ${T.line}`, color: T.leaf, padding: '8px 14px', borderRadius: 999, fontSize: 13.5, fontWeight: 600, marginBottom: 22 }}>
-                <span className="pp-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: T.leafBright }} />
                 Waitlist open in Gachibowli and the Financial District
               </div>
               <h1 className="pp-enter" style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(36px, 4.4vw, 60px)', lineHeight: 1.04, letterSpacing: '-0.035em', margin: 0, color: T.ink, animationDelay: '.08s' }}>
@@ -319,13 +313,8 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 ProxyPaw matches you with verified pet lovers who live in your own gated community, for dog walks, cat home visits and overnight boarding. From ₹149.
               </p>
               <div className="pp-enter pp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', animationDelay: '.24s' }}>
-                <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('hero-join')}>Join the waitlist <Arrow /></button>
-                <button className="pp-btn pp-btn-secondary" style={btnSecondary} onClick={() => scrollTo('walk')}>
-                  <span style={{ width: 22, height: 22, borderRadius: '50%', background: T.leafPale, display: 'grid', placeItems: 'center' }}>
-                    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill={T.leaf} /></svg>
-                  </span>
-                  Watch a walk
-                </button>
+                <button className="pp-glass-btn pp-glass-primary" style={btnPrimary} onClick={() => onJoin('hero-join')}>Join the waitlist</button>
+                <button className="pp-glass-btn" style={btnSecondary} onClick={() => scrollTo('world')}>Watch a visit in 3D</button>
               </div>
               <div className="pp-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, auto)', justifyContent: 'start', gap: 'clamp(18px, 3vw, 40px)', marginTop: 34, animationDelay: '.32s' }}>
                 {[
@@ -348,7 +337,6 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               <div className="pp-float pp-hide-sm" style={{ position: 'absolute', left: -22, bottom: -26, width: 'clamp(150px, 15vw, 196px)', background: T.surface, borderRadius: 20, padding: 8, boxShadow: '0 24px 50px rgba(28,60,40,.2)' }}>
                 <img src="/real/hero.jpg" alt="A neighbour walking a golden retriever on a community lawn at sunrise" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', objectPosition: '72% 50%', borderRadius: 14, display: 'block' }} />
                 <div style={{ padding: '8px 4px 2px', fontSize: 12.5, fontWeight: 600, color: T.sub, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="pp-pulse" style={{ width: 7, height: 7, borderRadius: '50%', background: T.leafBright }} />
                   7:04 am · the lawn loop
                 </div>
               </div>
@@ -371,8 +359,8 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           <div style={{ overflow: 'hidden', flex: 1, maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}>
             <div className="pp-marquee">
               {[...COMMUNITIES, ...COMMUNITIES].map((c, i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: T.leafPale, color: T.leafDeep, fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
-                  <Paw size={13} color={T.leaf} />{c}
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '9px 18px', borderRadius: 999, background: 'linear-gradient(180deg, rgba(255,255,255,.9), rgba(231,244,228,.9))', border: '1px solid #d5e8d0', boxShadow: 'inset 0 1px 0 #fff', color: T.leafDeep, fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
+                  {c}
                 </span>
               ))}
             </div>
@@ -414,7 +402,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 <footer style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 14, color: T.muted }}><strong style={{ color: T.ink }}>Deekshitha</strong>, founder, with Pablo and Leo</span>
                   <button onClick={onAboutClick} className="pp-btn" style={{ border: 'none', background: 'none', color: T.marigoldDark, fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 0', minHeight: 44 }}>
-                    Read her story <Arrow />
+                    Read her story
                   </button>
                 </footer>
               </blockquote>
@@ -471,13 +459,32 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* ------------------------------ try a walk ------------------------------ */}
+      <Section id="world">
+        <Heading
+          kicker="Step inside"
+          title="Step into a ten-tower community."
+          sub="A 3D community laid out like Prestige High Fields: ten towers, the ring road, the walking loop, the pool, the clubhouse and the pet garden. Watch the dog walk or the cat visit as a story that starts inside a flat, then take the leash yourself."
+        />
+        <WorldMount onJoin={onJoin} />
+        <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 14, textAlign: 'center' }}>An illustrative 3D model based on the community's published master plan. ProxyPaw is not affiliated with the developer.</p>
+      </Section>
+
       <Section id="walk" band>
         <Heading
-          kicker="Try it now"
-          title="Take Biscuit for a walk. It takes 20 seconds."
-          sub="Pick a length and press start. Watch an hour of a ProxyPaw walk: the route, the updates on your phone, and the receipt at the end. Or switch to a cat visit."
+          kicker="The parent's side"
+          title="Now watch a walk the way Biscuit's parent does."
+          sub="Pick a length and press start. An hour plays in 20 seconds: the live route, the updates on your phone, and the receipt at the end. Or switch to a cat visit."
         />
         <Reveal><WalkSimulator onJoin={onJoin} /></Reveal>
+      </Section>
+
+      <Section id="app">
+        <Heading
+          kicker="Inside the app"
+          title="Book a walk in six steps. Watch it happen."
+          sub="These are the real ProxyPaw screens. Hover to pause, or pick any step."
+        />
+        <Reveal><AppWalkthrough /></Reveal>
       </Section>
 
       {/* ------------------------------- services ------------------------------- */}
@@ -500,7 +507,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                   <p style={{ margin: 0, fontSize: 15, color: T.sub, lineHeight: 1.55, flex: 1 }}>{s.d}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
                     <span style={{ fontFamily: head, fontWeight: 800, color: T.ink }}>{s.p}</span>
-                    <span style={{ color: T.marigoldDark, fontWeight: 700, fontSize: 14, display: 'inline-flex', gap: 6, alignItems: 'center' }}>Get early access <Arrow /></span>
+                    <span style={{ color: T.marigoldDark, fontWeight: 700, fontSize: 14, display: 'inline-flex', gap: 6, alignItems: 'center' }}>Get early access</span>
                   </div>
                 </div>
               </button>
@@ -524,7 +531,6 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: GAP }}>
           <Reveal>
             <div style={{ borderRadius: 28, padding: 'clamp(26px, 3.4vw, 40px)', background: `linear-gradient(140deg, ${T.marigold}, #ef8a4a)`, color: '#fff', height: '100%', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: -30, bottom: -40, opacity: .14 }}><Paw size={220} /></div>
               <div style={{ ...eyebrow, color: '#fff', opacity: .9 }}>Founding 1,000</div>
               <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(26px, 2.8vw, 36px)', letterSpacing: '-.025em', lineHeight: 1.1, margin: '0 0 12px' }}>
                 Be one of the first 1,000 pet parents.
@@ -533,8 +539,8 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 A free onboarding session for your pet, plus ₹100 off your first booking. ProxyPaw opens one community at a time, so tell your tower.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button className="pp-btn" onClick={() => onJoin('founding-1000')} style={{ ...btnPrimary, background: '#fff', color: T.marigoldDark, boxShadow: 'none' }}>Claim my founding spot</button>
-                <a className="pp-btn" href={SHARE_URL} target="_blank" rel="noreferrer" style={{ ...btnSecondary, background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,.6)', textDecoration: 'none' }}>Share with your tower</a>
+                <button className="pp-glass-btn" onClick={() => onJoin('founding-1000')} style={{ ...btnPrimary, color: T.marigoldDark }}>Claim my founding spot</button>
+                <a className="pp-glass-btn pp-glass-dark" href={SHARE_URL} target="_blank" rel="noreferrer" style={btnSecondary}>Share with your tower</a>
               </div>
             </div>
           </Reveal>
@@ -550,7 +556,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                 <p style={{ margin: '0 0 22px', fontSize: 16, lineHeight: 1.6, opacity: .92 }}>
                   Walk dogs before work, visit cats after class. Training, insurance and a steady set of furry regulars, a lift ride from home.
                 </p>
-                <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('volunteer-band', 'walker')}>Become a volunteer <Arrow /></button>
+                <button className="pp-glass-btn pp-glass-primary" style={btnPrimary} onClick={() => onJoin('volunteer-band', 'walker')}>Become a volunteer</button>
               </div>
             </div>
           </Reveal>
@@ -562,7 +568,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <Heading
           kicker="The Paw Journal"
           title="Care guides for dogs and cats."
-          action={<button className="pp-btn pp-btn-secondary" style={btnSecondary} onClick={onBlogClick}>Read all guides <Arrow /></button>}
+          action={<button className="pp-glass-btn" style={btnSecondary} onClick={onBlogClick}>Read all guides</button>}
         />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: GAP }}>
           {POSTS.map((p, i) => (
@@ -619,8 +625,8 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
                   Join in under a minute. Somewhere in your tower, a wagging tail is already waiting.
                 </p>
                 <div className="pp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 26 }}>
-                  <button className="pp-btn pp-btn-primary" style={btnPrimary} onClick={() => onJoin('closing-cta')}>Join the waitlist, it’s free <Arrow /></button>
-                  <button className="pp-btn" style={{ ...btnSecondary, background: 'rgba(255,255,255,.12)', color: '#fff', borderColor: 'rgba(255,255,255,.5)' }} onClick={onTourClick}>See inside the app</button>
+                  <button className="pp-glass-btn pp-glass-primary" style={btnPrimary} onClick={() => onJoin('closing-cta')}>Join the waitlist, it’s free</button>
+                  <button className="pp-glass-btn pp-glass-dark" style={btnSecondary} onClick={onTourClick}>See inside the app</button>
                 </div>
               </div>
             </div>
