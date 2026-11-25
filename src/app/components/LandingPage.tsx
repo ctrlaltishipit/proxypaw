@@ -515,11 +515,11 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <Heading
           stop="world"
           kicker="Step inside"
-          title="Step into a ten-tower community."
-          sub="A 3D community laid out like Prestige High Fields: ten towers, the ring road, the charcoal jogging track, the pool, the clubhouse and the pet garden. It plays by itself: the dog walk from the flat to the track, then the cat visit. Tap any time to take the leash yourself."
+          title="Pick your community. Watch a walk, a cat visit or a sleepover."
+          sub="Choose your area and community, then a service: dog walking, cat care or overnight boarding. Each one plays by itself in a 3D model of that community, and you can take the leash any time."
         />
         <WorldMount onJoin={onJoin} />
-        <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 14, textAlign: 'center' }}>An illustrative 3D model based on the community's published master plan. ProxyPaw is not affiliated with the developer.</p>
+        <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 14, textAlign: 'center' }}>Illustrative 3D models based on each community's published master plan. ProxyPaw is not affiliated with any developer.</p>
       </Section>
 
       <Section id="walk">
