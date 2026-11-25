@@ -91,10 +91,11 @@ class WorldBoundary extends Component<{ children: ReactNode; fallback: ReactNode
 /** Mounts the 3D world only once it is near the viewport, so three.js never slows first paint. */
 function WorldMount({ onJoin }: { onJoin: (source: string) => void }) {
   const [ref, seen] = useInView<HTMLDivElement>(0);
-  const frame: CSSProperties = { height: 'clamp(600px, 84vh, 800px)', borderRadius: 30, background: 'linear-gradient(180deg, #d9ecf4, #edf6ea 60%, #d3e9c6)' };
+  // The poster is a still of the opening view, so the section never shows an empty box while the 3D code loads.
+  const frame: CSSProperties = { height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat' };
   const placeholder = <div style={frame} />;
   const failed = (
-    <div style={{ ...frame, height: 'auto', minHeight: 260, display: 'grid', placeItems: 'center', padding: 28, textAlign: 'center' }}>
+    <div style={{ ...frame, background: 'linear-gradient(180deg, #d9ecf4, #edf6ea 60%, #d3e9c6)', height: 'auto', minHeight: 260, display: 'grid', placeItems: 'center', padding: 28, textAlign: 'center' }}>
       <div style={{ maxWidth: 460 }}>
         <div style={{ fontFamily: head, fontWeight: 800, fontSize: 20, color: T.ink, marginBottom: 8 }}>The 3D community could not load on this device.</div>
         <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.6, color: T.sub }}>The walk tracker just below shows the same walk, start to receipt.</p>
@@ -102,7 +103,7 @@ function WorldMount({ onJoin }: { onJoin: (source: string) => void }) {
     </div>
   );
   return (
-    <div ref={ref}>
+    <div ref={ref} data-trail-avoid>
       {seen ? <WorldBoundary fallback={failed}><Suspense fallback={placeholder}><CommunityWorld onJoin={onJoin} /></Suspense></WorldBoundary> : placeholder}
     </div>
   );
