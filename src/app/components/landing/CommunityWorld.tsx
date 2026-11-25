@@ -31,7 +31,7 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { T, head, body } from './ui';
 import { createActors, xf, paint, merge } from './worldActors';
 import type { Person } from './worldActors';
-import { LAYOUTS, COMMUNITY_IDS, AREAS } from './worldLayouts';
+import { LAYOUTS, COMMUNITY_IDS, DRAFTS, AREAS } from './worldLayouts';
 import type { Area, CommunityId, StopId } from './worldLayouts';
 
 const PRICE = 249;
@@ -322,7 +322,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const pathM = new THREE.MeshStandardMaterial({ map: graniteTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const curve = (pts: [number, number][], closed: boolean): THREE.Curve<THREE.Vector3> => pts.length === 2 ? new THREE.LineCurve3(V(pts[0][0], 0, pts[0][1]), V(pts[1][0], 0, pts[1][1])) : new THREE.CatmullRomCurve3(pts.map(([x, z]) => V(x, 0, z)), closed, 'catmullrom', 0.5);
     const ring = curve(LY.ring, true), loop = curve(LY.loop, true);
-    scene.add(ribbon(ring, 7, 500, 0.03, roadM));
+    scene.add(ribbon(ring, 7, Math.max(120, Math.min(900, Math.round(ring.getLength() / 1.4))), 0.03, roadM));
     // the inner loop is a charcoal jogging track: three lanes, crisp white lines
     const TRACK_W = 4;
     const trackTex = canvasTex(256, 256, (g) => {
@@ -334,18 +334,23 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     });
     trackTex.wrapS = trackTex.wrapT = THREE.RepeatWrapping; trackTex.anisotropy = maxAniso;
     const trackM = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.93, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
-    scene.add(ribbon(loop, TRACK_W, 400, 0.05, trackM));
+    const isPath = !!LY.loopIsPath; // where the plan draws no jogging track, the circuit is an ordinary garden path
+    const loopLen = loop.getLength(), ringLen = ring.getLength();
+    scene.add(ribbon(loop, isPath ? 3.6 : TRACK_W, Math.max(400, Math.round(loopLen / 1.5)), 0.05, isPath ? new THREE.MeshStandardMaterial({ map: graniteTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }) : trackM));
+    // Counts and speeds follow the length of the road or track, so a short drop-off loop is not crowded and a long perimeter
+    // is not bare. Mid-sized ones keep exactly the counts they were tuned with.
+    const byLen = (n: number, len: number, ref: number) => { const k = len / ref; return Math.max(2, Math.round(n * (k < 0.5 ? k / 0.5 : k > 1.6 ? k / 1.6 : 1))); };
+    const JOG = 3.8 / loopLen, STROLL = 1.5 / loopLen, DRIVE = Math.min(8.4, Math.max(1.5, ringLen / 40)) / ringLen; // laps per second
     // painted distance marks and a start line, the way a real community track has them
-    const loopLen = loop.getLength();
     let tStart = 0; { let bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - LY.trackStart[0], p.z - LY.trackStart[1]); if (d < bd) { bd = d; tStart = i / 300; } } }
     // distance ticks every 50 m: short bars on the outer lane (no painted words: they read upside down from the other side)
-    for (let k = 1; k * 50 < loopLen - 20; k++) {
+    for (let k = 1; !isPath && k * 50 < loopLen - 20; k++) {
       const tt = (((tStart + (k * 50) / loopLen) % 1) + 1) % 1, p = loop.getPointAt(tt), tan = loop.getTangentAt(tt);
       const nx = tan.z, nz = -tan.x, off = TRACK_W / 2 - 0.55;
       const tick = mesh(new THREE.PlaneGeometry(0.7, 0.16), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x + nx * off, 0.06, p.z + nz * off, false);
       tick.rotation.order = 'YXZ'; tick.rotation.y = Math.atan2(tan.x, tan.z); tick.rotation.x = -Math.PI / 2; scene.add(tick);
     }
-    { // start line across the three lanes
+    if (!isPath) { // start line across the three lanes
       const p = loop.getPointAt(tStart), tan = loop.getTangentAt(tStart);
       const line = mesh(new THREE.PlaneGeometry(TRACK_W - 0.5, 0.32), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x, 0.06, p.z, false);
       line.rotation.order = 'YXZ'; line.rotation.y = Math.atan2(tan.x, tan.z); line.rotation.x = -Math.PI / 2; scene.add(line);
@@ -409,10 +414,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     };
     if (LY.towers) {
     const FL = Math.max(...LY.towers.map((t) => t[4])), TH = FL * 3;
-    const fWide = facade(FL, 10, 11), fDeep = facade(FL, 5, 23), fNarrow = facade(FL, 2, 37);
+    const WD = LY.towerDepth ?? 18; // how deep a block is, front to back
+    const fWide = facade(FL, 10, 11), fDeep = facade(FL, Math.max(2, Math.round(WD / 3.6)), 23), fNarrow = facade(FL, 2, 37);
     const mWide = wm(fWide), mDeep = wm(fDeep), mNarrow = wm(fNarrow);
     const roofM = std('#c9bfb2', 0.9), podiumM = std('#c2b3a0', 0.9), crownM = std('#b39a82', 0.8);
-    const wingGeo = new THREE.BoxGeometry(6, TH, 18), spines = new Map<number, THREE.BoxGeometry>();
+    const wingGeo = new THREE.BoxGeometry(6, TH, WD), spines = new Map<number, THREE.BoxGeometry>();
     // a tower is a slab: a spine with a wing every 8.5 m. A longer slab simply carries more wings
     LY.towers.forEach(([name, x, z, rot, floors, len = 34]) => {
       const nW = Math.round(len / 8.5), spineGeo = spines.get(len) ?? new THREE.BoxGeometry(len, TH, 8); spines.set(len, spineGeo);
@@ -422,14 +428,14 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       for (let i = 0; i < nW; i++) {
         const wx = (i - (nW - 1) / 2) * 8.5;
         const w = new THREE.Mesh(wingGeo, [mDeep, mDeep, roofM, roofM, mNarrow, mNarrow]); w.position.set(wx, TH / 2 + 1, 0); w.castShadow = w.receiveShadow = true; body3.add(w);
-        body3.add(mesh(new THREE.BoxGeometry(6.6, 1.2, 18.6), crownM, wx, TH + 1.6, 0));
+        body3.add(mesh(new THREE.BoxGeometry(6.6, 1.2, WD + 0.6), crownM, wx, TH + 1.6, 0));
       }
-      t.add(mesh(new THREE.BoxGeometry(len + 2, 1, 20), podiumM, 0, 0.5, 0));
+      t.add(mesh(new THREE.BoxGeometry(len + 2, 1, WD + 2), podiumM, 0, 0.5, 0));
       // lobby canopy on the north side
-      t.add(mesh(new THREE.BoxGeometry(7, 0.4, 4), crownM, 0, 4.2, -11));
-      t.add(mesh(new THREE.BoxGeometry(5, 3.2, 0.3), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3 }), 0, 2.6, -9.1, false));
-      if (name) { const lb = label(name, { scale: 1.3 }); lb.position.set(0, 7.5, -12.5); t.add(lb); airLabel(name, x, floors * 3 + 10, z); }
-      scene.add(t); block(x, z, len / 2 + 2, 11, rot, floors * 3 + 12);
+      t.add(mesh(new THREE.BoxGeometry(7, 0.4, 4), crownM, 0, 4.2, -(WD / 2 + 2)));
+      t.add(mesh(new THREE.BoxGeometry(5, 3.2, 0.3), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3 }), 0, 2.6, -(WD / 2 + 0.1), false));
+      if (name) { const lb = label(name, { scale: 1.3 }); lb.position.set(0, 7.5, -(WD / 2 + 3.5)); t.add(lb); airLabel(name, x, floors * 3 + 10, z); }
+      scene.add(t); block(x, z, len / 2 + 2, WD / 2 + 2, rot, floors * 3 + 12);
     });
     // where a tower is two slabs, a plain lift core joins them
     for (const [x, z, w, d, floors] of LY.cores ?? []) scene.add(mesh(new THREE.BoxGeometry(w, floors * 3 + 4, d), roofM, x, (floors * 3 + 4) / 2 + 1, z));
@@ -480,22 +486,25 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
 
     /* ---- clubhouse, pools, courts, play area ---- */
-    const club = new THREE.Group(); club.position.set(LY.club.x, 0, LY.club.z); club.rotation.y = LY.club.rot; club.scale.setScalar(LY.club.s); scene.add(club);
-    club.add(mesh(new THREE.BoxGeometry(24, 7, 18), std('#d6c2ab', 0.8), 0, 3.5, 0));
     const checker = canvasTex(128, 128, (g) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#e9c9bd' : '#f6efe8'; g.fillRect(i * 16, j * 16, 16, 16); } });
-    const roofTop = mesh(new THREE.PlaneGeometry(23, 17), new THREE.MeshStandardMaterial({ map: checker, roughness: 0.9 }), 0, 7.03, 0, false); roofTop.rotation.x = -Math.PI / 2; club.add(roofTop);
     // glazing on all four sides (the water bowl and the lawn sit by different walls in each community) under a deep eave
     const clubGlass = new THREE.MeshStandardMaterial({ map: canvasTex(256, 64, (g) => {
       const grd = g.createLinearGradient(0, 0, 0, 64); grd.addColorStop(0, '#a9d2e0'); grd.addColorStop(1, '#6f9db0'); g.fillStyle = grd; g.fillRect(0, 0, 256, 64);
       g.fillStyle = 'rgba(255,255,255,.25)'; for (let i = 0; i < 8; i++) g.fillRect(i * 32 + 4, 0, 6, 64);
       g.fillStyle = '#f3efe8'; for (let i = 0; i <= 8; i++) g.fillRect(Math.min(253, i * 32 - 1.5), 0, 3, 64); g.fillRect(0, 0, 256, 3); g.fillRect(0, 61, 256, 3); g.fillRect(0, 20, 256, 2);
     }), roughness: 0.08, metalness: 0.3 });
-    for (const sx of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(0.3, 4, 12), clubGlass, sx * 12.1, 2.6, 0, false));
-    for (const sz of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(18, 3.6, 0.3), clubGlass, 0, 2.5, sz * 9.1, false));
-    club.add(mesh(new THREE.BoxGeometry(26.6, 0.45, 20.6), std('#b39a82', 0.8), 0, 6.6, 0));
-    const clb = label(LY.club.label, { scale: 0.9 }); clb.position.set(-13, 6.5, 0); club.add(clb);
-    block(LY.club.x, LY.club.z, 13.5 * LY.club.s, 10.5 * LY.club.s, LY.club.rot, 8 * LY.club.s);
-    airLabel(LY.club.label, LY.club.x, 12, LY.club.z);
+    // the clubhouse, and any second one the plan shows
+    for (const CL of [...(LY.club ? [LY.club] : []), ...(LY.clubs ?? [])]) {
+      const club = new THREE.Group(); club.position.set(CL.x, 0, CL.z); club.rotation.y = CL.rot; club.scale.set(CL.s * (CL.kx ?? 1), CL.s, CL.s * (CL.kz ?? 1)); scene.add(club);
+      club.add(mesh(new THREE.BoxGeometry(24, 7, 18), std('#d6c2ab', 0.8), 0, 3.5, 0));
+      const roofTop = mesh(new THREE.PlaneGeometry(23, 17), new THREE.MeshStandardMaterial({ map: checker, roughness: 0.9 }), 0, 7.03, 0, false); roofTop.rotation.x = -Math.PI / 2; club.add(roofTop);
+      for (const sx of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(0.3, 4, 12), clubGlass, sx * 12.1, 2.6, 0, false));
+      for (const sz of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(18, 3.6, 0.3), clubGlass, 0, 2.5, sz * 9.1, false));
+      club.add(mesh(new THREE.BoxGeometry(26.6, 0.45, 20.6), std('#b39a82', 0.8), 0, 6.6, 0));
+      const clb = label(CL.label, { scale: 0.9 }); clb.position.set(-13, 6.5, 0); club.add(clb);
+      block(CL.x, CL.z, 13.5 * CL.s * (CL.kx ?? 1), 10.5 * CL.s * (CL.kz ?? 1), CL.rot, 8 * CL.s);
+      airLabel(CL.label, CL.x, 12, CL.z);
+    }
     for (const [text, x, z] of LY.places ?? []) airLabel(text, x, 7, z);
     const BX = LY.bowl[0], BZ = LY.bowl[1];
     scene.add(mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.16, 20), std('#cfd6d8', 0.2, 0.9), BX, 0.08, BZ));
@@ -535,7 +544,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const lagoonG = new THREE.Group(); lagoonG.position.set((LY.lagoon?.[0] ?? 0), 0, (LY.lagoon?.[1] ?? -9) + 9); lagoonG.visible = !!LY.lagoon; scene.add(lagoonG); lagoonG.add(lagoonDeck);
     const lagoon = mesh(new THREE.CircleGeometry(1, 48), poolM, 0, 0.1, -9, false); lagoon.scale.set(7, 5, 1); lagoon.rotation.x = -Math.PI / 2; lagoonG.add(lagoon);
     const lagoonEdge = mesh(new THREE.TorusGeometry(1, 0.045, 6, 56), copingM, 0, 0.1, -9, false); lagoonEdge.scale.set(7.15, 5.15, 3); lagoonEdge.rotation.x = -Math.PI / 2; lagoonG.add(lagoonEdge);
-    const rp = new THREE.Group(); rp.position.set(LY.pool.x, 0, LY.pool.z); rp.rotation.y = LY.pool.rot; scene.add(rp);
+    const POOL = LY.pool ?? { x: 0, z: 0, rot: 0 }, hasPool = !!LY.pool; // some plans keep the pool indoors: then none is shown
+    const rp = new THREE.Group(); rp.position.set(POOL.x, 0, POOL.z); rp.rotation.y = POOL.rot; rp.visible = hasPool; scene.add(rp);
     const PW = 13, PD = 6.4;
     const rpd = mesh(new THREE.PlaneGeometry(PW + 3.4, PD + 3.7), deckM, 0, 0.044, -0.55, false); rpd.rotation.x = -Math.PI / 2; rp.add(rpd);
     const rpw = mesh(new THREE.PlaneGeometry(PW, PD), poolM, 0, 0.1, 0, false); rpw.rotation.x = -Math.PI / 2; rp.add(rpw);
@@ -562,12 +572,12 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     for (const a of [1.75, 2.2]) { const x = 8 * Math.cos(a), z = -9 + 5.9 * Math.sin(a); lounger(lagoonG, x, z, Math.atan2(-x, -9 - z)); }
     lagoonG.add(mesh(umbA, detailM, 8.2 * Math.cos(1.98), 0, -9 + 6 * Math.sin(1.98)));
     if (LY.lagoon) block(LY.lagoon[0], LY.lagoon[1], 7.6, 5.6);
-    block(LY.pool.x, LY.pool.z, PW / 2 + 0.6, PD / 2 + 0.5, LY.pool.rot);
+    if (hasPool) block(POOL.x, POOL.z, PW / 2 + 0.6, PD / 2 + 0.5, POOL.rot);
 
     const courtTex = canvasTex(256, 160, (g) => { g.fillStyle = '#4f9a6a'; g.fillRect(0, 0, 256, 160); g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(10, 10, 236, 140); g.beginPath(); g.moveTo(128, 10); g.lineTo(128, 150); g.stroke(); g.strokeRect(50, 40, 156, 80); });
     for (const ct of LY.courts) { const c = mesh(new THREE.PlaneGeometry(11, 7), new THREE.MeshStandardMaterial({ map: courtTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), ct.x, 0.05, ct.z, false); c.rotation.x = -Math.PI / 2; c.rotation.z = ct.rot; scene.add(c); }
     const bbTex = canvasTex(256, 160, (g) => { g.fillStyle = '#d98a5a'; g.fillRect(0, 0, 256, 160); g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(8, 8, 240, 144); g.beginPath(); g.arc(128, 80, 26, 0, 7); g.stroke(); g.beginPath(); g.arc(8, 80, 50, -1.57, 1.57); g.stroke(); g.beginPath(); g.arc(248, 80, 50, 1.57, 4.71); g.stroke(); });
-    const bb = mesh(new THREE.PlaneGeometry(14, 9), new THREE.MeshStandardMaterial({ map: bbTex, roughness: 0.9 }), LY.bball?.[0] ?? 0, 0.05, LY.bball?.[1] ?? 0, false); bb.rotation.x = -Math.PI / 2; bb.visible = !!LY.bball; scene.add(bb);
+    const bb = mesh(new THREE.PlaneGeometry(14, 9), new THREE.MeshStandardMaterial({ map: bbTex, roughness: 0.9 }), LY.bball?.[0] ?? 0, 0.05, LY.bball?.[1] ?? 0, false); bb.rotation.x = -Math.PI / 2; bb.rotation.z = LY.bball?.[2] ?? 0; bb.visible = !!LY.bball; scene.add(bb);
     // play area: soft floor, slide and swing frame
     const play = new THREE.Group(); play.position.set(LY.play[0], 0, LY.play[1]); scene.add(play);
     const pf = mesh(new THREE.CircleGeometry(5, 32), std('#e98a8a', 0.9), 0, 0.05, 0, false); pf.rotation.x = -Math.PI / 2; play.add(pf);
@@ -579,16 +589,23 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
     /* ---- pet garden ---- */
     if (LY.pet) {
+      // built in its own frame with the gate in the left (-x) fence, then turned so the gate faces the side the plan needs
       const fenceM = std('#f6f7f2', 0.6);
-      const [px0, px1, pz0, pz1] = LY.pet;
-      for (let x = px0; x <= px1; x += 2) for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, x, 0.55, z));
-      for (let z = pz0; z <= pz1; z += 2) { scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px1, 0.55, z)); if (z < pz0 + 8 || z > pz0 + 12) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px0, 0.55, z)); }
-      for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(px1 - px0, 0.08, 0.08), fenceM, (px0 + px1) / 2, 1, z));
-      scene.add(mesh(new THREE.BoxGeometry(0.08, 0.08, pz1 - pz0), fenceM, px1, 1, (pz0 + pz1) / 2));
-      for (const z of [pz0 + 6, pz0 + 14]) { for (const x of [px0 + 11, px0 + 13]) scene.add(mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), std('#e0662f', 0.7), x, 0.45, z)); scene.add(mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), std('#f0b429', 0.7), px0 + 12, 0.6, z)); }
-      scene.add(mesh(new THREE.TorusGeometry(0.7, 0.12, 8, 20, Math.PI), std('#3f9fd0', 0.6), px0 + 8, 0, pz1 - 3));
-      const dpl = label(LY.petLabel ?? 'Pet garden', { scale: 0.5 }); dpl.position.set((px0 + px1) / 2, 4, (pz0 + pz1) / 2); scene.add(dpl);
-      airLabel(LY.petLabel ?? 'Pet garden', (px0 + px1) / 2, 7, (pz0 + pz1) / 2);
+      const [ax0, ax1, az0, az1] = LY.pet, side = LY.petGate ?? 'w', flip = side === 'n' || side === 's';
+      const w = flip ? az1 - az0 : ax1 - ax0, d = flip ? ax1 - ax0 : az1 - az0;
+      const pg = new THREE.Group(); pg.position.set((ax0 + ax1) / 2, 0, (az0 + az1) / 2); pg.rotation.y = { w: 0, s: Math.PI / 2, e: Math.PI, n: -Math.PI / 2 }[side] + (LY.petRot ?? 0); scene.add(pg);
+      const px0 = -w / 2, px1 = w / 2, pz0 = -d / 2, pz1 = d / 2, roomy = w >= 14 && d >= 16;
+      const gz = pz0 + (d >= 16 && d <= 20 ? 10 : d / 2); // where the gate is along that fence
+      const post = (x: number, z: number) => pg.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, x, 0.55, z));
+      for (let x = px0; x <= px1 + 0.01; x += 2) for (const z of [pz0, pz1]) post(x, z);
+      for (let z = pz0; z <= pz1 + 0.01; z += 2) { post(px1, z); if (z < gz - 2 || z > gz + 2) post(px0, z); }
+      for (const z of [pz0, pz1]) pg.add(mesh(new THREE.BoxGeometry(w, 0.08, 0.08), fenceM, 0, 1, z));
+      pg.add(mesh(new THREE.BoxGeometry(0.08, 0.08, d), fenceM, px1, 1, 0));
+      const hx = roomy ? px0 + 12 : px0 + w * 0.6;
+      for (const z of roomy ? [pz0 + 6, pz0 + 14] : [pz0 + d * 0.3, pz0 + d * 0.7]) { for (const x of [hx - 1, hx + 1]) pg.add(mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), std('#e0662f', 0.7), x, 0.45, z)); pg.add(mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), std('#f0b429', 0.7), hx, 0.6, z)); }
+      pg.add(mesh(new THREE.TorusGeometry(0.7, 0.12, 8, 20, Math.PI), std('#3f9fd0', 0.6), roomy ? px0 + 8 : px0 + w * 0.42, 0, roomy ? pz1 - 3 : pz1 - d * 0.14));
+      const dpl = label(LY.petLabel ?? 'Pet garden', { scale: 0.5 }); dpl.position.set(0, 4, 0); pg.add(dpl);
+      airLabel(LY.petLabel ?? 'Pet garden', (ax0 + ax1) / 2, 7, (az0 + az1) / 2);
     }
 
     /* ---- garden: trees, palms, shrubs, beds, hedges ---- */
@@ -597,10 +614,16 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const along = (c: THREE.Curve<THREE.Vector3>, t: number, off: number) => { const p = c.getPointAt(((t % 1) + 1) % 1), tan = c.getTangentAt(((t % 1) + 1) % 1); return V(p.x - tan.z * off, 0, p.z + tan.x * off); };
     const onPaving = (x: number, z: number) => {
       const near = (c: THREE.Curve<THREE.Vector3>, w: number, n: number) => { for (let i = 0; i <= n; i++) { const p = c.getPointAt(i / n); if (Math.hypot(p.x - x, p.z - z) < w) return true; } return false; };
-      return near(ring, 5, 160) || near(loop, 3, 110) || linkCurves.some((c, i) => near(c, linkW[i] / 2 + 1.4, Math.max(24, Math.round(c.getLength() / 2.5))));
+      return near(ring, 5, Math.max(160, Math.ceil(ringLen / 4))) || near(loop, 3, Math.max(110, Math.ceil(loopLen / 2.4))) || linkCurves.some((c, i) => near(c, linkW[i] / 2 + 1.4, Math.max(24, Math.round(c.getLength() / 2.5))));
     };
-    const free = (x: number, z: number, pad = 1.5) => !inBlock(x, z, pad) && !onPaving(x, z);
-    const loopPts = loop.getSpacedPoints(140);
+    // nothing is planted inside the pet park: it is open lawn for fetch
+    const inPet = (x: number, z: number) => {
+      if (!LY.pet) return false;
+      const [a0, a1, b0, b1] = LY.pet, cx = (a0 + a1) / 2, cz = (b0 + b1) / 2, r = LY.petRot ?? 0, dx = x - cx, dz = z - cz;
+      return Math.abs(dx * Math.cos(r) - dz * Math.sin(r)) < (a1 - a0) / 2 + 1 && Math.abs(dx * Math.sin(r) + dz * Math.cos(r)) < (b1 - b0) / 2 + 1;
+    };
+    const free = (x: number, z: number, pad = 1.5) => !inBlock(x, z, pad) && !onPaving(x, z) && !inPet(x, z);
+    const loopPts = loop.getSpacedPoints(Math.max(140, Math.ceil(loopLen / 1.6)));
     const nearLoop = (x: number, z: number, d: number) => loopPts.some((p) => Math.hypot(p.x - x, p.z - z) < d);
     // park benches sit in gaps in the hedge, facing the track (and the pools beyond it)
     const BENCHES: [number, number, number][] = LY.benches.map((b) => [b[0], b[1], b[2]]);
@@ -692,8 +715,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
       scene.add(t); trees.push(t); if (gold) goldSpots.push([x, z, s]);
     }
-    for (let i = 0; i < 34; i++) { const p = along(loop, i / 34 + tr() * 0.01, (i % 2 ? 5 : -5) + (tr() - 0.5) * 2); tree(p.x, p.z, 0.75 + tr() * 0.4, i % 6 === 0 ? 9 : i % 4 === 1 ? 8 : i % 5); }
-    for (let i = 0; i < 72; i++) { const p = along(ring, i / 72 + tr() * 0.006, (i % 2 ? 7.5 : -7.5) + (tr() - 0.5) * 2.5); tree(p.x, p.z, 0.9 + tr() * 0.5, i % 8 === 0 ? 9 : i % 7 === 3 ? 8 : i % 5); }
+    for (let i = 0, n = byLen(34, loopLen, 200); i < n; i++) { const p = along(loop, i / n + tr() * 0.01, (i % 2 ? 5 : -5) + (tr() - 0.5) * 2); tree(p.x, p.z, 0.75 + tr() * 0.4, i % 6 === 0 ? 9 : i % 4 === 1 ? 8 : i % 5); }
+    for (let i = 0, n = byLen(72, ringLen, 700); i < n; i++) { const p = along(ring, i / n + tr() * 0.006, (i % 2 ? 7.5 : -7.5) + (tr() - 0.5) * 2.5); tree(p.x, p.z, 0.9 + tr() * 0.5, i % 8 === 0 ? 9 : i % 7 === 3 ? 8 : i % 5); }
     for (let i = 0; i < LY.grove[4]; i++) tree(LY.grove[0] + tr() * LY.grove[2], LY.grove[1] + tr() * LY.grove[3], 0.7 + tr() * 0.4, i % 5 === 0 ? 9 : i % 6 === 2 ? 8 : i % 5);
     for (const [x, z] of LY.golds) tree(x, z, 0.95, 8);
     // street trees down both sides of every street
@@ -746,11 +769,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       for (let i = 0; i < 3; i++) shrub(x + (tr() - 0.5) * rx, z + (tr() - 0.5) * rz, 0.3 + tr() * 0.2, null);
     };
     // layered planting along the walking loop, like a real landscaped path
-    for (let i = 0; i < 120; i++) {
-      const t = i / 120, side = i % 2 ? 1 : -1;
+    for (let i = 0, n = byLen(120, loopLen, 200); i < n; i++) {
+      const t = i / n, side = i % 2 ? 1 : -1;
       const p = along(loop, t, side * (3.9 + tr() * 1.6)); shrub(p.x, p.z, 0.45 + tr() * 0.5, i % 4 === 0 ? PETALS[Math.floor(tr() * PETALS.length)] : null);
     }
-    for (let i = 0; i < 26; i++) { const p = along(loop, i / 26 + 0.013, (i % 2 ? 1 : -1) * (6.2 + tr() * 2)); bed(p.x, p.z, 1.4 + tr() * 1.3, 0.9 + tr() * 0.8, PETALS[i % PETALS.length], PETALS[(i + 2) % PETALS.length]); }
+    for (let i = 0, n = byLen(26, loopLen, 200); i < n; i++) { const p = along(loop, i / n + 0.013, (i % 2 ? 1 : -1) * (6.2 + tr() * 2)); bed(p.x, p.z, 1.4 + tr() * 1.3, 0.9 + tr() * 0.8, PETALS[i % PETALS.length], PETALS[(i + 2) % PETALS.length]); }
     // foundation planting around every tower, and around the clubhouse and pools
     blockers.forEach((b) => {
       const n = b.h > 50 ? 26 : LY.villas ? 7 : 14;
@@ -760,7 +783,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         shrub(b.x + lx * b.c + lz * b.s, b.z - lx * b.s + lz * b.c, 0.5 + tr() * 0.45, i % 5 === 0 ? PETALS[Math.floor(tr() * PETALS.length)] : null);
       }
     });
-    for (let i = 0; i < 70; i++) { const p = along(ring, i / 70 + 0.007, (i % 2 ? 1 : -1) * (5.6 + tr())); shrub(p.x, p.z, 0.4 + tr() * 0.4, i % 6 === 0 ? PETALS[i % PETALS.length] : null); }
+    for (let i = 0, n = byLen(70, ringLen, 700); i < n; i++) { const p = along(ring, i / n + 0.007, (i % 2 ? 1 : -1) * (5.6 + tr())); shrub(p.x, p.z, 0.4 + tr() * 0.4, i % 6 === 0 ? PETALS[i % PETALS.length] : null); }
     // flower borders behind the hedges, planted in runs of marigold, pink and white
     const BORDER = ['#f0a020', '#f29bb4', '#ffffff', '#e0662f', '#f7d548', '#f4b8c8'];
     for (let i = 0, n = small ? 700 : 1700; i < n && petalN < petals.count - 400; i++) {
@@ -791,32 +814,32 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
     // clipped hedges on both sides of the walking loop
     const hedgeM = std('#2f7a3d', 1);
-    const HEDGE = 360;
+    const HEDGE = isPath ? 2 : Math.min(2000, 2 * Math.ceil(loopLen / 1.05)); // one box a metre on each side, however long the track
     const hedge = new THREE.InstancedMesh(new THREE.BoxGeometry(1.25, 0.8, 0.85, 2, 2, 2), hedgeM, HEDGE);
     for (let i = 0; i < HEDGE; i++) {
       const t = (i >> 1) / (HEDGE / 2), side = i % 2 ? 2.55 : -2.55; const p = along(loop, t, side), tan = loop.getTangentAt(t);
       q.setFromAxisAngle(V(0, 1, 0), Math.atan2(-tan.z, tan.x));
-      const pr0 = LY.pool.rot, rx = (p.x - LY.pool.x) * Math.cos(pr0) - (p.z - LY.pool.z) * Math.sin(pr0), rz = (p.x - LY.pool.x) * Math.sin(pr0) + (p.z - LY.pool.z) * Math.cos(pr0);
-      const hide = [...LY.hedgeGaps, STOPS[2].pos].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3.6) || inBlock(p.x, p.z, 0.4)
+      const pr0 = POOL.rot, rx = (p.x - POOL.x) * Math.cos(pr0) - (p.z - POOL.z) * Math.sin(pr0), rz = (p.x - POOL.x) * Math.sin(pr0) + (p.z - POOL.z) * Math.cos(pr0);
+      const hide = isPath || [...LY.hedgeGaps, STOPS[2].pos].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3.6) || inBlock(p.x, p.z, 0.4)
         || BENCHES.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 2.1)
-        || (Math.abs(rx) < PW / 2 + 2.3 && rz > -PD / 2 - 3.4 && rz < PD / 2 + 2.2) || (!!LY.lagoon && ((p.x - LY.lagoon[0]) / 9.5) ** 2 + ((p.z - LY.lagoon[1]) / 7.3) ** 2 < 1);
+        || (hasPool && Math.abs(rx) < PW / 2 + 2.3 && rz > -PD / 2 - 3.4 && rz < PD / 2 + 2.2) || (!!LY.lagoon && ((p.x - LY.lagoon[0]) / 9.5) ** 2 + ((p.z - LY.lagoon[1]) / 7.3) ** 2 < 1);
       mtx.compose(V(p.x, hide ? -3 : 0.4, p.z), q, V(1, 0.92 + ((i * 7) % 5) * 0.03, 1)); hedge.setMatrixAt(i, mtx);
     }
     hedge.castShadow = hedge.receiveShadow = true; scene.add(hedge);
 
     /* ---- real grass: tens of thousands of blades that sway and follow you ---- */
-    const MX0 = LY.mask[0], MZ0 = LY.mask[1], MW = 320, MH = 210;
-    const maskTex = canvasTex(1024, 672, (g) => {
+    const MX0 = LY.mask[0], MZ0 = LY.mask[1], MW = LY.maskSize?.[0] ?? 320, MH = LY.maskSize?.[1] ?? 210, MPX = Math.round((1024 * MH) / MW);
+    const maskTex = canvasTex(1024, MPX, (g) => {
       const k = 1024 / MW, X = (x: number) => (x - MX0) * k, Z = (z: number) => (z - MZ0) * k;
-      g.fillStyle = '#fff'; g.fillRect(0, 0, 1024, 672); g.fillStyle = g.strokeStyle = '#000'; g.lineCap = g.lineJoin = 'round';
+      g.fillStyle = '#fff'; g.fillRect(0, 0, 1024, MPX); g.fillStyle = g.strokeStyle = '#000'; g.lineCap = g.lineJoin = 'round';
       const stroke = (c: THREE.Curve<THREE.Vector3>, w: number) => { const pts = c.getSpacedPoints(260); g.lineWidth = w * k; g.beginPath(); pts.forEach((pt, i) => (i ? g.lineTo(X(pt.x), Z(pt.z)) : g.moveTo(X(pt.x), Z(pt.z)))); g.stroke(); };
       stroke(ring, 8.2); stroke(loop, 6.9); linkCurves.forEach((c, i) => stroke(c, linkW[i] + 1.2));
       stroke(new THREE.LineCurve3(V(LY.mainRoad[0], 0, LY.mainRoad[1]), V(LY.mainRoad[2], 0, LY.mainRoad[3])), 16);
       const rect = (x: number, z: number, hw: number, hd: number, rot: number) => { g.save(); g.translate(X(x), Z(z)); g.rotate(-rot); g.fillRect(-hw * k, -hd * k, hw * 2 * k, hd * 2 * k); g.restore(); };
       blockers.forEach((b) => rect(b.x, b.z, b.hw + 0.4, b.hd + 0.4, Math.atan2(b.s, b.c)));
       if (LY.lagoon) { g.beginPath(); g.ellipse(X(LY.lagoon[0]), Z(LY.lagoon[1]), 9 * k, 6.8 * k, 0, 0, 6.3); g.fill(); }
-      rect(LY.pool.x, LY.pool.z, PW / 2 + 1.8, PD / 2 + 2.5, LY.pool.rot);
-      LY.courts.forEach((ct) => rect(ct.x, ct.z, 5.8, 3.8, ct.rot)); if (LY.bball) rect(LY.bball[0], LY.bball[1], 7.3, 4.8, 0);
+      if (hasPool) rect(POOL.x, POOL.z, PW / 2 + 1.8, PD / 2 + 2.5, POOL.rot);
+      LY.courts.forEach((ct) => rect(ct.x, ct.z, 5.8, 3.8, ct.rot)); if (LY.bball) rect(LY.bball[0], LY.bball[1], 7.3, 4.8, LY.bball[2] ?? 0);
       g.beginPath(); g.arc(X(LY.play[0]), Z(LY.play[1]), 5.2 * k, 0, 6.3); g.fill();
     }, false);
     const TILE = small ? 30 : 44, BLADES = small ? 34000 : 96000;
@@ -890,8 +913,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
     // lamps along the loop
     const lampM = std('#24452f', 0.5, 0.5); const bulbs: THREE.MeshStandardMaterial[] = [];
-    for (let i = 0; i < 14; i++) {
-      const p = along(loop, i / 14 + 0.02, 3.3);
+    for (let i = 0, n = byLen(14, loopLen, 200); i < n; i++) {
+      const p = along(loop, i / n + 0.02, 3.3);
       scene.add(mesh(new THREE.CylinderGeometry(0.07, 0.1, 4, 8), lampM, p.x, 2, p.z));
       const bm = new THREE.MeshStandardMaterial({ color: '#fff6dc', emissive: '#ffcf86', emissiveIntensity: 0.1 }); bulbs.push(bm);
       scene.add(mesh(new THREE.SphereGeometry(0.26, 12, 10), bm, p.x, 4.1, p.z, false));
@@ -916,7 +939,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       for (const [x, z] of [[-0.9, 1.3], [0.9, 1.3], [-0.9, -1.3], [0.9, -1.3]]) { const w = mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.25, 12), std('#1c1c1c', 0.8), x, 0.34, z); w.rotation.z = Math.PI / 2; g.add(w); }
       scene.add(g); return g;
     }
-    ['#f4f4f2', '#b8312f', '#3b4a5a', '#d9d9d9', '#1f2a33', '#e9e2d0', '#7c8f83'].forEach((c, i) => { const t = 0.08 + i * 0.13, p = along(ring, t, 5.2), tan = ring.getTangentAt(t); const g = car(c); g.position.copy(p); g.rotation.y = Math.atan2(tan.x, tan.z); });
+    ['#f4f4f2', '#b8312f', '#3b4a5a', '#d9d9d9', '#1f2a33', '#e9e2d0', '#7c8f83'].slice(0, Math.min(7, byLen(7, ringLen, 700))).forEach((c, i) => { const t = 0.08 + i * 0.13, p = along(ring, t, 5.2), tan = ring.getTangentAt(t); const g = car(c); g.position.copy(p); g.rotation.y = Math.atan2(tan.x, tan.z); });
     const driver = car('#e0662f');
 
     /* ---- clouds, far city ---- */
@@ -1144,7 +1167,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       { dur: 5.5, text: 'A proper hello first. Then the leash goes on, with poop bags and a towel packed.', cam: fc(-1.9, 1.25, 3.9, -2.7, 0.7, 1.4), start: () => { hearts(wpos(dog.g, 0.9), 6, 0.22); Object.assign(parent.c, { wave: [0, 1], twist: 0.9, look: 0.5, type: 0 }); dogSitFlat = true; },
         update: (t) => { visitor.c.crouch = t < 3.2 ? 1 : 0; visitor.c.reach[0] = t > 0.4 && t < 3.2 ? 1 : 0; if (t > 2.6) { leashInFlat = true; visitor.c.leash = 0; } if (t > 3.5) Object.assign(parent.c, { wave: [0, 0], twist: 0, look: 0, type: 1 }); } },
       { dur: 4.5, text: 'Out they go. Ananya is back on her call before the lift arrives.', cam: fc(1.5, 2.2, 6.4, -2.5, 0.9, 0.8), start: () => { visitor.c.crouch = 0; visitor.c.reach[0] = 0; dogSitFlat = false; aVisitor.dest = L(-8.5, 1.6); }, update: (t) => { if (t > 0.5) aDog.dest = L(-8, 2.2); if (t > 3.4) doorTarget = 0; } },
-      { dur: 9, img: '/real/hero.jpg', text: 'Down to the jogging track. Live GPS and a photo every 15 minutes go to Ananya\'s phone.', cam: [0, 0, 0, 0, 0, 0], start: () => { toWorld(); queue = routeTo(walker.g.position, V(LY.story.to[0], 0, LY.story.to[1])); autoWalk = true; } },
+      { dur: 9, img: '/real/hero.jpg', text: `Down to the ${LY.words.track ?? (isPath ? 'garden path' : 'jogging track')}. Live GPS and a photo every 15 minutes go to Ananya's phone.`, cam: [0, 0, 0, 0, 0, 0], start: () => { toWorld(); queue = routeTo(walker.g.position, V(LY.story.to[0], 0, LY.story.to[1])); autoWalk = true; } },
     ];
     const CAT_BEATS: Beat[] = [
       { dur: 5, img: '/real/cat-window.jpg', text: 'Meera is travelling for work. Lily stays home, where cats are happiest.', cam: fc(-0.5, 1.5, 0.6, -1.6, 0.62, -3.25) },
@@ -1203,7 +1226,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     function nextBeat() {
       bi++; bt = 0;
       if (bi >= beats.length) {
-        if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? 'Now the walk: four stops along the track.' : 'Your turn. Walk Biscuit to the four stops.'); }
+        if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? `Now the walk: four stops along the ${isPath ? 'path' : 'track'}.` : 'Your turn. Walk Biscuit to the four stops.'); }
         else {
           dissolve(); nightTarget = 0; const dm: Mode = storyId === 'cat' ? 'catdone' : 'boarddone'; m = dm; setMode(dm); setCaption(null); flat.visible = false; camSnap = true;
           if (dog.g.parent !== scene) { scene.add(dog.g); dog.g.position.set(LY.start[0] - 0.5, 0, LY.start[1] - 0.8); }
@@ -1410,7 +1433,24 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const onCancel = () => { drag = null; };
     canvas.addEventListener('pointerdown', onDown); canvas.addEventListener('pointermove', onMove); canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onCancel);
 
-    let viewShift = small ? 0.16 : 0.14, sideShift = 0;
+    let viewShift = small ? 0.16 : 0.14, sideShift = 0, panelFrac = small ? 0.36 : 0.29; // how much of the view the menu panel covers
+    let fit = 1; const fitV = V(); // extra stand-back so tall towers keep their roofs (and name tags) inside the frame
+    // Tidy name tags: where two would overlap on screen, the one added later steps aside. It is worked out for the
+    // resting view (no drift) and only when the framing changes, so tags never blink while the view sways.
+    const probe = new THREE.PerspectiveCamera(); let tagKey = '', akpNow = 1;
+    const tidyTags = () => {
+      const W = wrap.clientWidth, H = wrap.clientHeight, key = `${akpNow.toFixed(2)}|${viewShift.toFixed(2)}|${W}x${H}`;
+      if (key === tagKey) return; tagKey = key;
+      probe.copy(camera); probe.position.set(AV[0] + Math.cos(A_BEAR) * AV[3] * akpNow, AV[2] * akpNow, AV[1] + Math.sin(A_BEAR) * AV[3] * akpNow);
+      probe.lookAt(AV[0], AV[4] ?? 0, AV[1]); probe.updateMatrixWorld();
+      const k = (probe.projectionMatrix.elements[5] * H) / 4, placed: number[][] = [];
+      for (const c of air.children) {
+        fitV.copy(c.position).project(probe);
+        const x = (fitV.x * 0.5 + 0.5) * W, y = (0.5 - fitV.y * 0.5) * H, hw = c.scale.x * k + 6, hh = c.scale.y * k + 3;
+        const clash = x - hw < 2 || x + hw > W - 2 /* would be cut by the frame edge */ || placed.some((q) => Math.abs(q[0] - x) < q[2] + hw && Math.abs(q[1] - y) < q[3] + hh);
+        c.visible = !clash; if (!clash) placed.push([x, y, hw, hh]);
+      }
+    };
     const applyShift = () => { const w = wrap.clientWidth, h = wrap.clientHeight; if (Math.abs(viewShift) < 0.002 && sideShift < 0.002) camera.clearViewOffset(); else camera.setViewOffset(w, h, sideShift * w, viewShift * h, w, h); };
     const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 64 : 52; camera.updateProjectionMatrix(); applyShift(); };
     resize();
@@ -1510,7 +1550,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       // menu / end: slow aerial orbit of the whole community
       if (m === 'menu' || m === 'catdone' || m === 'boarddone') {
         // a bird's-eye of the whole community, low enough that it fills the frame, drifting slowly
-        const A = AV, a = A_BEAR + Math.sin(time * 0.06) * A_SWAY; tmp.set(A[0] + Math.cos(a) * A[3] * AK, A[2] * AK, A[1] + Math.sin(a) * A[3] * AK);
+        // The menu panel grows when an area lists many communities: the view stands back and sits higher by as much as it covers.
+        if (m === 'menu' && (frames + Math.floor(time * 4)) % 2 === 0) { const pn = wrap.querySelector<HTMLElement>('.pp-world-panel'); if (pn && wrap.clientHeight) panelFrac = pn.offsetHeight / wrap.clientHeight; }
+        const AKP = AK * THREE.MathUtils.clamp((1 - (small ? 0.36 : 0.29)) / (1 - panelFrac), 0.96, 1.32) * fit; akpNow = AKP;
+        const A = AV, a = A_BEAR + Math.sin(time * 0.06) * A_SWAY; tmp.set(A[0] + Math.cos(a) * A[3] * AKP, A[2] * AKP, A[1] + Math.sin(a) * A[3] * AKP);
         if (camSnap) { camPos.copy(tmp); camLook.set(A[0], A[4] ?? 0, A[1]); camSnap = false; } else { camPos.lerp(tmp, 0.04); camLook.lerp(tmp.set(A[0], A[4] ?? 0, A[1]), 0.05); }
       }
       if (m === 'ended') followCam();
@@ -1519,22 +1562,31 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       // behind the story cards the picture slides up, and behind the payment summary it slides aside, so nothing important is covered
       // (the same after a cat visit or a sleepover: otherwise the summary card sits exactly on top of a slim community such as two towers)
       const sumAir = m === 'catdone' || m === 'boarddone';
-      const wantShift = m === 'menu' ? (small ? 0.16 : 0.14) : (m === 'ended' || sumAir) && small ? -0.33 : 0, wantSide = !small ? (m === 'ended' ? 0.34 : sumAir ? 0.3 : 0) : 0;
+      const wantShift = m === 'menu' ? THREE.MathUtils.clamp(panelFrac / 2 - (small ? 0.02 : 0.005), 0.1, 0.24) : (m === 'ended' || sumAir) && small ? -0.33 : 0, wantSide = !small ? (m === 'ended' ? 0.34 : sumAir ? 0.3 : 0) : 0;
       if (Math.abs(wantShift - viewShift) > 0.001 || Math.abs(wantSide - sideShift) > 0.001) { const k = Math.min(1, Math.max(dt, 0.016) * 3); viewShift += (wantShift - viewShift) * k; sideShift += (wantSide - sideShift) * k; applyShift(); }
       camera.position.copy(camPos); camera.lookAt(camLook);
+      // Headroom: the name tags sit on the roofs, so if one would touch the top of the frame (or the chip there),
+      // stand back a little further. It only ever eases outwards, so the view settles and stays put.
+      if (m === 'menu' && fit < 1.5 && air.children.length) {
+        camera.updateMatrixWorld(); let top = -1;
+        for (const c of air.children) { fitV.copy(c.position).project(camera); if (fitV.z < 1 && fitV.y > top) top = fitV.y; }
+        const limit = small ? 0.72 : 0.8;
+        if (top > limit) fit = Math.min(1.5, fit + Math.min(0.01, (top - limit) * 0.06));
+      }
+      if (m === 'menu' && Math.abs(wantShift - viewShift) < 0.004) tidyTags();
 
       // neighbours and traffic
-      const tj = (time * 0.02) % 1; const pj = along(loop, tj, 1.3), pj2 = along(loop, (tj + 0.004) % 1, 1.3);
+      const tj = (time * JOG) % 1; const pj = along(loop, tj, 1.3), pj2 = along(loop, (tj + 0.8 / loopLen) % 1, 1.3);
       jogger.g.position.copy(pj); jogger.g.lookAt(pj2.x, 0, pj2.z);
-      jogger.phase = time * loopLen * 0.02 * AC.stride(1); AC.posePerson(jogger, dt, time, true, 1);
-      const t2 = 1 - ((time * 0.008 + 0.4) % 1); const pr = along(loop, t2, -1.2), pr2 = along(loop, (t2 + 0.996) % 1, -1.2);
+      jogger.phase = time * loopLen * JOG * AC.stride(1); AC.posePerson(jogger, dt, time, true, 1);
+      const t2 = 1 - ((time * STROLL + 0.4) % 1); const pr = along(loop, t2, -1.2), pr2 = along(loop, (t2 + 1 - 0.8 / loopLen) % 1, -1.2);
       resident.g.position.copy(pr); resident.g.lookAt(pr2.x, 0, pr2.z);
-      resident.phase = time * loopLen * 0.008 * AC.stride(0); AC.posePerson(resident, dt, time, true, 0);
-      const pd = along(loop, (t2 + 0.9955) % 1, -1.2), fx2 = pr2.x - pr.x, fz2 = pr2.z - pr.z, fl = Math.hypot(fx2, fz2) || 1;
+      resident.phase = time * loopLen * STROLL * AC.stride(0); AC.posePerson(resident, dt, time, true, 0);
+      const pd = along(loop, (t2 + 1 - 0.9 / loopLen) % 1, -1.2), fx2 = pr2.x - pr.x, fz2 = pr2.z - pr.z, fl = Math.hypot(fx2, fz2) || 1;
       dog2.g.position.set(pd.x - (fz2 / fl) * 0.7, 0, pd.z + (fx2 / fl) * 0.7); dog2.g.lookAt(dog2.g.position.x + fx2, 0, dog2.g.position.z + fz2);
-      dog2.phase = time * loopLen * 0.008 * AC.DOG_STRIDE * 1.5; AC.poseDog(dog2, dt, time, true, { walk: true });
+      dog2.phase = time * loopLen * STROLL * AC.DOG_STRIDE * 1.5; AC.poseDog(dog2, dt, time, true, { walk: true });
       drawLeash(leash2, resident.arms[0].end.getWorldPosition(lA), dog2.ring.getWorldPosition(lB));
-      const td = (time * 0.012) % 1; const pc = along(ring, td, -1.6), pc2 = ring.getTangentAt(td); driver.position.copy(pc); driver.rotation.y = Math.atan2(pc2.x, pc2.z);
+      const td = (time * DRIVE) % 1; const pc = along(ring, td, -1.6), pc2 = ring.getTangentAt(td); driver.position.copy(pc); driver.rotation.y = Math.atan2(pc2.x, pc2.z);
       priya.c.wave[1] = wave > 0 ? 1 : 0; if (wave > 0) wave -= dt; AC.posePerson(priya, dt, time, false);
       if (walker.g.position.distanceTo(priya.g.position) < 9) priya.g.rotation.y = Math.atan2(walker.g.position.x - priya.g.position.x, walker.g.position.z - priya.g.position.z);
       AC.posePerson(sitter, dt, time, false); AC.poseCat(cat, dt, time, false, true);
@@ -1579,7 +1631,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
           const g = t.g.position;
           if (Math.hypot(g.x - dog.g.position.x, g.z - dog.g.position.z) < 1.2 || Math.hypot(g.x - walker.g.position.x, g.z - walker.g.position.z) < 1.25) {
             t.got = 0.001; treatN++; setTreats(treatN); hearts(V(g.x, 0.9, g.z), 2, 0.24);
-            if (treatN === 1) say('Biscuit found a treat. Seven more are waiting along the track.'); else if (treatN === treats.length) say('All eight treats found. Biscuit is thrilled.');
+            if (treatN === 1) say(`Biscuit found a treat. Seven more are waiting along the ${isPath ? 'path' : 'track'}.`); else if (treatN === treats.length) say('All eight treats found. Biscuit is thrilled.');
           }
         }
       }
@@ -1639,9 +1691,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   /** switch community: the last frame stays on screen while the next scene is built, then dissolves into it */
   const pickCommunity = (id: CommunityId) => { if (id === community) return; api.current?.freeze(); setCommunity(id); };
   // the area filter: only areas that have a modelled community are offered, and choosing one lands you in a community there
-  const areas = AREAS.filter((a) => COMMUNITY_IDS.some((id) => LAYOUTS[id].area === a));
-  const shown = COMMUNITY_IDS.filter((id) => area === 'All' || LAYOUTS[id].area === area);
-  const pickArea = (a: Area | 'All') => { setArea(a); if (a !== 'All' && LAYOUTS[community].area !== a) { const first = COMMUNITY_IDS.find((id) => LAYOUTS[id].area === a); if (first) pickCommunity(first); } };
+  const ids = typeof location !== 'undefined' && location.hash.includes('ppdraft') ? [...COMMUNITY_IDS, ...DRAFTS.map((l) => l.id)] : COMMUNITY_IDS; // drafts are for checking only
+  const areas = AREAS.filter((a) => ids.some((id) => LAYOUTS[id].area === a));
+  const shown = ids.filter((id) => area === 'All' || LAYOUTS[id].area === area);
+  const pickArea = (a: Area | 'All') => { setArea(a); if (a !== 'All' && LAYOUTS[community].area !== a) { const first = ids.find((id) => LAYOUTS[id].area === a); if (first) pickCommunity(first); } };
   const DONE: Record<'ended' | 'catdone' | 'boarddone', { k: string; t: string; item: string; price: number; who: string; src: string }> = {
     ended: { k: 'Walk complete', t: 'The walk is over. Here\'s your payment.', item: '1-hour walk', price: PRICE, who: 'The neighbour', src: '3d-walk' },
     catdone: { k: 'Visit complete', t: 'Lily is fed, clean and happy.', item: '30-minute cat visit', price: 129, who: 'The neighbour', src: '3d-cat-visit' },
@@ -1683,7 +1736,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
             <div className="pp-world-go" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 230px', minWidth: 0 }}>
                 <div style={{ fontFamily: head, fontWeight: 800, fontSize: 15.5, letterSpacing: '-0.01em', color: T.ink }}>{svc.price}<span className="pp-world-blurb" style={{ fontFamily: body, fontWeight: 500, fontSize: 14, letterSpacing: 0, color: T.sub }}> · {LY.blurb}</span></div>
-                <div className="pp-world-line" style={{ fontSize: 13.5, color: T.sub, lineHeight: 1.45, marginTop: 3 }}>{svc.line}</div>
+                <div className="pp-world-line" style={{ fontSize: 13.5, color: T.sub, lineHeight: 1.45, marginTop: 3 }}>{LY.loopIsPath ? svc.line.replace('community track', 'community paths') : svc.line}</div>
               </div>
               <button data-pp="watch" className="pp-glass-btn pp-glass-primary" style={{ fontSize: 14.5, padding: '11px 20px', minHeight: 44 }} aria-label={`Watch ${svc.label.toLowerCase()}`} onClick={() => api.current?.play(service)}><span>Watch<span className="pp-world-wsvc"> {svc.label.toLowerCase()}</span></span></button>
               <button data-pp="explore" className="pp-glass-btn" style={{ fontSize: 14.5, padding: '11px 18px', minHeight: 44 }} onClick={() => api.current?.explore()}>Explore on foot</button>
