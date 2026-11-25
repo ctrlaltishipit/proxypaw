@@ -64,11 +64,11 @@ function RouteMap({ progress, laps, running }: { progress: number; laps: number;
   const walker = { x: pt.x - Math.cos(angle) * 16, y: pt.y - Math.sin(angle) * 16 };
   return (
     <svg viewBox="0 0 600 380" role="img" aria-label="Map of the community with the walk route" style={{ width: '100%', height: '100%', display: 'block' }}>
-      <rect width="600" height="380" rx="22" fill="#9fd67f" />
+      <rect width="600" height="380" rx="22" fill="#d3e9c6" />
       <rect x="0" y="0" width="600" height="380" rx="22" fill="url(#ws-grain)" opacity=".25" />
       <defs>
         <pattern id="ws-grain" width="16" height="16" patternUnits="userSpaceOnUse">
-          <circle cx="3" cy="4" r="1.2" fill="#5fae4a" /><circle cx="11" cy="12" r="1" fill="#5fae4a" />
+          <circle cx="3" cy="4" r="1.2" fill="#8cc47c" /><circle cx="11" cy="12" r="1" fill="#8cc47c" />
         </pattern>
       </defs>
       {/* Towers */}
@@ -78,7 +78,7 @@ function RouteMap({ progress, laps, running }: { progress: number; laps: number;
         { x: 6, y: 206, w: 58, h: 86, n: 'C' },
       ].map((t) => (
         <g key={t.n}>
-          <rect x={t.x + 3} y={t.y + 4} width={t.w} height={t.h} rx="8" fill="#2e7d4f" opacity=".25" />
+          <rect x={t.x + 3} y={t.y + 4} width={t.w} height={t.h} rx="8" fill="#2e7d4f" opacity=".14" />
           <rect x={t.x} y={t.y} width={t.w} height={t.h} rx="8" fill="#f6f2ea" stroke="#e2dccf" />
           <text x={t.x + t.w / 2} y={t.y + t.h / 2 + 4} textAnchor="middle" fontSize={t.w < 60 ? 10 : 12} fontWeight="700" fill="#3f5547" fontFamily="Inter, sans-serif">
             {t.n === 'C' ? 'Tower C' : t.n.replace('T', 'Tower ')}
@@ -94,14 +94,16 @@ function RouteMap({ progress, laps, running }: { progress: number; laps: number;
       {/* Trees */}
       {[[90, 120], [150, 250], [240, 110], [470, 110], [470, 250], [330, 250], [210, 360], [400, 370], [60, 350], [500, 345]].map(([x, y], i) => (
         <g key={i}>
-          <circle cx={x + 2} cy={y + 3} r="15" fill="#1f6b3a" opacity=".25" />
-          <circle cx={x} cy={y} r="15" fill={i % 3 === 0 ? '#f29bb8' : '#3f9b4f'} />
+          <circle cx={x + 2} cy={y + 3} r="15" fill="#1f6b3a" opacity=".14" />
+          <circle cx={x} cy={y} r="15" fill={i % 3 === 0 ? '#f5b9cb' : i % 3 === 1 ? '#f3cf5f' : '#8cc596'} />
           <circle cx={x - 4} cy={y - 4} r="5" fill="#ffffff" opacity=".2" />
         </g>
       ))}
       {/* Path */}
-      <path d={TRAIL} fill="none" stroke="#efe3c6" strokeWidth="16" strokeLinecap="round" />
-      <path ref={pathRef} d={TRAIL} fill="none" stroke="#e1d0a8" strokeWidth="2" strokeDasharray="3 9" />
+      {/* The jogging track: charcoal with white stripes, as in the 3D community */}
+      <path d={TRAIL} fill="none" stroke="#ffffff" strokeWidth="19" strokeLinecap="round" opacity=".9" />
+      <path d={TRAIL} fill="none" stroke="#3a3f44" strokeWidth="16" strokeLinecap="round" />
+      <path ref={pathRef} d={TRAIL} fill="none" stroke="#ffffff" strokeWidth="1.6" strokeDasharray="7 8" opacity=".9" />
       {/* GPS trail for this lap */}
       <path d={TRAIL} fill="none" stroke={T.marigold} strokeWidth="5" strokeLinecap="round"
         strokeDasharray={len} strokeDashoffset={len * (1 - lapP)} opacity={progress > 0 ? 0.9 : 0} />
@@ -251,7 +253,7 @@ export default function WalkSimulator({ onJoin }: { onJoin: (source: string, int
   const tab = (active: boolean): CSSProperties => ({
     border: 'none', cursor: 'pointer', fontFamily: head, fontWeight: 700, fontSize: 15,
     padding: '11px 18px', borderRadius: 999, minHeight: 44,
-    background: active ? T.ink : 'transparent', color: active ? '#fff' : T.sub,
+    background: active ? T.leafGlass2 : 'transparent', boxShadow: active ? `inset 0 0 0 1px ${T.leafLine}` : 'none', color: active ? T.ink : T.sub,
   });
 
   return (

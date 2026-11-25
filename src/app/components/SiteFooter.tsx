@@ -1,9 +1,10 @@
 /**
  * SiteFooter, shared by every page.
  *
- * A forest band that rises out of the page through a soft silhouette of
+ * A pale sage band that rises out of the page through a soft silhouette of
  * community towers and trees, then one north-star line with one CTA, three
- * link columns and a small-print bar. No social icons and no email address on
+ * link columns and a small-print bar. It is light on purpose: green is used as
+ * a tint across the site, never as a solid dark block (see DESIGN.md). No social icons and no email address on
  * purpose: neither exists yet. Links to page sections work from any page (App
  * routes home first, then scrolls).
  */
@@ -12,14 +13,15 @@ import type { CSSProperties } from 'react';
 import BrandLogo from './BrandLogo';
 
 const C = {
-  forest: '#14301f',
-  marigold: '#e0662f',
+  /** top of the sage band; the skyline's ground melts into it */
+  sage: '#e2efdd',
+  sage2: '#eaf3e6',
+  ink: '#14301f',
+  sub: '#3f5547',
+  leaf: '#2e7d4f',
   marigoldDark: '#c24e1d',
-  canvas2: '#fbfdf8',
-  sun: '#f0b429',
-  onDark: '#b9d3c0',
-  dim: '#8fae99',
-  hair: 'rgba(251,253,248,.12)',
+  dim: '#5e7266',
+  hair: 'rgba(20,48,31,.10)',
 };
 const heading = "'Plus Jakarta Sans', system-ui, sans-serif";
 
@@ -50,23 +52,23 @@ function Skyline() {
       {/* far towers */}
       {towers.map(([x, top, w], i) => (
         <g key={`t${i}`}>
-          <rect x={x} y={top} width={w} height={120 - top} rx="3" fill="#cfe5cb" opacity=".75" />
+          <rect x={x} y={top} width={w} height={120 - top} rx="3" fill="#d6e8d2" opacity=".7" />
           {Array.from({ length: Math.floor((96 - top) / 14) }).map((_, r) => (
-            <rect key={r} x={x + 8} y={top + 10 + r * 14} width={w - 16} height="3" rx="1.5" fill="#e7f4e4" opacity=".9" />
+            <rect key={r} x={x + 8} y={top + 10 + r * 14} width={w - 16} height="3" rx="1.5" fill="#f1f8ee" opacity=".9" />
           ))}
         </g>
       ))}
       {/* mid hedge */}
-      <path d="M0 96 C 120 82, 220 92, 340 86 S 560 78, 700 88 S 960 80, 1080 88 S 1320 80, 1440 90 V120 H0Z" fill="#49a85a" opacity=".55" />
+      <path d="M0 96 C 120 82, 220 92, 340 86 S 560 78, 700 88 S 960 80, 1080 88 S 1320 80, 1440 90 V120 H0Z" fill="#a9d3ae" opacity=".55" />
       {/* trees */}
       {trees.map(([x, r], i) => (
         <g key={`r${i}`}>
-          <rect x={x - 2} y={104 - r * 0.4} width="4" height={r * 0.6} fill="#1f6b3a" />
-          <circle cx={x} cy={100 - r} r={r * 0.75} fill={i % 2 ? '#2e7d4f' : '#1f6b3a'} />
+          <rect x={x - 2} y={104 - r * 0.4} width="4" height={r * 0.6} fill="#7fae8b" />
+          <circle cx={x} cy={100 - r} r={r * 0.75} fill={i % 3 === 0 ? '#f0cf6a' : i % 2 ? '#9fcca6' : '#86bb92'} />
         </g>
       ))}
-      {/* ground into forest */}
-      <path d="M0 104 C 200 96, 380 108, 620 100 S 1040 96, 1240 104 S 1400 102, 1440 100 V120 H0Z" fill={C.forest} />
+      {/* ground into the sage band */}
+      <path d="M0 104 C 200 96, 380 108, 620 100 S 1040 96, 1240 104 S 1400 102, 1440 100 V120 H0Z" fill={C.sage} />
     </svg>
   );
 }
@@ -83,22 +85,20 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
   }, []);
 
   const link: CSSProperties = {
-    fontSize: 14.5, color: C.onDark, cursor: 'pointer',
+    fontSize: 14.5, color: C.sub, cursor: 'pointer',
     background: 'none', border: 'none', padding: 0, textAlign: 'left', fontFamily: 'inherit',
   };
   const colTitle: CSSProperties = {
     fontFamily: heading, fontWeight: 700, fontSize: 12.5, letterSpacing: '0.14em',
-    color: C.sun, marginBottom: 6,
+    color: C.leaf, marginBottom: 6,
   };
 
   return (
-    <footer className="ppf" style={{ color: C.canvas2, textTransform: 'none', position: 'relative', zIndex: 1, marginTop: 'clamp(8px, 2vw, 24px)' }}>
+    <footer className="ppf" style={{ color: C.ink, textTransform: 'none', position: 'relative', zIndex: 1, marginTop: 'clamp(8px, 2vw, 24px)' }}>
       <style>{`
         .ppf-link { transition: color .2s, transform .2s; }
-        .ppf-link:hover { color: ${C.canvas2} !important; transform: translateX(2px); }
-        .ppf-cta { transition: transform .2s, background .2s, box-shadow .2s; }
-        .ppf-cta:hover { transform: translateY(-2px); background: ${C.marigoldDark} !important; box-shadow: 0 16px 32px rgba(224,102,47,.36) !important; }
-        .ppf button:focus-visible, .ppf a:focus-visible { outline: 2px solid ${C.sun}; outline-offset: 3px; border-radius: 4px; }
+        .ppf-link:hover { color: ${C.ink} !important; transform: translateX(2px); }
+        .ppf button:focus-visible, .ppf a:focus-visible { outline: 2px solid ${C.leaf}; outline-offset: 3px; border-radius: 4px; }
         .ppf-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
         .ppf-top { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
         @media (max-width: 760px) {
@@ -113,20 +113,20 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
 
       <Skyline />
 
-      <div style={{ background: C.forest }}>
+      <div style={{ background: `linear-gradient(180deg, ${C.sage} 0%, ${C.sage2} 100%)` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(22px, 3vw, 36px) clamp(18px, 3vw, 28px) 0' }}>
           {/* north star + the one CTA */}
           <div className="ppf-top">
             <div>
-              <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 12.5, letterSpacing: '0.14em', color: C.sun, marginBottom: 10 }}>OUR NORTH STAR</div>
+              <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 12.5, letterSpacing: '0.14em', color: C.leaf, marginBottom: 10 }}>OUR NORTH STAR</div>
               <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)', lineHeight: 1.3, letterSpacing: '-0.02em', maxWidth: 600 }}>
                 Every pet cared for in their own home, by a neighbour they already know.
               </div>
             </div>
             <button
-              className="ppf-cta"
+              className="ppf-cta pp-glass-btn pp-glass-primary"
               onClick={() => nav.onJoin('footer-join')}
-              style={{ border: 'none', background: C.marigold, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 15, padding: '15px 28px', borderRadius: 999, cursor: 'pointer', boxShadow: '0 12px 28px rgba(224,102,47,.3)', flexShrink: 0 }}
+              style={{ fontSize: 15, padding: '15px 28px', flexShrink: 0 }}
             >
               Join the waitlist
             </button>
@@ -137,9 +137,9 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
           <div className="ppf-grid">
             <div className="ppf-brandcol">
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-                <BrandLogo tile={30} onDark />
+                <BrandLogo tile={30} />
               </div>
-              <p style={{ fontSize: 14, lineHeight: 1.65, color: C.onDark, margin: 0, maxWidth: 300 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: C.sub, margin: 0, maxWidth: 300 }}>
                 Hyderabad, gated communities first: Gachibowli, Financial District, Kokapet, Kondapur and Nallagandla. Your community next?
               </p>
             </div>
@@ -169,15 +169,12 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
           </div>
 
           <div className="ppf-bottom" style={{ borderTop: `1px solid ${C.hair}`, marginTop: 'clamp(28px, 3.6vw, 44px)', padding: '18px 0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <span style={{ fontSize: 12.5, color: C.dim }}>
-              © 2026 ProxyPaw · Made with love in Gachibowli ·{' '}
-              <a href="/terms" style={{ color: C.dim, textDecoration: 'underline' }}>Terms</a> ·{' '}
-              <a href="/privacy" style={{ color: C.dim, textDecoration: 'underline' }}>Privacy</a>
-            </span>
-            <span style={{ fontSize: 12.5, color: C.dim, display: 'flex', gap: 12, alignItems: 'center' }}>
-              Walks · Visits · Boarding
+            <span style={{ fontSize: 12.5, color: C.dim }}>© 2026 ProxyPaw · Made with love in Gachibowli</span>
+            <span style={{ fontSize: 14, color: C.dim, display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
+              <a className="ppf-link" href="/terms" style={{ color: C.sub, textDecoration: 'none', fontWeight: 600 }}>Terms and conditions</a>
+              <a className="ppf-link" href="/privacy" style={{ color: C.sub, textDecoration: 'none', fontWeight: 600 }}>Privacy note</a>
               {hasSession && (
-                <a href="/admin" style={{ color: C.sun, textDecoration: 'none', fontWeight: 700 }}>Founder dashboard</a>
+                <a href="/admin" style={{ color: C.marigoldDark, textDecoration: 'none', fontWeight: 700 }}>Founder dashboard</a>
               )}
             </span>
           </div>

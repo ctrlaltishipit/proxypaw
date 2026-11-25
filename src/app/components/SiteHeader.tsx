@@ -2,7 +2,7 @@
  * SiteHeader, shared by every page (rendered once in App.tsx).
  *
  * Logo left, nav centre, marigold waitlist pill right. Sticky and translucent
- * over the garden canvas. The nav is a glass capsule; the current page gets a leaf-green pill. Below 940px
+ * over the garden canvas. The nav is a glass capsule; the current page gets a tinted leaf-glass pill. Below 940px
  * the nav folds into a menu button (aria-expanded) that opens a sheet under
  * the bar, so nothing squeezes or overflows at phone width.
  */
@@ -75,7 +75,7 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
         .pph-link { position: relative; background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 999px; font-family: ${heading}; font-weight: 600; font-size: 14.5px; color: ${C.sub}; white-space: nowrap; transition: color .2s, background .25s, box-shadow .25s, transform .35s cubic-bezier(.34,1.56,.64,1); }
         .pph-link:hover { color: ${C.ink}; background: rgba(255,255,255,.9); box-shadow: 0 4px 12px rgba(20,48,31,.08); transform: translateY(-1px); }
         .pph-link:active { transform: scale(.96); }
-        .pph-link[aria-current="page"] { color: #fff; background: ${C.leaf}; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 14px rgba(46,125,79,.28); }
+        .pph-link[aria-current="page"] { color: #1f6b3a; background: rgba(46,125,79,.14); box-shadow: inset 0 0 0 1px rgba(46,125,79,.24), inset 0 1px 0 rgba(255,255,255,.6); }
         .pph-cta { font-size: 14.5px !important; padding: 11px 20px !important; min-height: 44px !important; }
         .pph-right { display: flex; align-items: center; gap: 8px; }
         .pph-toggle { display: none; width: 42px; height: 42px; border-radius: 999px; border: 1.5px solid #c9dcc4; background: #fff; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; padding: 0; color: ${C.ink}; }

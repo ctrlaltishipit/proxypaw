@@ -194,10 +194,10 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
         </section>
 
         {/* founder story */}
-        <section style={{ background: C.ink, color: C.cream2 }}>
+        <section style={{ background: 'linear-gradient(180deg, rgba(46,125,79,.11), rgba(46,125,79,.05))', color: C.ink }}>
           <div style={{ ...shell, padding: `clamp(44px, 6vw, 80px) ${SIDE_PAD}` }}>
             <Reveal>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: C.gold, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: C.green, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
                 WHY WE BUILT THIS
               </div>
               <h2 style={{ fontFamily: sora, fontWeight: 600, fontSize: 'clamp(26px, 3.2vw, 40px)', letterSpacing: '-0.01em', lineHeight: 1.12, margin: '0 0 26px', maxWidth: 680 }}>
@@ -205,12 +205,12 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
               </h2>
             </Reveal>
             <Reveal delay={120}>
-              <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.darkSub, fontWeight: 400 }}>
+              <div style={{ maxWidth: 720, fontSize: 'clamp(16px, 1.6vw, 17.5px)', lineHeight: 1.8, color: C.sub, fontWeight: 400 }}>
                 <p style={{ margin: '0 0 18px' }}>
                   My first pet found me. A street dog outside the Balaji temple, my parents named him
                   Balaji after it; I laughed and called him Baloo, and Baloo stuck. He was with us for six
                   years before his health gave out, and losing him taught me something I've carried since:
-                  <em style={{ color: C.cream2 }}> what comes to you from nature, without you searching for it,
+                  <em style={{ color: C.ink }}> what comes to you from nature, without you searching for it,
                   one day goes back to nature.</em> I told myself I wouldn't get another pet. Then my dad
                   surprised me with Coco, a Shih Tzu with a heart bigger than her whole body. When I moved
                   away to study, she went back to grow up alongside her sisters and brothers, and today
@@ -238,9 +238,9 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
                   their people live. Because the safest hands for your pet were always the ones a few
                   floors away.
                 </p>
-                <p style={{ margin: 0, fontFamily: sora, fontWeight: 600, color: C.cream2 }}>
+                <p style={{ margin: 0, fontFamily: sora, fontWeight: 600, color: C.ink }}>
                   Deekshitha<br />
-                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted2 }}>Founder, ProxyPaw · cat mum to Pablo &amp; Leo · Gachibowli, Hyderabad</span>
+                  <span style={{ fontWeight: 400, fontSize: 14, color: C.muted }}>Founder, ProxyPaw · cat mum to Pablo &amp; Leo · Gachibowli, Hyderabad</span>
                 </p>
               </div>
             </Reveal>
@@ -252,7 +252,7 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
                   alt="Pablo and Leo as kittens, cuddled together"
                   style={{ width: '100%', borderRadius: 22, display: 'block', border: '1px solid rgba(253,249,240,.14)' }}
                 />
-                <figcaption style={{ fontSize: 13, color: C.muted2, marginTop: 10, lineHeight: 1.5 }}>
+                <figcaption style={{ fontSize: 13, color: C.muted, marginTop: 10, lineHeight: 1.5 }}>
                   From their very first days home with us: Pablo holding Leo, brand new to the house and already inseparable.
                 </figcaption>
               </figure>
