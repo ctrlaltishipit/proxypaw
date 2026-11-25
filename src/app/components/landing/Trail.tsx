@@ -33,7 +33,7 @@ export const STOPS: TrailStop[] = [
   { id: 'why', label: 'Why', name: 'Why ProxyPaw exists', line: 'It began with a pet parent who could not leave her two cats with a stranger.' },
   { id: 'community', label: 'Community', name: 'Life in your community', line: 'Care comes from verified neighbours who live inside your own gated community.' },
   { id: 'how', label: 'How', name: 'How it works', line: 'Meet at your door, book in 30 seconds, then watch it live.' },
-  { id: 'world', label: '3D visit', name: 'Step inside', line: 'Watch a dog walk and a cat visit in a ten-tower community, then take the leash.' },
+  { id: 'world', label: '3D visit', name: 'Step inside', line: 'Pick your community and watch a walk, a cat visit or a sleepover in 3D.' },
   { id: 'walk', label: 'The app', name: 'The parent’s side', line: 'Live GPS, photo updates and a receipt, for every walk and visit.' },
   { id: 'services', label: 'Prices', name: 'Services and prices', line: 'Walks from ₹149, cat visits from ₹129, and 70% goes to your neighbour.' },
   { id: 'perks', label: 'Perks', name: 'Join early', line: 'The first 1,000 pet parents get a free onboarding session and ₹100 off.' },

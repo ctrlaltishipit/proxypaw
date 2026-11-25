@@ -1,18 +1,25 @@
 /**
- * CommunityWorld: a 3D gated community you can watch and walk through.
+ * CommunityWorld: 3D gated communities you can watch and walk through.
  *
- * The layout follows the published master plan of a ten-tower Hyderabad
- * community (ring road, a charcoal jogging track with white lanes, pools,
- * clubhouse, pet garden). Two stories play inside a flat (the dog walker
- * arriving at the door, and a cat home visit); the dog story then hands over
- * the leash: WASD or arrow keys walk, dragging looks around, tapping the
- * ground walks there along the paths, the checklist can auto-walk you to each
- * stop, and there are treats to collect along the track.
+ * One engine builds whichever community is chosen from ./worldLayouts (each an
+ * illustrative model based on that community's published master plan: homes,
+ * internal roads, a charcoal jogging track with white lanes, pool, clubhouse,
+ * lawns). Choosing another community freezes the last frame, rebuilds the
+ * scene behind it and dissolves into the new one; the renderer is kept.
+ *
+ * The menu is one glass panel: an area filter, the communities in that area,
+ * the three services (dog walking, cat care, overnight boarding), Watch and
+ * Explore on foot. Three stories play inside a flat (the dog walker arriving,
+ * a cat home visit, an overnight stay at a host's home); the dog story then
+ * hands over the leash: WASD or arrow keys walk, dragging looks around,
+ * tapping the ground walks there along the paths, the checklist can auto-walk
+ * you to each stop, and there are treats to collect along the track.
  *
  * Left alone, it plays by itself like a video: a "director" moves a demo
- * cursor over the real controls (cards, checklist, action buttons, End walk)
- * and calls their handlers, looping dog walk, payment summary and cat visit.
- * Any real press, tap or key inside the world hands control to the visitor.
+ * cursor over the real controls (community pill, service pill, Watch, the
+ * checklist, action buttons, End walk) and calls their handlers, touring
+ * three communities with one service each, then looping. Any real press, tap
+ * or key inside the world hands control to the visitor.
  *
  * People and pets come from ./worldActors. Built with three.js, loaded
  * lazily, rendered only while on screen. Stylised, not photoreal.
@@ -24,15 +31,9 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { T, head, body } from './ui';
 import { createActors, xf, paint, merge } from './worldActors';
 import type { Person } from './worldActors';
+import { LAYOUTS, COMMUNITY_IDS, AREAS } from './worldLayouts';
+import type { Area, CommunityId, StopId } from './worldLayouts';
 
-type StopId = 'water' | 'fetch' | 'hello' | 'cat';
-interface Stop { id: StopId; label: string; verb: string; pos: [number, number]; done: string }
-const STOPS: Stop[] = [
-  { id: 'hello', label: 'Say hi to Rhea by the pool', verb: 'Say hi to Rhea', pos: [5, -19], done: 'Rhea: "Morning! Biscuit looks so happy today."' },
-  { id: 'water', label: 'Water break at the clubhouse', verb: 'Give Biscuit water', pos: [36, -3], done: 'Biscuit drank half the bowl. Hydrated and happy.' },
-  { id: 'cat', label: 'Meet Lily on the lawn bench', verb: 'Pet Lily', pos: [-30, 0.4], done: 'Lily purred. Biscuit stayed polite and sat.' },
-  { id: 'fetch', label: 'Fetch in the pet garden', verb: 'Throw the ball', pos: [136, 22], done: 'Fetch done. Zoomies achieved.' },
-];
 const PRICE = 249;
 
 const glass: React.CSSProperties = {
@@ -53,12 +54,15 @@ function mesh(geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 
   m.castShadow = shadow; m.receiveShadow = true;
   return m;
 }
+/** every texture painted here, so that switching community can free them all, including ones on sprites that already left the scene */
+const paintedTex = new Set<THREE.Texture>();
 function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void, srgb = true) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d')!);
   const t = new THREE.CanvasTexture(c);
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
+  paintedTex.add(t);
   return t;
 }
 function rand(seed: number) { let s = seed; return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646; }
@@ -151,34 +155,35 @@ function ribbon(curve: THREE.Curve<THREE.Vector3>, width: number, segs: number, 
 /* ---------- component ---------- */
 
 interface Stats { minutes: number; km: number; photos: number }
-type Mode = 'menu' | 'story' | 'walk' | 'ended' | 'catdone';
-type StoryId = 'dog' | 'cat';
-
-// Tower centres and rotation, read off the master plan (1 plan px = 0.2 m).
-const TOWERS: [string, number, number, number, number][] = [
-  ['T1', -66, -33, 0.42, 33], ['T2', -16, -35, 0.42, 33], ['T3', 36, -35, 0.42, 33], ['T4', 86, -33, -0.35, 33], ['T5', 96, 10, -0.5, 33],
-  ['T6', 96, 46, -0.6, 27], ['T7', 48, 48, 0.45, 33], ['T8', 22, 29, 0.42, 33], ['T9', -28, 22, 0.42, 31], ['T10', -76, 18, 0.42, 33],
+type Mode = 'menu' | 'story' | 'walk' | 'ended' | 'catdone' | 'boarddone';
+type StoryId = 'dog' | 'cat' | 'board';
+/** the three services, as the switch names them, with the price line the site shows for each */
+const SERVICES: { id: StoryId; label: string; price: string; line: string }[] = [
+  { id: 'dog', label: 'Dog walking', price: 'Walks from ₹149', line: 'A verified neighbour walks your dog on the community track, with live GPS and photo updates.' },
+  { id: 'cat', label: 'Cat care', price: 'Cat home visits from ₹129', line: 'Food, fresh water, litter and play, in your cat\'s own home.' },
+  { id: 'board', label: 'Overnight boarding', price: 'Boarding from ₹449 a night', line: 'Your pet sleeps over at a vetted host\'s home in your community, with daily photos.' },
 ];
-const RING: [number, number][] = [[-104, -40], [-84, -58], [-40, -62], [8, -62], [58, -60], [108, -52], [124, -30], [126, -13], [126, 26], [126, 70], [88, 80], [34, 66], [-8, 54], [-50, 50], [-96, 42], [-106, 6]];
-const LOOP: [number, number][] = [[-54, -14], [-30, -19], [5, -18], [28, -14], [31, -4], [12, 2], [-10, 0], [-35, 0], [-52, -4]];
-const LINKS: [number, number][][] = [
-  [[-128, -40], [-104, -40]],
-  [[-106, 6], [-78, -8], [-54, -14]],
-  [[5, -18], [9, -40], [8, -62]],
-  [[31, -4], [40, -11], [72, -13], [100, -13], [126, -13]],
-  [[100, -13], [100, -1]],
-  [[126, 26], [131, 22], [136, 22]],
-  [[12, 2], [-5, 27], [-8, 54]],
-];
+/** the self-playing tour: one glimpse per community, a different service in each */
+/** the self-playing tour shows three communities per loop, one service each (only ones that have a layout) */
+const TOUR: { c: CommunityId; s: StoryId }[] = ([{ c: 'prestige', s: 'dog' }, { c: 'myscape', s: 'cat' }, { c: 'olympus', s: 'board' }] as { c: CommunityId; s: StoryId }[]).filter((t) => LAYOUTS[t.c]);
+const slug = (t: string) => t.toLowerCase().replace(/\s+/g, '-');
 
 export default function CommunityWorld({ onJoin }: { onJoin: (source: string) => void }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null); // one renderer for the life of the section; only the scene is rebuilt
+  // the tour outlives a community switch: the scene is rebuilt, the tour and its cursor carry on from here
+  const tourRef = useRef({ on: false, step: 0, x: 0, y: 0, swapped: false, touched: false });
   const api = useRef<{
     act: (id: StopId) => void; goTo: (id: StopId) => void; photo: () => string | null;
-    setNight: (n: boolean) => void; play: (s: StoryId) => void; skip: () => void; explore: () => void; menu: () => void; sync: (x: Mode) => void;
-    dirStart: () => void; dirPause: (p: boolean) => void;
+    setNight: (n: boolean) => void; play: (s: StoryId, glimpse?: boolean) => void; skip: () => void; explore: () => void; menu: () => void; sync: (x: Mode) => void;
+    dirStart: () => void; dirPause: (p: boolean) => void; freeze: () => void;
   } | null>(null);
+
+  const [community, setCommunity] = useState<CommunityId>('prestige');
+  const [service, setService] = useState<StoryId>('dog');
+  const [area, setArea] = useState<Area | 'All'>('All');
+  const LY = LAYOUTS[community], STOPS = LY.stops;
 
   const [mode, setMode] = useState<Mode>('menu');
   const [story, setStory] = useState<StoryId | null>(null);
@@ -211,9 +216,17 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const canvas = canvasRef.current!, wrap = wrapRef.current!;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer = rendererRef.current ?? (rendererRef.current = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));
     } catch { setWebgl(false); return; }
+    // every community starts on its own menu
+    setMode('menu'); setStory(null); setCaption(null); setNear(null); setDone([]); setStats({ minutes: 0, km: 0, photos: 0 }); setTreats(0); setPhotos([]); setToast(null); setNight(false);
     const small = wrap.clientWidth < 700;
+    // a narrow screen sees less to either side, so the opening view stands further back (and sways less)
+    // A long, low community may give its own opening view for narrow screens (looking along its length).
+    const narrowView = small && !!LY.aerialNarrow;
+    const AV = (narrowView && LY.aerialNarrow) || LY.aerial; // orbit centre x, z, camera height, radius, look height, bearing in degrees
+    const AK = narrowView ? 1 : small ? THREE.MathUtils.clamp(0.45 / ((wrap.clientWidth / Math.max(1, wrap.clientHeight)) * 0.625), 1.15, 1.6) : 1;
+    const A_BEAR = ((AV[5] ?? 90) * Math.PI) / 180, A_SWAY = narrowView ? 0.06 : small ? 0.2 : 0.32;
     if (small) setListOpen(false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
     renderer.shadowMap.enabled = true;
@@ -226,7 +239,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
     const scene = new THREE.Scene();
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const envRoom = new RoomEnvironment(), envRT = pmrem.fromScene(envRoom, 0.04);
+    scene.environment = envRT.texture;
     scene.environmentIntensity = 0.35;
     const DAY = { top: new THREE.Color('#6fb4e4'), bottom: new THREE.Color('#e6f2ee'), fog: new THREE.Color('#dcebe8') };
     const NIGHT = { top: new THREE.Color('#0c1a2e'), bottom: new THREE.Color('#2a3d4d'), fog: new THREE.Color('#1c2c38') };
@@ -271,8 +285,9 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
       }
     });
-    grassTex.wrapS = grassTex.wrapT = THREE.RepeatWrapping; grassTex.repeat.set(140, 140);
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(520, 64), new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
+    grassTex.wrapS = grassTex.wrapT = THREE.RepeatWrapping; grassTex.repeat.set(380, 380);
+    // wide enough that the lower opening views never see its edge: it fades into the haze instead
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(1400, 64), new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
     // soft sunlit and damp patches so the lawn never reads as one flat colour
     const patchTex = canvasTex(512, 512, (g) => {
@@ -286,8 +301,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         }
       }
     });
-    patchTex.wrapS = patchTex.wrapT = THREE.RepeatWrapping; patchTex.repeat.set(5, 5);
-    const patches = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshBasicMaterial({ map: patchTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
+    patchTex.wrapS = patchTex.wrapT = THREE.RepeatWrapping; patchTex.repeat.set(20, 20);
+    const patches = new THREE.Mesh(new THREE.PlaneGeometry(2800, 2800), new THREE.MeshBasicMaterial({ map: patchTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
     patches.rotation.x = -Math.PI / 2; patches.position.y = 0.012; scene.add(patches);
 
     const asphaltTex = canvasTex(64, 256, (g) => {
@@ -306,7 +321,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     graniteTex.wrapS = graniteTex.wrapT = THREE.RepeatWrapping;
     const pathM = new THREE.MeshStandardMaterial({ map: graniteTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const curve = (pts: [number, number][], closed: boolean): THREE.Curve<THREE.Vector3> => pts.length === 2 ? new THREE.LineCurve3(V(pts[0][0], 0, pts[0][1]), V(pts[1][0], 0, pts[1][1])) : new THREE.CatmullRomCurve3(pts.map(([x, z]) => V(x, 0, z)), closed, 'catmullrom', 0.5);
-    const ring = curve(RING, true), loop = curve(LOOP, true);
+    const ring = curve(LY.ring, true), loop = curve(LY.loop, true);
     scene.add(ribbon(ring, 7, 500, 0.03, roadM));
     // the inner loop is a charcoal jogging track: three lanes, crisp white lines
     const TRACK_W = 4;
@@ -322,7 +337,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     scene.add(ribbon(loop, TRACK_W, 400, 0.05, trackM));
     // painted distance marks and a start line, the way a real community track has them
     const loopLen = loop.getLength();
-    let tStart = 0; { let bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - 26, p.z + 1.2); if (d < bd) { bd = d; tStart = i / 300; } } }
+    let tStart = 0; { let bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - LY.trackStart[0], p.z - LY.trackStart[1]); if (d < bd) { bd = d; tStart = i / 300; } } }
     // distance ticks every 50 m: short bars on the outer lane (no painted words: they read upside down from the other side)
     for (let k = 1; k * 50 < loopLen - 20; k++) {
       const tt = (((tStart + (k * 50) / loopLen) % 1) + 1) % 1, p = loop.getPointAt(tt), tan = loop.getTangentAt(tt);
@@ -335,28 +350,31 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const line = mesh(new THREE.PlaneGeometry(TRACK_W - 0.5, 0.32), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x, 0.06, p.z, false);
       line.rotation.order = 'YXZ'; line.rotation.y = Math.atan2(tan.x, tan.z); line.rotation.x = -Math.PI / 2; scene.add(line);
     }
-    const linkCurves = LINKS.map((l) => curve(l, false));
-    linkCurves.forEach((c, i) => scene.add(ribbon(c, i === 0 ? 7 : 3.6, 60, 0.04, i === 0 ? roadM : pathM)));
-    // main road outside the gate
-    scene.add(ribbon(new THREE.LineCurve3(V(-136, 0, -220), V(-136, 0, 220)), 14, 2, 0.02, roadM));
+    const linkCurves = LY.links.map((l) => curve(l.p, false));
+    // link 0 is the entrance road, `road` links are streets, the rest are garden paths
+    const linkW = LY.links.map((l, i) => (i === 0 ? 7 : l.road ? 6 : 3.6));
+    linkCurves.forEach((c, i) => scene.add(ribbon(c, linkW[i], Math.max(12, Math.round(c.getLength() / 3)), i === 0 || LY.links[i].road ? 0.035 : 0.04, i === 0 || LY.links[i].road ? roadM : pathM)));
+    // the public road outside the gate
+    scene.add(ribbon(new THREE.LineCurve3(V(LY.mainRoad[0], 0, LY.mainRoad[1]), V(LY.mainRoad[2], 0, LY.mainRoad[3])), 14, 2, 0.02, roadM));
     // entry arch
     const gateM = std('#cdb49c', 0.8);
-    scene.add(mesh(new THREE.BoxGeometry(2, 7, 2), gateM, -124, 3.5, -46)); scene.add(mesh(new THREE.BoxGeometry(2, 7, 2), gateM, -124, 3.5, -34));
-    scene.add(mesh(new THREE.BoxGeometry(3, 1.6, 15), std('#8d6f58', 0.8), -124, 7.6, -40));
+    const gate = new THREE.Group(); gate.position.set(LY.gate.x, 0, LY.gate.z); gate.rotation.y = LY.gate.rot; scene.add(gate);
+    gate.add(mesh(new THREE.BoxGeometry(2, 7, 2), gateM, 0, 3.5, -6)); gate.add(mesh(new THREE.BoxGeometry(2, 7, 2), gateM, 0, 3.5, 6));
+    gate.add(mesh(new THREE.BoxGeometry(3, 1.6, 15), std('#8d6f58', 0.8), 0, 7.6, 0));
 
     /* ---- walkable graph (roads and paths) ---- */
     const nodes: THREE.Vector3[] = []; const adj: number[][] = [];
     const nodeAt = (x: number, z: number) => {
-      for (let i = 0; i < nodes.length; i++) if (Math.hypot(nodes[i].x - x, nodes[i].z - z) < 3.2) return i;
+      for (let i = 0; i < nodes.length; i++) if (Math.hypot(nodes[i].x - x, nodes[i].z - z) < 3.0) return i;
       nodes.push(V(x, 0, z)); adj.push([]); return nodes.length - 1;
     };
     const link = (a: number, b: number) => { if (a !== b && !adj[a].includes(b)) { adj[a].push(b); adj[b].push(a); } };
     const addPoly = (pts: [number, number][], closed: boolean) => {
-      const c = curve(pts, closed), n = Math.max(1, Math.round(c.getLength() / 5));
+      const c = curve(pts, closed), n = Math.max(1, Math.round(c.getLength() / 4)); // 4 m apart, joined within 3 m: crossing streets always connect
       const ids = c.getSpacedPoints(n).map((pt) => nodeAt(pt.x, pt.z));
       for (let i = 1; i < ids.length; i++) link(ids[i - 1], ids[i]);
     };
-    addPoly(RING, true); addPoly(LOOP, true); LINKS.forEach((l) => addPoly(l, false));
+    addPoly(LY.ring, true); addPoly(LY.loop, true); LY.links.forEach((l) => addPoly(l.p, false));
     const nearestNode = (p: THREE.Vector3) => { let b = 0, bd = 1e9; nodes.forEach((n, i) => { const d = n.distanceTo(p); if (d < bd) { bd = d; b = i; } }); return b; };
     function routeTo(from: THREE.Vector3, to: THREE.Vector3) {
       const a = nearestNode(from), b = nearestNode(to);
@@ -378,42 +396,110 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     interface Box { x: number; z: number; hw: number; hd: number; c: number; s: number; h: number }
     const blockers: Box[] = [];
     const block = (x: number, z: number, hw: number, hd: number, rot = 0, h = 0) => blockers.push({ x, z, hw, hd, c: Math.cos(rot), s: Math.sin(rot), h });
-    const FL = 33, TH = FL * 3;
-    const fWide = facade(FL, 10, 11), fDeep = facade(FL, 5, 23), fNarrow = facade(FL, 2, 37);
     const windowMats: THREE.MeshStandardMaterial[] = [];
     const wm = (f: { map: THREE.Texture; emissive: THREE.Texture }) => {
       const m = new THREE.MeshStandardMaterial({ map: f.map, emissiveMap: f.emissive, emissive: '#ffffff', emissiveIntensity: 0, roughness: 0.8 });
       windowMats.push(m); return m;
     };
+    // name tags seen from the air: the same small size on screen however far away, hidden once you are on foot
+    const air = new THREE.Group(); scene.add(air);
+    const airLabel = (text: string, x: number, y: number, z: number) => {
+      const s = label(text); (s.material as THREE.SpriteMaterial).sizeAttenuation = false; s.material.depthTest = false; // never half hidden behind a tower
+      s.scale.multiplyScalar((small ? 0.034 : 0.029) / 1.6); s.position.set(x, y, z); air.add(s);
+    };
+    if (LY.towers) {
+    const FL = Math.max(...LY.towers.map((t) => t[4])), TH = FL * 3;
+    const fWide = facade(FL, 10, 11), fDeep = facade(FL, 5, 23), fNarrow = facade(FL, 2, 37);
     const mWide = wm(fWide), mDeep = wm(fDeep), mNarrow = wm(fNarrow);
     const roofM = std('#c9bfb2', 0.9), podiumM = std('#c2b3a0', 0.9), crownM = std('#b39a82', 0.8);
-    const spineGeo = new THREE.BoxGeometry(34, TH, 8), wingGeo = new THREE.BoxGeometry(6, TH, 18);
-    TOWERS.forEach(([name, x, z, rot, floors]) => {
+    const wingGeo = new THREE.BoxGeometry(6, TH, 18), spines = new Map<number, THREE.BoxGeometry>();
+    // a tower is a slab: a spine with a wing every 8.5 m. A longer slab simply carries more wings
+    LY.towers.forEach(([name, x, z, rot, floors, len = 34]) => {
+      const nW = Math.round(len / 8.5), spineGeo = spines.get(len) ?? new THREE.BoxGeometry(len, TH, 8); spines.set(len, spineGeo);
       const t = new THREE.Group(); t.position.set(x, 0, z); t.rotation.y = rot;
       const body3 = new THREE.Group(); body3.scale.y = floors / FL; t.add(body3);
       const sp = new THREE.Mesh(spineGeo, [mNarrow, mNarrow, roofM, roofM, mWide, mWide]); sp.position.y = TH / 2 + 1; sp.castShadow = sp.receiveShadow = true; body3.add(sp);
-      for (let i = 0; i < 4; i++) {
-        const w = new THREE.Mesh(wingGeo, [mDeep, mDeep, roofM, roofM, mNarrow, mNarrow]); w.position.set(-12.75 + i * 8.5, TH / 2 + 1, 0); w.castShadow = w.receiveShadow = true; body3.add(w);
-        body3.add(mesh(new THREE.BoxGeometry(6.6, 1.2, 18.6), crownM, -12.75 + i * 8.5, TH + 1.6, 0));
+      for (let i = 0; i < nW; i++) {
+        const wx = (i - (nW - 1) / 2) * 8.5;
+        const w = new THREE.Mesh(wingGeo, [mDeep, mDeep, roofM, roofM, mNarrow, mNarrow]); w.position.set(wx, TH / 2 + 1, 0); w.castShadow = w.receiveShadow = true; body3.add(w);
+        body3.add(mesh(new THREE.BoxGeometry(6.6, 1.2, 18.6), crownM, wx, TH + 1.6, 0));
       }
-      t.add(mesh(new THREE.BoxGeometry(36, 1, 20), podiumM, 0, 0.5, 0));
+      t.add(mesh(new THREE.BoxGeometry(len + 2, 1, 20), podiumM, 0, 0.5, 0));
       // lobby canopy on the north side
       t.add(mesh(new THREE.BoxGeometry(7, 0.4, 4), crownM, 0, 4.2, -11));
       t.add(mesh(new THREE.BoxGeometry(5, 3.2, 0.3), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3 }), 0, 2.6, -9.1, false));
-      const lb = label(name.replace(/^T/, 'Tower '), { scale: 1.3 }); lb.position.set(0, 7.5, -12.5); t.add(lb);
-      scene.add(t); block(x, z, 19, 11, rot, 110);
+      if (name) { const lb = label(name, { scale: 1.3 }); lb.position.set(0, 7.5, -12.5); t.add(lb); airLabel(name, x, floors * 3 + 10, z); }
+      scene.add(t); block(x, z, len / 2 + 2, 11, rot, floors * 3 + 12);
     });
+    // where a tower is two slabs, a plain lift core joins them
+    for (const [x, z, w, d, floors] of LY.cores ?? []) scene.add(mesh(new THREE.BoxGeometry(w, floors * 3 + 4, d), roofM, x, (floors * 3 + 4) / 2 + 1, z));
+    }
+
+    /* ---- villas: two storeys, pitched or flat roofs, each on its own paved plot ---- */
+    if (LY.villas) {
+      const villaTex = (front: boolean) => {
+        const draw = (g: CanvasRenderingContext2D, lit: boolean) => {
+          const W = 256, H = 160;
+          if (lit) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); }
+          else { g.fillStyle = '#efe7d8'; g.fillRect(0, 0, W, H); g.fillStyle = '#d9cfbb'; g.fillRect(0, H - 10, W, 10); g.fillStyle = '#e2d8c6'; g.fillRect(0, 76, W, 5); }
+          const win = (x: number, y: number, w: number, h: number, on: boolean) => {
+            if (lit) { if (on) { g.fillStyle = '#ffcf86'; g.fillRect(x, y, w, h); } return; }
+            g.fillStyle = '#fbf9f3'; g.fillRect(x - 3, y - 3, w + 6, h + 6);
+            const grd = g.createLinearGradient(0, y, 0, y + h); grd.addColorStop(0, '#7f9aa8'); grd.addColorStop(1, '#4f6b7a'); g.fillStyle = grd; g.fillRect(x, y, w, h);
+            g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(x, y, w * 0.3, h); g.fillStyle = '#fbf9f3'; g.fillRect(x + w / 2 - 1, y, 2, h);
+          };
+          [26, 106, 186].forEach((x, i) => win(x, 18, 44, 46, i !== 1));
+          if (front) {
+            win(26, 96, 44, 46, true); win(186, 96, 44, 46, false);
+            if (!lit) { g.fillStyle = '#5c7c6a'; g.fillRect(112, 92, 32, 58); g.fillStyle = '#f0b429'; g.fillRect(138, 120, 3, 3); g.fillStyle = '#fbf9f3'; g.fillRect(96, 70, 64, 6); }
+          } else [26, 106, 186].forEach((x, i) => win(x, 96, 44, 46, i === 1));
+        };
+        return { map: canvasTex(256, 160, (g) => draw(g, false)), emissive: canvasTex(256, 160, (g) => draw(g, true)) };
+      };
+      const vFront = wm(villaTex(true)), vSide = wm(villaTex(false)), vTop = std('#d8d2c4', 0.9);
+      const N = LY.villas.length, unit = new THREE.BoxGeometry(1, 1, 1);
+      const pyr = new THREE.ConeGeometry(0.7071, 1, 4, 1); pyr.rotateY(Math.PI / 4); pyr.translate(0, 0.5, 0);
+      const bodies = new THREE.InstancedMesh(unit, [vSide, vSide, vTop, vTop, vFront, vSide], N);
+      const roofs = new THREE.InstancedMesh(pyr, std('#737d84', 0.85), N), slabs = new THREE.InstancedMesh(unit, std('#f4f1ea', 0.85), N * 2);
+      const plots = new THREE.InstancedMesh(unit, std('#d9d4c8', 0.95), N), porches = new THREE.InstancedMesh(unit, std('#fbf9f3', 0.8), N);
+      const vm = new THREE.Matrix4(), vq = new THREE.Quaternion(), vc = new THREE.Color(), TINTS = ['#ffffff', '#f6efe2', '#eef1ee', '#f3e9dc'];
+      let rN = 0, sN = 0;
+      LY.villas.forEach((v, i) => {
+        const h = 6.6, y0 = 0.3;
+        vm.compose(V(v.x, y0 + h / 2, v.z), vq, V(v.w, h, v.d)); bodies.setMatrixAt(i, vm); bodies.setColorAt(i, vc.set(TINTS[v.n % 4]));
+        vm.compose(V(v.x, y0 / 2, v.z), vq, V(v.w + 3, y0, v.d + 3)); plots.setMatrixAt(i, vm);
+        vm.compose(V(v.x, 3.35, v.z + v.d / 2 + 0.8), vq, V(v.w * 0.42, 0.18, 1.6)); porches.setMatrixAt(i, vm);
+        if (v.flat) { vm.compose(V(v.x, y0 + h + 0.2, v.z), vq, V(v.w + 0.6, 0.4, v.d + 0.6)); slabs.setMatrixAt(sN++, vm); }
+        else { vm.compose(V(v.x, y0 + h, v.z), vq, V(v.w + 1.1, v.big ? 3 : 2.4, v.d + 1.1)); roofs.setMatrixAt(rN++, vm); }
+        if (v.big && v.flat) { vm.compose(V(v.x - v.w * 0.15, y0 + h + 1.8, v.z - v.d * 0.1), vq, V(v.w * 0.6, 3, v.d * 0.65)); slabs.setMatrixAt(sN++, vm); }
+        block(v.x, v.z, v.w / 2 + 1.5, v.d / 2 + 1.5, 0, h + 4);
+        if (v.label) { const lb = label(`Villa ${v.n}`, { scale: 0.55 }); lb.position.set(v.x, y0 + h + 4.8, v.z); scene.add(lb); }
+      });
+      roofs.count = rN; slabs.count = sN;
+      [bodies, roofs, slabs, plots, porches].forEach((im) => { im.castShadow = im.receiveShadow = true; scene.add(im); });
+    }
 
     /* ---- clubhouse, pools, courts, play area ---- */
-    const club = new THREE.Group(); club.position.set(56, 0, 4); club.rotation.y = 0.42; scene.add(club);
+    const club = new THREE.Group(); club.position.set(LY.club.x, 0, LY.club.z); club.rotation.y = LY.club.rot; club.scale.setScalar(LY.club.s); scene.add(club);
     club.add(mesh(new THREE.BoxGeometry(24, 7, 18), std('#d6c2ab', 0.8), 0, 3.5, 0));
     const checker = canvasTex(128, 128, (g) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#e9c9bd' : '#f6efe8'; g.fillRect(i * 16, j * 16, 16, 16); } });
     const roofTop = mesh(new THREE.PlaneGeometry(23, 17), new THREE.MeshStandardMaterial({ map: checker, roughness: 0.9 }), 0, 7.03, 0, false); roofTop.rotation.x = -Math.PI / 2; club.add(roofTop);
-    club.add(mesh(new THREE.BoxGeometry(0.3, 4, 12), new THREE.MeshStandardMaterial({ color: '#9cc6d6', roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.8 }), -12.1, 2.6, 0, false));
-    const clb = label('Clubhouse', { scale: 0.9 }); clb.position.set(-13, 6.5, 0); club.add(clb);
-    block(56, 4, 13.5, 10.5, 0.42, 8);
-    scene.add(mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.16, 20), std('#cfd6d8', 0.2, 0.9), 38, 0.08, -1.6));
-    const bowlWater = mesh(new THREE.CircleGeometry(0.27, 20), new THREE.MeshStandardMaterial({ color: '#5fa8c9', roughness: 0.05 }), 38, 0.15, -1.6, false); bowlWater.rotation.x = -Math.PI / 2; scene.add(bowlWater);
+    // glazing on all four sides (the water bowl and the lawn sit by different walls in each community) under a deep eave
+    const clubGlass = new THREE.MeshStandardMaterial({ map: canvasTex(256, 64, (g) => {
+      const grd = g.createLinearGradient(0, 0, 0, 64); grd.addColorStop(0, '#a9d2e0'); grd.addColorStop(1, '#6f9db0'); g.fillStyle = grd; g.fillRect(0, 0, 256, 64);
+      g.fillStyle = 'rgba(255,255,255,.25)'; for (let i = 0; i < 8; i++) g.fillRect(i * 32 + 4, 0, 6, 64);
+      g.fillStyle = '#f3efe8'; for (let i = 0; i <= 8; i++) g.fillRect(Math.min(253, i * 32 - 1.5), 0, 3, 64); g.fillRect(0, 0, 256, 3); g.fillRect(0, 61, 256, 3); g.fillRect(0, 20, 256, 2);
+    }), roughness: 0.08, metalness: 0.3 });
+    for (const sx of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(0.3, 4, 12), clubGlass, sx * 12.1, 2.6, 0, false));
+    for (const sz of [-1, 1]) club.add(mesh(new THREE.BoxGeometry(18, 3.6, 0.3), clubGlass, 0, 2.5, sz * 9.1, false));
+    club.add(mesh(new THREE.BoxGeometry(26.6, 0.45, 20.6), std('#b39a82', 0.8), 0, 6.6, 0));
+    const clb = label(LY.club.label, { scale: 0.9 }); clb.position.set(-13, 6.5, 0); club.add(clb);
+    block(LY.club.x, LY.club.z, 13.5 * LY.club.s, 10.5 * LY.club.s, LY.club.rot, 8 * LY.club.s);
+    airLabel(LY.club.label, LY.club.x, 12, LY.club.z);
+    for (const [text, x, z] of LY.places ?? []) airLabel(text, x, 7, z);
+    const BX = LY.bowl[0], BZ = LY.bowl[1];
+    scene.add(mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.16, 20), std('#cfd6d8', 0.2, 0.9), BX, 0.08, BZ));
+    const bowlWater = mesh(new THREE.CircleGeometry(0.27, 20), new THREE.MeshStandardMaterial({ color: '#5fa8c9', roughness: 0.05 }), BX, 0.15, BZ, false); bowlWater.rotation.x = -Math.PI / 2; scene.add(bowlWater);
 
     // pools: tiled floor seen through moving water, stone coping, lane ropes, a ladder, loungers and umbrellas
     const poolTex = canvasTex(128, 128, (g) => {
@@ -444,10 +530,12 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
           diffuseColor.rgb += vec3(0.5, 0.72, 0.78) * (ppRipple(vW * 1.4, uTime) * 0.55 + ppRipple(vW * 0.6 + 7.0, uTime * 0.7) * 0.25);`);
     };
     const deckM = std('#e6dccb', 0.9), copingM = std('#f6f3ec', 0.75);
-    const lagoonDeck = mesh(new THREE.CircleGeometry(1, 48), deckM, 0, 0.04, -9, false); lagoonDeck.scale.set(9, 6.8, 1); lagoonDeck.rotation.x = -Math.PI / 2; scene.add(lagoonDeck);
-    const lagoon = mesh(new THREE.CircleGeometry(1, 48), poolM, 0, 0.1, -9, false); lagoon.scale.set(7, 5, 1); lagoon.rotation.x = -Math.PI / 2; scene.add(lagoon);
-    const lagoonEdge = mesh(new THREE.TorusGeometry(1, 0.045, 6, 56), copingM, 0, 0.1, -9, false); lagoonEdge.scale.set(7.15, 5.15, 3); lagoonEdge.rotation.x = -Math.PI / 2; scene.add(lagoonEdge);
-    const rp = new THREE.Group(); rp.position.set(16, 0, -7); rp.rotation.y = 0.42; scene.add(rp);
+    const lagoonDeck = mesh(new THREE.CircleGeometry(1, 48), deckM, 0, 0.04, -9, false); lagoonDeck.scale.set(9, 6.8, 1); lagoonDeck.rotation.x = -Math.PI / 2;
+    // the free-form pool is drawn around (0, -9); the group moves it to where this community has one
+    const lagoonG = new THREE.Group(); lagoonG.position.set((LY.lagoon?.[0] ?? 0), 0, (LY.lagoon?.[1] ?? -9) + 9); lagoonG.visible = !!LY.lagoon; scene.add(lagoonG); lagoonG.add(lagoonDeck);
+    const lagoon = mesh(new THREE.CircleGeometry(1, 48), poolM, 0, 0.1, -9, false); lagoon.scale.set(7, 5, 1); lagoon.rotation.x = -Math.PI / 2; lagoonG.add(lagoon);
+    const lagoonEdge = mesh(new THREE.TorusGeometry(1, 0.045, 6, 56), copingM, 0, 0.1, -9, false); lagoonEdge.scale.set(7.15, 5.15, 3); lagoonEdge.rotation.x = -Math.PI / 2; lagoonG.add(lagoonEdge);
+    const rp = new THREE.Group(); rp.position.set(LY.pool.x, 0, LY.pool.z); rp.rotation.y = LY.pool.rot; scene.add(rp);
     const PW = 13, PD = 6.4;
     const rpd = mesh(new THREE.PlaneGeometry(PW + 3.4, PD + 3.7), deckM, 0, 0.044, -0.55, false); rpd.rotation.x = -Math.PI / 2; rp.add(rpd);
     const rpw = mesh(new THREE.PlaneGeometry(PW, PD), poolM, 0, 0.1, 0, false); rpw.rotation.x = -Math.PI / 2; rp.add(rpw);
@@ -471,16 +559,17 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const umbA = umbrellaGeo('#f0a53a', '#fbf8f0'), umbB = umbrellaGeo('#2e9d6a', '#fbf8f0');
     const lounger = (parent: THREE.Object3D, x: number, z: number, rot: number) => { const l = mesh(loungerGeo, detailM, x, 0, z); l.rotation.y = rot; parent.add(l); };
     for (let i = 0; i < 5; i++) { lounger(rp, -5.2 + i * 2.6, -PD / 2 - 1.3, 0); if (i % 2 === 0) rp.add(mesh(i === 2 ? umbB : umbA, detailM, -3.9 + i * 2.6, 0, -PD / 2 - 1.5)); }
-    for (const a of [1.75, 2.2]) { const x = 8 * Math.cos(a), z = -9 + 5.9 * Math.sin(a); lounger(scene, x, z, Math.atan2(-x, -9 - z)); }
-    scene.add(mesh(umbA, detailM, 8.2 * Math.cos(1.98), 0, -9 + 6 * Math.sin(1.98)));
-    block(0, -9, 7.6, 5.6); block(16, -7, PW / 2 + 0.6, PD / 2 + 0.5, 0.42);
+    for (const a of [1.75, 2.2]) { const x = 8 * Math.cos(a), z = -9 + 5.9 * Math.sin(a); lounger(lagoonG, x, z, Math.atan2(-x, -9 - z)); }
+    lagoonG.add(mesh(umbA, detailM, 8.2 * Math.cos(1.98), 0, -9 + 6 * Math.sin(1.98)));
+    if (LY.lagoon) block(LY.lagoon[0], LY.lagoon[1], 7.6, 5.6);
+    block(LY.pool.x, LY.pool.z, PW / 2 + 0.6, PD / 2 + 0.5, LY.pool.rot);
 
     const courtTex = canvasTex(256, 160, (g) => { g.fillStyle = '#4f9a6a'; g.fillRect(0, 0, 256, 160); g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(10, 10, 236, 140); g.beginPath(); g.moveTo(128, 10); g.lineTo(128, 150); g.stroke(); g.strokeRect(50, 40, 156, 80); });
-    for (const [x, z] of [[-44, -13], [-40, -5]] as const) { const c = mesh(new THREE.PlaneGeometry(11, 7), new THREE.MeshStandardMaterial({ map: courtTex, roughness: 0.9 }), x, 0.05, z, false); c.rotation.x = -Math.PI / 2; c.rotation.z = 0.42; scene.add(c); }
+    for (const ct of LY.courts) { const c = mesh(new THREE.PlaneGeometry(11, 7), new THREE.MeshStandardMaterial({ map: courtTex, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), ct.x, 0.05, ct.z, false); c.rotation.x = -Math.PI / 2; c.rotation.z = ct.rot; scene.add(c); }
     const bbTex = canvasTex(256, 160, (g) => { g.fillStyle = '#d98a5a'; g.fillRect(0, 0, 256, 160); g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(8, 8, 240, 144); g.beginPath(); g.arc(128, 80, 26, 0, 7); g.stroke(); g.beginPath(); g.arc(8, 80, 50, -1.57, 1.57); g.stroke(); g.beginPath(); g.arc(248, 80, 50, 1.57, 4.71); g.stroke(); });
-    const bb = mesh(new THREE.PlaneGeometry(14, 9), new THREE.MeshStandardMaterial({ map: bbTex, roughness: 0.9 }), 22, 0.05, -70, false); bb.rotation.x = -Math.PI / 2; scene.add(bb);
+    const bb = mesh(new THREE.PlaneGeometry(14, 9), new THREE.MeshStandardMaterial({ map: bbTex, roughness: 0.9 }), LY.bball?.[0] ?? 0, 0.05, LY.bball?.[1] ?? 0, false); bb.rotation.x = -Math.PI / 2; bb.visible = !!LY.bball; scene.add(bb);
     // play area: soft floor, slide and swing frame
-    const play = new THREE.Group(); play.position.set(-20, 0, -9); scene.add(play);
+    const play = new THREE.Group(); play.position.set(LY.play[0], 0, LY.play[1]); scene.add(play);
     const pf = mesh(new THREE.CircleGeometry(5, 32), std('#e98a8a', 0.9), 0, 0.05, 0, false); pf.rotation.x = -Math.PI / 2; play.add(pf);
     play.add(mesh(new THREE.BoxGeometry(1.6, 0.2, 1.6), std('#f0b429', 0.6), 0, 1.6, 0));
     for (const [px, pz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) play.add(mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.6, 8), std('#3f9fd0', 0.5), px, 0.8, pz));
@@ -489,15 +578,18 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     for (const [px, pz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) play.add(mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6), std('#3f9fd0', 0.5), px, 2.2, pz));
 
     /* ---- pet garden ---- */
-    const fenceM = std('#f6f7f2', 0.6);
-    const px0 = 132, px1 = 150, pz0 = 12, pz1 = 32;
-    for (let x = px0; x <= px1; x += 2) for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, x, 0.55, z));
-    for (let z = pz0; z <= pz1; z += 2) { scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px1, 0.55, z)); if (z < 20 || z > 24) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px0, 0.55, z)); }
-    for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(px1 - px0, 0.08, 0.08), fenceM, (px0 + px1) / 2, 1, z));
-    scene.add(mesh(new THREE.BoxGeometry(0.08, 0.08, pz1 - pz0), fenceM, px1, 1, (pz0 + pz1) / 2));
-    for (const z of [18, 26]) { for (const x of [143, 145]) scene.add(mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), std('#e0662f', 0.7), x, 0.45, z)); scene.add(mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), std('#f0b429', 0.7), 144, 0.6, z)); }
-    const tunnel = mesh(new THREE.TorusGeometry(0.7, 0.12, 8, 20, Math.PI), std('#3f9fd0', 0.6), 140, 0, 29); scene.add(tunnel);
-    const dpl = label('Pet garden', { scale: 0.5 }); dpl.position.set(141, 4, 22); scene.add(dpl);
+    if (LY.pet) {
+      const fenceM = std('#f6f7f2', 0.6);
+      const [px0, px1, pz0, pz1] = LY.pet;
+      for (let x = px0; x <= px1; x += 2) for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, x, 0.55, z));
+      for (let z = pz0; z <= pz1; z += 2) { scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px1, 0.55, z)); if (z < pz0 + 8 || z > pz0 + 12) scene.add(mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), fenceM, px0, 0.55, z)); }
+      for (const z of [pz0, pz1]) scene.add(mesh(new THREE.BoxGeometry(px1 - px0, 0.08, 0.08), fenceM, (px0 + px1) / 2, 1, z));
+      scene.add(mesh(new THREE.BoxGeometry(0.08, 0.08, pz1 - pz0), fenceM, px1, 1, (pz0 + pz1) / 2));
+      for (const z of [pz0 + 6, pz0 + 14]) { for (const x of [px0 + 11, px0 + 13]) scene.add(mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), std('#e0662f', 0.7), x, 0.45, z)); scene.add(mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), std('#f0b429', 0.7), px0 + 12, 0.6, z)); }
+      scene.add(mesh(new THREE.TorusGeometry(0.7, 0.12, 8, 20, Math.PI), std('#3f9fd0', 0.6), px0 + 8, 0, pz1 - 3));
+      const dpl = label(LY.petLabel ?? 'Pet garden', { scale: 0.5 }); dpl.position.set((px0 + px1) / 2, 4, (pz0 + pz1) / 2); scene.add(dpl);
+      airLabel(LY.petLabel ?? 'Pet garden', (px0 + px1) / 2, 7, (pz0 + pz1) / 2);
+    }
 
     /* ---- garden: trees, palms, shrubs, beds, hedges ---- */
     const inBlock = (x: number, z: number, pad = 2) => blockers.some((b) => { const dx = x - b.x, dz = z - b.z; return Math.abs(dx * b.c - dz * b.s) < b.hw + pad && Math.abs(dx * b.s + dz * b.c) < b.hd + pad; });
@@ -505,16 +597,16 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const along = (c: THREE.Curve<THREE.Vector3>, t: number, off: number) => { const p = c.getPointAt(((t % 1) + 1) % 1), tan = c.getTangentAt(((t % 1) + 1) % 1); return V(p.x - tan.z * off, 0, p.z + tan.x * off); };
     const onPaving = (x: number, z: number) => {
       const near = (c: THREE.Curve<THREE.Vector3>, w: number, n: number) => { for (let i = 0; i <= n; i++) { const p = c.getPointAt(i / n); if (Math.hypot(p.x - x, p.z - z) < w) return true; } return false; };
-      return near(ring, 5, 160) || near(loop, 3, 110) || linkCurves.some((c, i) => near(c, i === 0 ? 5 : 2.8, 24));
+      return near(ring, 5, 160) || near(loop, 3, 110) || linkCurves.some((c, i) => near(c, linkW[i] / 2 + 1.4, Math.max(24, Math.round(c.getLength() / 2.5))));
     };
     const free = (x: number, z: number, pad = 1.5) => !inBlock(x, z, pad) && !onPaving(x, z);
     const loopPts = loop.getSpacedPoints(140);
     const nearLoop = (x: number, z: number, d: number) => loopPts.some((p) => Math.hypot(p.x - x, p.z - z) < d);
     // park benches sit in gaps in the hedge, facing the track (and the pools beyond it)
-    const BENCHES: [number, number, number][] = [[-30, 3.2, Math.PI], [-8, -21.5, 0], [22, 3.6, Math.PI - 0.3]];
+    const BENCHES: [number, number, number][] = LY.benches.map((b) => [b[0], b[1], b[2]]);
     for (const [t, side] of [[0.06, 1], [0.16, -1], [0.29, 1], [0.4, -1], [0.52, 1], [0.63, -1], [0.76, 1], [0.9, -1]]) {
       const p = along(loop, t, side * 3.25), c = loop.getPointAt(t);
-      if (!free(p.x, p.z, 1) || BENCHES.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 9) || STOPS.some((st) => Math.hypot(p.x - st.pos[0], p.z - st.pos[1]) < 5) || [[-54, -14], [5, -18], [31, -4], [12, 2]].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 6)) continue;
+      if (!free(p.x, p.z, 1) || BENCHES.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 9) || STOPS.some((st) => Math.hypot(p.x - st.pos[0], p.z - st.pos[1]) < 5) || LY.hedgeGaps.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 6)) continue;
       BENCHES.push([p.x, p.z, Math.atan2(c.x - p.x, c.z - p.z)]);
     }
 
@@ -602,9 +694,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
     for (let i = 0; i < 34; i++) { const p = along(loop, i / 34 + tr() * 0.01, (i % 2 ? 5 : -5) + (tr() - 0.5) * 2); tree(p.x, p.z, 0.75 + tr() * 0.4, i % 6 === 0 ? 9 : i % 4 === 1 ? 8 : i % 5); }
     for (let i = 0; i < 72; i++) { const p = along(ring, i / 72 + tr() * 0.006, (i % 2 ? 7.5 : -7.5) + (tr() - 0.5) * 2.5); tree(p.x, p.z, 0.9 + tr() * 0.5, i % 8 === 0 ? 9 : i % 7 === 3 ? 8 : i % 5); }
-    for (let i = 0; i < 26; i++) tree(-60 + tr() * 34, -17 + tr() * 16, 0.7 + tr() * 0.4, i % 5 === 0 ? 9 : i % 6 === 2 ? 8 : i % 5);
-    for (const [x, z] of [[-12, -12.5], [-12.6, -5], [-3, 5.2], [18, -20.4]]) tree(x, z, 0.95, 8);
-    for (let i = 0; i < 110; i++) { const a = tr() * Math.PI * 2, r = 175 + tr() * 170; tree(Math.cos(a) * r + 10, Math.sin(a) * r, 1.1 + tr() * 0.8, Math.floor(tr() * 5), false); }
+    for (let i = 0; i < LY.grove[4]; i++) tree(LY.grove[0] + tr() * LY.grove[2], LY.grove[1] + tr() * LY.grove[3], 0.7 + tr() * 0.4, i % 5 === 0 ? 9 : i % 6 === 2 ? 8 : i % 5);
+    for (const [x, z] of LY.golds) tree(x, z, 0.95, 8);
+    // street trees down both sides of every street
+    linkCurves.forEach((c, i) => { if (i === 0 || !LY.links[i].road) return; const n = Math.round(c.getLength() / 13); for (let k = 0; k < n; k++) for (const side of [-1, 1]) { const p = along(c, (k + 0.5) / n, side * 5.2); tree(p.x, p.z, 0.8 + tr() * 0.3, k % 5 === 0 ? 8 : k % 7 === 3 ? 9 : k % 5, false); } });
+    for (let i = 0; i < 110; i++) { const a = tr() * Math.PI * 2, r = LY.far[2] + tr() * 170; tree(Math.cos(a) * r + LY.far[0], Math.sin(a) * r + LY.far[1], 1.1 + tr() * 0.8, Math.floor(tr() * 5), false); }
 
     // palms by the pools
     const frondGeo = (() => {
@@ -615,7 +709,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const frondM = nearFade(new THREE.MeshStandardMaterial({ color: '#4c9d55', roughness: 0.8, side: THREE.DoubleSide }));
     const palmTrunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 1, 8);
     const palms: THREE.Group[] = [];
-    for (const [x, z, h] of [[-8, -15, 7], [9, -15.5, 8], [-9.5, -3, 6.5], [24, -12, 7.5], [26.5, -1.5, 7], [8.5, -1.5, 6], [36, -8, 7.5], [-22, -1.5, 6.5]] as const) {
+    for (const [x, z, h] of LY.palms) {
       const g0 = new THREE.Group(); g0.position.set(x, 0, z);
       const tk = mesh(palmTrunkGeo, trunkM, 0, h / 2, 0); tk.scale.y = h; g0.add(tk);
       const crown = new THREE.Group(); crown.position.y = h; g0.add(crown); palms.push(crown);
@@ -624,7 +718,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
 
     // shrubs, flower beds on soil, and tall ornamental grass
-    const SHRUBS = small ? 260 : 520;
+    const SHRUBS = small ? (LY.villas ? 420 : 260) : LY.villas ? 900 : 520;
     const shrubs = new THREE.InstancedMesh(shrubGeo, new THREE.MeshStandardMaterial({ roughness: 0.95, vertexColors: true }), SHRUBS);
     const petals = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.062, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), small ? 4000 : 5600);
     const soil = new THREE.InstancedMesh(new THREE.CircleGeometry(1, 20), std('#7a5230', 1), 96);
@@ -659,7 +753,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     for (let i = 0; i < 26; i++) { const p = along(loop, i / 26 + 0.013, (i % 2 ? 1 : -1) * (6.2 + tr() * 2)); bed(p.x, p.z, 1.4 + tr() * 1.3, 0.9 + tr() * 0.8, PETALS[i % PETALS.length], PETALS[(i + 2) % PETALS.length]); }
     // foundation planting around every tower, and around the clubhouse and pools
     blockers.forEach((b) => {
-      const n = b.h > 50 ? 26 : 14;
+      const n = b.h > 50 ? 26 : LY.villas ? 7 : 14;
       for (let i = 0; i < n; i++) {
         const t = (i / n) * 4, e = Math.floor(t), f = (t - e) * 2 - 1;
         const lx = e % 2 === 0 ? f * (b.hw + 0.4) : (e === 1 ? 1 : -1) * (b.hw + 0.9), lz = e % 2 === 0 ? (e === 0 ? 1 : -1) * (b.hd + 0.9) : f * (b.hd + 0.4);
@@ -693,7 +787,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
     // boulders by the lagoon
     const rockM = std('#a9a79d', 0.95);
-    for (const [x, z, sz] of [[-8.6, -8, 0.9], [-7.8, -10.6, 0.6], [7.9, -12.4, 0.8], [-3, -15, 0.5], [3.4, -3.2, 0.7]] as const) { const rk = mesh(new THREE.DodecahedronGeometry(sz, 1), rockM, x, sz * 0.5, z); rk.rotation.set(sz * 3, sz * 7, 0); rk.scale.y = 0.7; scene.add(rk); }
+    for (const [x, z, sz] of LY.rocks) { const rk = mesh(new THREE.DodecahedronGeometry(sz, 1), rockM, x, sz * 0.5, z); rk.rotation.set(sz * 3, sz * 7, 0); rk.scale.y = 0.7; scene.add(rk); }
 
     // clipped hedges on both sides of the walking loop
     const hedgeM = std('#2f7a3d', 1);
@@ -702,27 +796,28 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     for (let i = 0; i < HEDGE; i++) {
       const t = (i >> 1) / (HEDGE / 2), side = i % 2 ? 2.55 : -2.55; const p = along(loop, t, side), tan = loop.getTangentAt(t);
       q.setFromAxisAngle(V(0, 1, 0), Math.atan2(-tan.z, tan.x));
-      const rx = (p.x - 16) * Math.cos(0.42) - (p.z + 7) * Math.sin(0.42), rz = (p.x - 16) * Math.sin(0.42) + (p.z + 7) * Math.cos(0.42);
-      const hide = [[-54, -14], [5, -18], [31, -4], [12, 2], [-30, 0.4]].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3.6)
+      const pr0 = LY.pool.rot, rx = (p.x - LY.pool.x) * Math.cos(pr0) - (p.z - LY.pool.z) * Math.sin(pr0), rz = (p.x - LY.pool.x) * Math.sin(pr0) + (p.z - LY.pool.z) * Math.cos(pr0);
+      const hide = [...LY.hedgeGaps, STOPS[2].pos].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3.6) || inBlock(p.x, p.z, 0.4)
         || BENCHES.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 2.1)
-        || (Math.abs(rx) < PW / 2 + 2.3 && rz > -PD / 2 - 3.4 && rz < PD / 2 + 2.2) || (p.x / 9.5) ** 2 + ((p.z + 9) / 7.3) ** 2 < 1;
+        || (Math.abs(rx) < PW / 2 + 2.3 && rz > -PD / 2 - 3.4 && rz < PD / 2 + 2.2) || (!!LY.lagoon && ((p.x - LY.lagoon[0]) / 9.5) ** 2 + ((p.z - LY.lagoon[1]) / 7.3) ** 2 < 1);
       mtx.compose(V(p.x, hide ? -3 : 0.4, p.z), q, V(1, 0.92 + ((i * 7) % 5) * 0.03, 1)); hedge.setMatrixAt(i, mtx);
     }
     hedge.castShadow = hedge.receiveShadow = true; scene.add(hedge);
 
     /* ---- real grass: tens of thousands of blades that sway and follow you ---- */
-    const MX0 = -150, MZ0 = -100, MW = 320, MH = 210;
+    const MX0 = LY.mask[0], MZ0 = LY.mask[1], MW = 320, MH = 210;
     const maskTex = canvasTex(1024, 672, (g) => {
       const k = 1024 / MW, X = (x: number) => (x - MX0) * k, Z = (z: number) => (z - MZ0) * k;
       g.fillStyle = '#fff'; g.fillRect(0, 0, 1024, 672); g.fillStyle = g.strokeStyle = '#000'; g.lineCap = g.lineJoin = 'round';
       const stroke = (c: THREE.Curve<THREE.Vector3>, w: number) => { const pts = c.getSpacedPoints(260); g.lineWidth = w * k; g.beginPath(); pts.forEach((pt, i) => (i ? g.lineTo(X(pt.x), Z(pt.z)) : g.moveTo(X(pt.x), Z(pt.z)))); g.stroke(); };
-      stroke(ring, 8.2); stroke(loop, 6.9); linkCurves.forEach((c, i) => stroke(c, i === 0 ? 8.2 : 4.6));
-      g.fillRect(X(-144), 0, 16 * k, 672);
+      stroke(ring, 8.2); stroke(loop, 6.9); linkCurves.forEach((c, i) => stroke(c, linkW[i] + 1.2));
+      stroke(new THREE.LineCurve3(V(LY.mainRoad[0], 0, LY.mainRoad[1]), V(LY.mainRoad[2], 0, LY.mainRoad[3])), 16);
       const rect = (x: number, z: number, hw: number, hd: number, rot: number) => { g.save(); g.translate(X(x), Z(z)); g.rotate(-rot); g.fillRect(-hw * k, -hd * k, hw * 2 * k, hd * 2 * k); g.restore(); };
       blockers.forEach((b) => rect(b.x, b.z, b.hw + 0.4, b.hd + 0.4, Math.atan2(b.s, b.c)));
-      g.beginPath(); g.ellipse(X(0), Z(-9), 9 * k, 6.8 * k, 0, 0, 6.3); g.fill(); rect(16, -7, PW / 2 + 1.8, PD / 2 + 2.5, 0.42);
-      rect(-44, -13, 5.8, 3.8, 0.42); rect(-40, -5, 5.8, 3.8, 0.42); rect(22, -70, 7.3, 4.8, 0);
-      g.beginPath(); g.arc(X(-20), Z(-9), 5.2 * k, 0, 6.3); g.fill();
+      if (LY.lagoon) { g.beginPath(); g.ellipse(X(LY.lagoon[0]), Z(LY.lagoon[1]), 9 * k, 6.8 * k, 0, 0, 6.3); g.fill(); }
+      rect(LY.pool.x, LY.pool.z, PW / 2 + 1.8, PD / 2 + 2.5, LY.pool.rot);
+      LY.courts.forEach((ct) => rect(ct.x, ct.z, 5.8, 3.8, ct.rot)); if (LY.bball) rect(LY.bball[0], LY.bball[1], 7.3, 4.8, 0);
+      g.beginPath(); g.arc(X(LY.play[0]), Z(LY.play[1]), 5.2 * k, 0, 6.3); g.fill();
     }, false);
     const TILE = small ? 30 : 44, BLADES = small ? 34000 : 96000;
     const bladeGeo = (() => {
@@ -732,7 +827,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       g0.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
       g0.setIndex([0, 1, 2, 2, 1, 3, 2, 3, 4, 2, 1, 0, 3, 1, 2, 4, 3, 2]); return g0;
     })();
-    const grassU = { uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(72, -13) }, uMask: { value: maskTex } };
+    const grassU = { uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(LY.start[0], LY.start[1]) }, uMask: { value: maskTex } };
     const grassMat = new THREE.MeshStandardMaterial({ roughness: 0.82 });
     grassMat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, grassU);
@@ -791,7 +886,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const a = new THREE.Mesh(bird ? birdWing : flyWing, wm2), b = new THREE.Mesh(bird ? birdWing : flyWing, wm2); b.scale.x = -1;
       a.rotation.x = b.rotation.x = -Math.PI / 2; g0.add(a); g0.add(b); scene.add(g0);
       const p = along(loop, tr(), (tr() - 0.5) * 12);
-      flyers.push({ g: g0, wings: [a, b], c: bird ? V(tr() * 80 - 30, 26 + tr() * 22, tr() * 60 - 30) : V(p.x, 0.9 + tr() * 0.8, p.z), ph: tr() * 6.3, r: bird ? 30 + tr() * 30 : 1.5 + tr() * 2.5, bird });
+      flyers.push({ g: g0, wings: [a, b], c: bird ? V(LY.aerial[0] + tr() * 80 - 40, 26 + tr() * 22, LY.aerial[1] + tr() * 60 - 30) : V(p.x, 0.9 + tr() * 0.8, p.z), ph: tr() * 6.3, r: bird ? 30 + tr() * 30 : 1.5 + tr() * 2.5, bird });
     }
     // lamps along the loop
     const lampM = std('#24452f', 0.5, 0.5); const bulbs: THREE.MeshStandardMaterial[] = [];
@@ -812,7 +907,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     ]));
     const slatM = std('#d8c3a0', 0.8), frameM = std('#24452f', 0.5, 0.4);
     BENCHES.forEach(([x, z, rot]) => { const b = new THREE.Group(); b.position.set(x, 0, z); b.rotation.y = rot; b.add(mesh(slatGeo, slatM)); b.add(mesh(frameGeo, frameM)); scene.add(b); });
-    const cat = AC.makeCat(); cat.g.position.set(-29.6, 0.47, 3.24); cat.g.rotation.y = Math.PI; scene.add(cat.g);
+    const cat = AC.makeCat(); { const b0 = BENCHES[0]; cat.g.position.set(b0[0] - 0.4 * Math.cos(b0[2]), 0.47, b0[1] + 0.4 * Math.sin(b0[2]) + 0.04); cat.g.rotation.y = b0[2]; } scene.add(cat.g); // Lily, on the first bench
 
     /* ---- cars ---- */
     function car(color: string) {
@@ -829,7 +924,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const clouds: THREE.Group[] = [];
     for (let i = 0; i < 9; i++) { const c = new THREE.Group(); c.position.set(-300 + i * 75, 430 + (i % 3) * 30, -260 + (i % 4) * 150); c.scale.setScalar(1.8); for (let k = 0; k < 4; k++) { const s = mesh(new THREE.SphereGeometry(14 + k * 3, 12, 10), cloudM, k * 16, (k % 2) * 4, 0, false); s.scale.y = 0.5; c.add(s); } scene.add(c); clouds.push(c); }
     /* ---- the flat (story set), on a high floor ---- */
-    const flat = new THREE.Group(); flat.position.set(56, 62, 2); flat.visible = false; scene.add(flat);
+    const flat = new THREE.Group(); flat.position.set(LY.flat[0], LY.flat[1], LY.flat[2]); flat.visible = false; scene.add(flat); // hung in clear air at about a mid-floor's height
     const wallM = std('#f3f1ea', 0.95), floorM = std('#e6dfd0', 0.7);
     const fadd = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number, sh = true) => { const m = mesh(geo, mat, x, y, z, sh); flat.add(m); return m; };
     fadd(new THREE.BoxGeometry(13, 0.2, 14), floorM, -1.5, -0.1, 3);
@@ -878,22 +973,27 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     parent.g.position.set(2.3, 0, -2.42); parent.g.rotation.y = Math.PI; parent.c.sit = parent.k.sit = 1; parent.c.seat = 0.625; parent.c.type = 1;
     const vPriya = AC.makePerson({ shirt: '#2e7d4f', pants: '#33424a', skin: '#c08a63', hair: '#1f1a17', style: 'pony', build: 'f', height: 1.65, lanyard: true }); flat.add(vPriya.g);
     const vKabir = AC.makePerson({ shirt: '#6fa8c9', pants: '#2f3b47', skin: '#a9764f', hair: '#17120f', style: 'crop', build: 'm', height: 1.77, lanyard: true }); flat.add(vKabir.g);
+    // boarding: Marcus is the host at home, and Ananya brings Biscuit to his door
+    const vMarcus = AC.makePerson({ shirt: '#3f6c8a', pants: '#3a3f45', skin: '#8a5a3c', hair: '#161210', style: 'crop', build: 'm', height: 1.8, lanyard: true }); flat.add(vMarcus.g);
+    const vOwner = AC.makePerson({ shirt: '#c6a3e8', pants: '#3b3b46', skin: '#b98562', hair: '#1a1512', style: 'long', build: 'f', height: 1.62 }); flat.add(vOwner.g);
     let visitor: Person = vPriya;
     const homeCat = AC.makeCat(); flat.add(homeCat.g);
-    const pLabel = label('Ananya', { scale: 0.13 }); pLabel.position.set(2.3, 1.56, -2.42); flat.add(pLabel);
-    const vLabel = label('Priya', { scale: 0.13 }); flat.add(vLabel);
+    // name tags in the flat keep one small size on screen, so a close-up never blows a name up across the picture
+    const nameTag = (text: string) => { const s = label(text); (s.material as THREE.SpriteMaterial).sizeAttenuation = false; s.scale.multiplyScalar((small ? 0.036 : 0.03) / 1.6); return s; };
+    const pLabel = nameTag('Ananya'); pLabel.position.set(2.3, 1.56, -2.42); flat.add(pLabel);
+    const vLabel = nameTag('Priya'); flat.add(vLabel);
 
     /* ---- world people and pets ---- */
-    const walker = AC.makePerson({ shirt: '#2e7d4f', pants: '#33424a', skin: '#c08a63', hair: '#1f1a17', style: 'pony', build: 'f', height: 1.65, lanyard: true }); walker.g.position.set(70, 0, -13); walker.c.leash = 0; scene.add(walker.g);
-    const dog = AC.makeDog(); dog.g.position.set(69.5, 0, -13.8); scene.add(dog.g);
-    const priya = AC.makePerson({ shirt: '#e0662f', pants: '#2c3a50', skin: '#9a6a4a', hair: '#14110f', style: 'bun', build: 'f', height: 1.6, lanyard: true }); priya.g.position.set(5, 0, -22); scene.add(priya.g);
-    const pl = label('Rhea', { scale: 0.2 }); pl.position.set(5, 2.0, -22); scene.add(pl); // the neighbour at the pool; Priya is the walker
+    const walker = AC.makePerson({ shirt: '#2e7d4f', pants: '#33424a', skin: '#c08a63', hair: '#1f1a17', style: 'pony', build: 'f', height: 1.65, lanyard: true }); walker.g.position.set(LY.start[0], 0, LY.start[1]); walker.c.leash = 0; scene.add(walker.g);
+    const dog = AC.makeDog(); dog.g.position.set(LY.start[0] - 0.5, 0, LY.start[1] - 0.8); scene.add(dog.g);
+    const priya = AC.makePerson({ shirt: '#e0662f', pants: '#2c3a50', skin: '#9a6a4a', hair: '#14110f', style: 'bun', build: 'f', height: 1.6, lanyard: true }); priya.g.position.set(LY.rhea[0], 0, LY.rhea[1]); scene.add(priya.g);
+    const pl = label('Rhea', { scale: 0.2 }); pl.position.set(LY.rhea[0], 2.0, LY.rhea[1]); scene.add(pl); // the neighbour at the pool; Priya is the walker
     const jogger = AC.makePerson({ shirt: '#f0b429', pants: '#22313a', skin: '#d1a07a', hair: '#3a2a1f', style: 'crop', build: 'm', height: 1.78, shorts: true }); scene.add(jogger.g);
     const resident = AC.makePerson({ shirt: '#6fa8c9', pants: '#4a4f55', skin: '#a87656', hair: '#8f8f8c', style: 'crop', build: 'm', height: 1.7 }); resident.c.leash = 0; scene.add(resident.g);
     const dog2 = AC.makeDog({ coat: '#2f2a26', cream: '#4a423b', dark: '#1d1916', scale: 0.82, harness: '#3f9fd0' }); scene.add(dog2.g);
-    const sitter = AC.makePerson({ shirt: '#c6a3e8', pants: '#3b3b46', skin: '#b07a58', hair: '#1a1512', style: 'bun', build: 'f', height: 1.6 }); sitter.g.position.set(-8.4, 0, -21.5); sitter.c.sit = sitter.k.sit = 1; sitter.c.phone = sitter.k.phone = 1; scene.add(sitter.g);
+    const sitter = AC.makePerson({ shirt: '#c6a3e8', pants: '#3b3b46', skin: '#b07a58', hair: '#1a1512', style: 'bun', build: 'f', height: 1.6 }); { const b1 = BENCHES[1]; sitter.g.position.set(b1[0] - 0.4 * Math.cos(b1[2]), 0, b1[1] + 0.4 * Math.sin(b1[2])); sitter.g.rotation.y = b1[2]; } sitter.c.sit = sitter.k.sit = 1; sitter.c.phone = sitter.k.phone = 1; scene.add(sitter.g);
     sitter.arms[0].low.add(mesh(new THREE.BoxGeometry(0.07, 0.14, 0.012), std('#20262a', 0.3, 0.4), 0, -0.3, 0.035, false));
-    [parent, vPriya, vKabir, walker, priya, jogger, resident, sitter].forEach((pp) => AC.posePerson(pp, 1, 0, false));
+    [parent, vPriya, vKabir, vMarcus, vOwner, walker, priya, jogger, resident, sitter].forEach((pp) => AC.posePerson(pp, 1, 0, false));
     AC.poseDog(dog, 1, 0, false); AC.poseDog(dog2, 1, 0, false); AC.poseCat(cat, 1, 0, false); AC.poseCat(homeCat, 1, 0, false);
 
     // leashes are real cords (instanced segments), one for Biscuit and one for the neighbour's dog
@@ -912,7 +1012,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
       l.instanceMatrix.needsUpdate = true;
     }
-    const ball = mesh(new THREE.SphereGeometry(0.075, 12, 10), std('#d4e157', 0.6), 138, 0.075, 20); scene.add(ball);
+    const FX = (LY.fetch[0] + LY.fetch[1]) / 2, FZ = (LY.fetch[2] + LY.fetch[3]) / 2; // the middle of the lawn where fetch happens
+    const ball = mesh(new THREE.SphereGeometry(0.075, 12, 10), std('#d4e157', 0.6), FX - 2, 0.075, FZ - 1); scene.add(ball);
 
     const ringGeo = new THREE.RingGeometry(1.1, 1.35, 40);
     const rings = new Map<StopId, THREE.Mesh>();
@@ -926,7 +1027,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const treatM = new THREE.MeshStandardMaterial({ color: '#f5b03c', emissive: '#e0662f', emissiveIntensity: 0.55, roughness: 0.35 });
     const glowTex = canvasTex(64, 64, (g) => { const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32); grd.addColorStop(0, 'rgba(255,196,96,.85)'); grd.addColorStop(1, 'rgba(255,196,96,0)'); g.fillStyle = grd; g.fillRect(0, 0, 64, 64); });
     const tOf = (x: number, z: number) => { let bt2 = 0, bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - x, p.z - z); if (d < bd) { bd = d; bt2 = i / 300; } } return bt2; };
-    const treatT = [tOf(5, -19) + 5.5 / loopLen, tOf(-30, 0.4) - 5.5 / loopLen, tOf(31, -4) - 6 / loopLen];
+    const treatT = [tOf(STOPS[0].pos[0], STOPS[0].pos[1]) + 5.5 / loopLen, tOf(STOPS[2].pos[0], STOPS[2].pos[1]) - 5.5 / loopLen, tOf(LY.story.to[0], LY.story.to[1]) - 6 / loopLen];
     for (const gap of [0.075, 0.04, 0]) for (let i = 0; i < 16 && treatT.length < TREATS; i++) { const t = (tStart + (i * 5 + 0.55) / 16) % 1; if (treatT.every((u) => Math.min(Math.abs(u - t), 1 - Math.abs(u - t)) > gap)) treatT.push(t); }
     const treats = Array.from({ length: treatT.length }, (_, i) => {
       const p = along(loop, treatT[i], i < 3 ? 0 : [-1.25, 0, 1.25][i % 3]);
@@ -974,7 +1075,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       if (snap) { camPos.copy(want); camLook.copy(tgt); } else { camPos.lerp(want, 0.14); camLook.lerp(tgt, 0.2); }
     }
     function collide(p: THREE.Vector3) {
-      p.x = THREE.MathUtils.clamp(p.x, -128, 151); p.z = THREE.MathUtils.clamp(p.z, -78, 92);
+      p.x = THREE.MathUtils.clamp(p.x, LY.bounds[0], LY.bounds[1]); p.z = THREE.MathUtils.clamp(p.z, LY.bounds[2], LY.bounds[3]);
       for (const b of blockers) {
         const dx = p.x - b.x, dz = p.z - b.z; let lx = dx * b.c - dz * b.s, lz = dx * b.s + dz * b.c;
         if (Math.abs(lx) < b.hw && Math.abs(lz) < b.hd) {
@@ -996,7 +1097,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     /* ---- actors inside the flat ---- */
     interface Actor { g: THREE.Group; dest: THREE.Vector3 | null; speed: number }
     const actor = (g: THREE.Group, speed: number): Actor => ({ g, dest: null, speed });
-    const aVisitor = actor(visitor.g, 1.5), aDog = actor(dog.g, 2), aCat = actor(homeCat.g, 1.2);
+    const aVisitor = actor(visitor.g, 1.5), aDog = actor(dog.g, 2), aCat = actor(homeCat.g, 1.2), aOwner = actor(vOwner.g, 1.4);
+    let flatHolder: Person = vPriya, dogEatFlat = false; // who holds the leash indoors; Biscuit at his bowl
     /** moves an actor towards its destination; returns the distance covered this frame */
     function stepActor(a: Actor, dt: number) {
       if (!a.dest) return 0;
@@ -1014,15 +1116,22 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const fc = (x: number, y: number, z: number, lx: number, ly: number, lz: number): Beat['cam'] => [F.x + x, F.y + y, F.z + z, F.x + lx, F.y + ly, F.z + lz];
     const wpos = (o: THREE.Object3D, y = 0.6) => o.getWorldPosition(V()).add(V(0, y, 0));
     function setupFlat(id: StoryId) {
-      flat.visible = true; doorOpen = doorTarget = 0; leashInFlat = false; dogSitFlat = false; fill = fillTarget = id === 'cat' ? 0 : 1;
-      visitor = id === 'dog' ? vPriya : vKabir; aVisitor.g = visitor.g; vPriya.g.visible = id === 'dog'; vKabir.g.visible = id === 'cat';
+      flat.visible = true; doorOpen = doorTarget = 0; leashInFlat = false; dogSitFlat = dogEatFlat = false; fill = fillTarget = id === 'dog' ? 1 : 0;
+      visitor = id === 'dog' ? vPriya : id === 'cat' ? vKabir : vMarcus; aVisitor.g = visitor.g; flatHolder = visitor;
+      vPriya.g.visible = id === 'dog'; vKabir.g.visible = id === 'cat'; vMarcus.g.visible = vOwner.g.visible = id === 'board';
       visitor.g.position.set(-8, 0, 1.6); visitor.g.rotation.set(0, Math.PI / 2, 0); aVisitor.dest = null;
-      Object.assign(visitor.c, { crouch: 0, reach: [0, 0], leash: -1 }); Object.assign(parent.c, { wave: [0, 0], twist: 0, look: 0 });
+      Object.assign(visitor.c, { crouch: 0, reach: [0, 0], leash: -1, phone: 0 }); Object.assign(parent.c, { wave: [0, 0], twist: 0, look: 0 });
       wand.position.y = -5;
-      const nl = label(id === 'dog' ? 'Priya' : 'Kabir', { scale: 0.13 }); vLabel.material.map?.dispose(); vLabel.material = nl.material; vLabel.scale.copy(nl.scale);
+      const nl = nameTag(id === 'dog' ? 'Priya' : id === 'cat' ? 'Kabir' : 'Marcus'); vLabel.material.map?.dispose(); vLabel.material = nl.material; vLabel.scale.copy(nl.scale);
       if (id === 'dog') {
-        parent.g.visible = pLabel.visible = true; homeCat.g.visible = false;
+        parent.g.visible = pLabel.visible = true; homeCat.g.visible = false; pLabel.position.set(2.3, 1.56, -2.42);
         flat.add(dog.g); dog.g.position.set(1.2, 0, -1.6); dog.g.rotation.set(0, 1.2, 0); aDog.dest = null;
+      } else if (id === 'board') {
+        parent.g.visible = false; pLabel.visible = true; homeCat.g.visible = false;
+        visitor.g.position.set(0.4, 0, 1.4); visitor.g.rotation.set(0, -Math.PI / 2, 0);
+        vOwner.g.visible = true; vOwner.g.position.set(-8.4, 0, 1.6); vOwner.g.rotation.set(0, Math.PI / 2, 0); aOwner.dest = null; Object.assign(vOwner.c, { wave: [0, 0], leash: 0 });
+        flat.add(dog.g); dog.g.position.set(-8.9, 0, 2.3); dog.g.rotation.set(0, Math.PI / 2, 0); aDog.dest = null;
+        flatHolder = vOwner; leashInFlat = true;
       } else {
         parent.g.visible = pLabel.visible = false; homeCat.g.visible = true;
         homeCat.g.position.set(-1.6, 0.48, -3.25); homeCat.g.rotation.set(0, 0.3, 0); aCat.dest = null;
@@ -1030,16 +1139,16 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
     const L = (x: number, z: number) => V(x, 0, z);
     const DOG_BEATS: Beat[] = [
-      { dur: 6, text: '9:40 am, Tower 5, flat 1204. Ananya has calls until noon. Biscuit has other plans.', cam: fc(-0.5, 2.3, 6.4, 0.6, 0.9, -1.2), start: () => { aDog.dest = L(-1.5, 1.2); }, update: (t) => { if (t > 3.6 && !aDog.dest) { dog.g.rotation.y += (-1.5 - dog.g.rotation.y) * 0.08; dogSitFlat = true; } } },
-      { dur: 5.5, img: '/real/meet-greet.jpg', text: 'The doorbell. Priya lives in Tower 3, is Aadhaar-verified, and met Biscuit at last week\'s meet-and-greet.', cam: fc(-1.2, 1.9, 5.6, -3.2, 0.95, 1.2), start: () => { aVisitor.dest = L(-5.6, 1.6); dogSitFlat = false; }, update: (t) => { if (t > 1.6) doorTarget = 1; if (t > 2.4 && !aVisitor.dest && visitor.g.position.x < -4) aVisitor.dest = L(-3.2, 1.5); if (t > 2.2) aDog.dest = L(-2.15, 1.35); } },
+      { dur: 6, text: `9:40 am, ${LY.words.home}. Ananya has calls until noon. Biscuit has other plans.`, cam: fc(-0.5, 2.3, 6.4, 0.6, 0.9, -1.2), start: () => { aDog.dest = L(-1.5, 1.2); }, update: (t) => { if (t > 3.6 && !aDog.dest) { dog.g.rotation.y += (-1.5 - dog.g.rotation.y) * 0.08; dogSitFlat = true; } } },
+      { dur: 5.5, img: '/real/meet-greet.jpg', text: `The doorbell. Priya lives in ${LY.words.walker}, is Aadhaar-verified, and met Biscuit at last week's meet-and-greet.`, cam: fc(-1.2, 1.9, 5.6, -3.2, 0.95, 1.2), start: () => { aVisitor.dest = L(-5.6, 1.6); dogSitFlat = false; }, update: (t) => { if (t > 1.6) doorTarget = 1; if (t > 2.4 && !aVisitor.dest && visitor.g.position.x < -4) aVisitor.dest = L(-3.2, 1.5); if (t > 2.2) aDog.dest = L(-2.15, 1.35); } },
       { dur: 5.5, text: 'A proper hello first. Then the leash goes on, with poop bags and a towel packed.', cam: fc(-1.9, 1.25, 3.9, -2.7, 0.7, 1.4), start: () => { hearts(wpos(dog.g, 0.9), 6, 0.22); Object.assign(parent.c, { wave: [0, 1], twist: 0.9, look: 0.5, type: 0 }); dogSitFlat = true; },
         update: (t) => { visitor.c.crouch = t < 3.2 ? 1 : 0; visitor.c.reach[0] = t > 0.4 && t < 3.2 ? 1 : 0; if (t > 2.6) { leashInFlat = true; visitor.c.leash = 0; } if (t > 3.5) Object.assign(parent.c, { wave: [0, 0], twist: 0, look: 0, type: 1 }); } },
       { dur: 4.5, text: 'Out they go. Ananya is back on her call before the lift arrives.', cam: fc(1.5, 2.2, 6.4, -2.5, 0.9, 0.8), start: () => { visitor.c.crouch = 0; visitor.c.reach[0] = 0; dogSitFlat = false; aVisitor.dest = L(-8.5, 1.6); }, update: (t) => { if (t > 0.5) aDog.dest = L(-8, 2.2); if (t > 3.4) doorTarget = 0; } },
-      { dur: 9, img: '/real/hero.jpg', text: 'Down to the jogging track. Live GPS and a photo every 15 minutes go to Ananya\'s phone.', cam: [0, 0, 0, 0, 0, 0], start: () => { toWorld(); queue = routeTo(walker.g.position, V(31, 0, -4)); autoWalk = true; } },
+      { dur: 9, img: '/real/hero.jpg', text: 'Down to the jogging track. Live GPS and a photo every 15 minutes go to Ananya\'s phone.', cam: [0, 0, 0, 0, 0, 0], start: () => { toWorld(); queue = routeTo(walker.g.position, V(LY.story.to[0], 0, LY.story.to[1])); autoWalk = true; } },
     ];
     const CAT_BEATS: Beat[] = [
       { dur: 5, img: '/real/cat-window.jpg', text: 'Meera is travelling for work. Lily stays home, where cats are happiest.', cam: fc(-0.5, 1.5, 0.6, -1.6, 0.62, -3.25) },
-      { dur: 5.5, text: 'Kabir from Tower 8 lets himself in with a one-time door code. Meera gets a ping the moment it opens.', cam: fc(-1.2, 1.9, 5.6, -3.2, 0.95, 1.2), start: () => { aVisitor.dest = L(-5.6, 1.6); }, update: (t) => { if (t > 1.5) doorTarget = 1; if (t > 2.3 && !aVisitor.dest && visitor.g.position.x < -4) aVisitor.dest = L(-2.6, 1.4); if (t > 4.5) doorTarget = 0; } },
+      { dur: 5.5, text: `Kabir from ${LY.words.sitter} lets himself in with a one-time door code. Meera gets a ping the moment it opens.`, cam: fc(-1.2, 1.9, 5.6, -3.2, 0.95, 1.2), start: () => { aVisitor.dest = L(-5.6, 1.6); }, update: (t) => { if (t > 1.5) doorTarget = 1; if (t > 2.3 && !aVisitor.dest && visitor.g.position.x < -4) aVisitor.dest = L(-2.6, 1.4); if (t > 4.5) doorTarget = 0; } },
       { dur: 6, text: 'Fresh food and fresh water first. Lily supervises.', cam: fc(1.6, 1.5, 5.6, 3.1, 0.4, 2.3), start: () => { aVisitor.dest = L(2.75, 2.45); }, update: (t) => { const dn = t > 2.2 && t < 4.8; visitor.c.crouch = dn ? 1 : 0; visitor.c.reach[0] = dn ? 1 : 0; if (t > 2.6) fillTarget = 1; if (t > 1.5 && homeCat.g.position.y > 0.1) { homeCat.g.position.y = 0; homeCat.g.position.z = -2.4; } if (t > 1.5) aCat.dest = L(3.75, 2.05); } },
       { dur: 5, text: 'Litter scooped and the box wiped clean.', cam: fc(1.9, 1.7, 4.6, 3.9, 0.4, 0.6), start: () => { visitor.c.crouch = 0; visitor.c.reach[0] = 0; aVisitor.dest = L(3.45, 0.65); }, update: (t) => { const dn = t > 1.8 && t < 4.2; visitor.c.crouch = dn ? 1 : 0; visitor.c.reach[0] = dn ? 1 : 0; if (t > 2.4) (litter.material as THREE.MeshStandardMaterial).color.set('#f8f5ea'); } },
       { dur: 6.5, img: '/real/cat-visit.jpg', text: 'Ten minutes of play, then chin scratches. This is the part Lily booked it for.', cam: fc(-0.2, 1.2, 4.2, -0.1, 0.45, 0.7), start: () => { visitor.c.crouch = 0; aVisitor.dest = L(0.55, 0.9); aCat.dest = L(-0.5, 0.75); },
@@ -1051,23 +1160,54 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         } },
       { dur: 5, text: 'Photos sent to Meera. Visit done in 30 minutes: ₹129, and ₹90.30 of it goes to Kabir.', cam: fc(0.5, 2.3, 6.6, -0.6, 0.9, -0.3), start: () => { visitor.c.crouch = 0; visitor.c.reach[0] = 0; aVisitor.dest = L(-3.4, 1.5); } },
     ];
+    const BOARD_BEATS: Beat[] = [
+      { dur: 5.5, text: `6:30 pm. Ananya flies out early tomorrow, so Biscuit is sleeping over with Marcus in ${LY.words.host}.`, cam: fc(-1.2, 1.9, 5.6, -3.2, 0.95, 1.2),
+        start: () => { nightTarget = 0.45; aVisitor.dest = L(-3.9, 1.6); },
+        update: (t) => { if (t > 1.2) doorTarget = 1; if (t > 1.8 && !aOwner.dest && vOwner.g.position.x < -6.5) { aOwner.dest = L(-5.9, 1.6); aDog.dest = L(-5.3, 2.3); } } },
+      { dur: 5.5, img: '/real/meet-greet.jpg', text: 'The same hello as at the meet-and-greet. His leash, his food and his blanket change hands.', cam: fc(-1.9, 1.25, 3.9, -3.6, 0.7, 1.7),
+        start: () => { hearts(wpos(dog.g, 0.9), 5, 0.22); dogSitFlat = true; },
+        update: (t) => {
+          visitor.c.crouch = t > 0.3 && t < 2.8 ? 1 : 0; visitor.c.reach[0] = t > 0.6 && t < 2.8 ? 1 : 0;
+          if (t > 2.6) { flatHolder = visitor; visitor.c.leash = 0; vOwner.c.leash = -1; }
+          vOwner.c.wave[1] = t > 3 && t < 4.6 ? 1 : 0; if (t > 4.2 && !aOwner.dest && vOwner.g.position.x > -7) aOwner.dest = L(-8.8, 1.6);
+        } },
+      { dur: 6, text: 'Dinner at eight, one scoop, exactly as her note says.', cam: fc(1.6, 1.5, 5.6, 3.1, 0.4, 2.3),
+        start: () => { doorTarget = 0; dogSitFlat = false; leashInFlat = false; visitor.c.leash = -1; vOwner.g.visible = pLabel.visible = false; nightTarget = 0.7; aVisitor.dest = L(2.75, 2.45); aDog.dest = L(2.5, 1.4); },
+        update: (t) => { const dn = t > 2 && t < 4; visitor.c.crouch = dn ? 1 : 0; visitor.c.reach[0] = dn ? 1 : 0; if (t > 2.5) fillTarget = 1; if (t > 3.6 && t < 3.7) aDog.dest = L(3.3, 2.05); dogEatFlat = t > 4.4 && !aDog.dest; } },
+      { dur: 5.5, img: '/real/boarding.jpg', text: 'Lights down. Biscuit settles on his own blanket, with Marcus a few steps away.', cam: fc(-1.4, 1.6, 4.4, -2.9, 0.4, -1.6),
+        start: () => { dogEatFlat = false; visitor.c.crouch = 0; visitor.c.reach[0] = 0; nightTarget = 1; doorTarget = 0; leashInFlat = false; visitor.c.leash = -1; vOwner.g.visible = pLabel.visible = false; fillTarget = 1; /* so it is also right when the glimpse skips dinner */ aDog.dest = L(-3.6, -1.2); aVisitor.dest = L(-1.4, -2.2); },
+        update: (t) => { if (!aDog.dest && t > 1.5) dogSitFlat = true; } },
+      { dur: 5, text: '7 am. A morning photo goes to Ananya before her flight boards.', cam: fc(-0.8, 1.3, 3.6, -3.1, 0.6, -1.0),
+        start: () => { nightTarget = 0; aVisitor.dest = L(-2.6, -0.4); },
+        update: (t) => { visitor.c.phone = t > 1.6 ? 1 : 0; if (t > 2.6 && t < 2.66) hearts(wpos(dog.g, 0.9), 2, 0.2); } },
+      { dur: 5, text: 'Picked up, fed and happy. One night: ₹549, and ₹384.30 of it goes to Marcus.', cam: fc(1.5, 2.2, 6.4, -2.5, 0.9, 0.8),
+        start: () => { nightTarget = 0; visitor.c.phone = 0; dogSitFlat = false; vOwner.g.visible = pLabel.visible = true; vOwner.g.position.set(-8.6, 0, 1.6); aOwner.dest = L(-5.8, 1.6); doorTarget = 1; aVisitor.dest = L(-3.8, 1.4); aDog.dest = L(-4.9, 2.1); },
+        update: (t) => { if (t > 2.2 && Math.random() < 0.05) hearts(wpos(dog.g, 0.9), 1, 0.2); } },
+    ];
+    // the tour shows a shorter cut of each story: the beats that explain the service at a glance
+    const cut = (all: Beat[], keep: number[]) => keep.map((i) => all[i]);
+    const storyBeats = (id: StoryId, glimpse: boolean) => id === 'dog' ? (glimpse ? cut(DOG_BEATS, [1, 2, 4]) : DOG_BEATS) : id === 'cat' ? (glimpse ? cut(CAT_BEATS, [1, 2, 4, 5]) : CAT_BEATS) : glimpse ? cut(BOARD_BEATS, [0, 1, 3, 5]) : BOARD_BEATS;
     function toWorld(fromFlat = true) {
       dissolve();
       flat.visible = false; scene.add(dog.g); leashInFlat = false; dogMode = 'follow';
-      if (fromFlat) { walker.g.position.set(100, 0, -8.5); walker.g.rotation.y = Math.PI; dog.g.position.set(100.8, 0, -9.1); dog.g.rotation.set(0, Math.PI, 0); yaw = Math.PI - 0.75; pitch = 0.3; }
-      else { walker.g.position.set(70, 0, -13); walker.g.rotation.y = -Math.PI / 2; dog.g.position.set(69.3, 0, -13.8); dog.g.rotation.set(0, -Math.PI / 2, 0); yaw = Math.PI / 2 - 0.3; pitch = 0.3; }
+      const at = fromFlat ? LY.story.at : LY.start, r = at[2];
+      walker.g.position.set(at[0], 0, at[1]); walker.g.rotation.y = r;
+      dog.g.position.set(at[0] - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, at[1] + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.set(0, r, 0); yaw = at[3]; pitch = 0.3;
       followCam(true);
     }
     function resetWalk() {
       minutes = 0; meters = 0; photoCount = 0; doneSet.clear(); setDone([]); rings.forEach((r) => (r.visible = true)); setPhotos([]);
-      ballFlight = null; ballHeld = false; ball.position.set(138, 0.075, 20); queue = []; marker.visible = false; autoWalk = false;
+      ballFlight = null; ballHeld = false; ball.position.set(FX - 2, 0.075, FZ - 1); queue = []; marker.visible = false; autoWalk = false;
       treatN = 0; setTreats(0); treats.forEach((t) => { t.got = 0; t.done = false; t.g.visible = true; t.b.scale.setScalar(1.25); (t.sp.material as THREE.SpriteMaterial).opacity = 1; });
     }
     function nextBeat() {
       bi++; bt = 0;
       if (bi >= beats.length) {
         if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? 'Now the walk: four stops along the track.' : 'Your turn. Walk Biscuit to the four stops.'); }
-        else { dissolve(); m = 'catdone'; setMode('catdone'); setCaption(null); flat.visible = false; camSnap = true; }
+        else {
+          dissolve(); nightTarget = 0; const dm: Mode = storyId === 'cat' ? 'catdone' : 'boarddone'; m = dm; setMode(dm); setCaption(null); flat.visible = false; camSnap = true;
+          if (dog.g.parent !== scene) { scene.add(dog.g); dog.g.position.set(LY.start[0] - 0.5, 0, LY.start[1] - 0.8); }
+        }
         beats = []; return;
       }
       setCaption({ text: beats[bi].text, i: bi, n: beats.length, img: beats[bi].img }); beats[bi].start?.();
@@ -1080,25 +1220,33 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       dirStart: () => {}, dirPause: () => {},
       setNight: (n) => { nightTarget = n ? 1 : 0; },
       sync: (x) => { m = x; },
-      play: (id) => { dissolve(); resetWalk(); storyId = id; setStory(id); setupFlat(id); beats = id === 'dog' ? DOG_BEATS : CAT_BEATS; bi = -1; camSnap = true; setM('story'); nextBeat(); },
+      play: (id, glimpse = false) => {
+        dissolve(); resetWalk(); nightTarget = 0; storyId = id; setStory(id); setupFlat(id); beats = storyBeats(id, glimpse);
+        if (glimpse && id === 'dog') { dog.g.position.set(-1.5, 0, 1.2); dog.g.rotation.set(0, -1.5, 0); dogSitFlat = true; } // the short cut opens on the doorbell, with Biscuit already waiting
+        bi = -1; camSnap = true; setM('story'); nextBeat();
+      },
+      freeze: () => { // hold the last frame of this community on screen while the next one is built
+        const dc = dissolveRef.current, g2 = dc?.getContext('2d'); if (!dc || !g2) return;
+        renderer.render(scene, camera); dc.width = canvas.width; dc.height = canvas.height; g2.drawImage(canvas, 0, 0); dc.style.transition = 'none'; dc.style.opacity = '1';
+      },
       skip: () => { if (storyId === 'dog') { if (flat.visible) toWorld(); bi = beats.length; nextBeat(); } else { bi = beats.length; nextBeat(); } },
       explore: () => { resetWalk(); storyId = 'dog'; setStory('dog'); toWorld(false); setCaption(null); setM('walk'); wrap.focus({ preventScroll: true }); },
-      menu: () => { dissolve(); flat.visible = false; if (dog.g.parent !== scene) scene.add(dog.g); beats = []; setCaption(null); camSnap = true; setM('menu'); },
+      menu: () => { dissolve(); nightTarget = 0; flat.visible = false; if (dog.g.parent !== scene) scene.add(dog.g); beats = []; setCaption(null); camSnap = true; setM('menu'); },
       goTo: (id) => { const s = STOPS.find((x) => x.id === id)!; goToPoint(V(s.pos[0], 0, s.pos[1])); },
       act: (id) => {
         const s = STOPS.find((x) => x.id === id)!;
         if (id === 'cat') { hearts(cat.g.position.clone().add(V(0, 0.5, 0)), 8); dogMode = 'sit'; dogTimer = 2.6; finish(s.done, id); }
         if (id === 'hello') {
           wave = 2.4; if (bubble) scene.remove(bubble);
-          bubble = label('Morning! Biscuit looks so happy.', { scale: 0.6 }); bubble.position.set(priya.g.position.x, 2.75, priya.g.position.z); scene.add(bubble); bubbleT = 4;
+          bubble = label('Morning! Biscuit looks so happy.', { scale: 0.6 }); (bubble.material as THREE.SpriteMaterial).sizeAttenuation = false; bubble.scale.multiplyScalar(0.046 / 0.96); /* a steady size on screen, so a close camera never crops it */ bubble.position.set(priya.g.position.x, 2.75, priya.g.position.z); scene.add(bubble); bubbleT = 4;
           finish(s.done, id);
         }
         if (id === 'water') { dogMode = 'drink'; dogTimer = 0; say('Biscuit is drinking...'); }
         if (id === 'fetch' && !ballFlight && dogMode === 'follow') {
           const from = walker.arms[1].end.getWorldPosition(V());
-          const fwd = V(142, 0, 22).sub(walker.g.position).setY(0).normalize();
+          const fwd = V(FX, 0, FZ).sub(walker.g.position).setY(0).normalize();
           const to = walker.g.position.clone().add(fwd.multiplyScalar(8));
-          to.x = THREE.MathUtils.clamp(to.x, px0 + 1.5, px1 - 1.5); to.z = THREE.MathUtils.clamp(to.z, pz0 + 1.5, pz1 - 1.5); to.y = 0.075;
+          to.x = THREE.MathUtils.clamp(to.x, LY.fetch[0], LY.fetch[1]); to.z = THREE.MathUtils.clamp(to.z, LY.fetch[2], LY.fetch[3]); to.y = 0.075;
           ballFlight = { from, to, t: 0 }; ballHeld = false; dogMode = 'go'; say('Go get it, Biscuit!');
         }
       },
@@ -1115,7 +1263,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
     /* ---- the director: plays the stories and the walk by itself, like a video ---- */
     const reducedMotion = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    let dirOn = false, dirPaused = false, dirRun = 0, dirT = 0, half = false, touched = false, started = false, rip = 0, cutN = 0, simT = 0;
+    let dirOn = false, dirPaused = false, dirRun = 0, dirT = 0, half = false, touched = tourRef.current.touched, started = false, rip = 0, cutN = 0, simT = 0;
     let dirWaits: { t: number; res: () => void; cond?: () => boolean }[] = [];
     const cursor = { x: 0, y: 0 };
     const sleep = (sec: number) => new Promise<void>((res) => dirWaits.push({ t: dirT + sec, res }));
@@ -1164,40 +1312,52 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       dog.g.position.set(p.x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, p.z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; dogMode = 'follow';
       yaw = r + Math.PI; pitch = 0.3; followCam(true); cutN++; showCursor();
     }
+    /** The tour: pick a community, pick a service, watch a short cut of it, move on. It resumes after each community is rebuilt. */
     async function direct(run: number) {
       const ok = () => run === dirRun && dirOn;
-      const w0 = wrap.getBoundingClientRect(); cursor.x = w0.width * 0.5; cursor.y = w0.height * 0.3;
-      let first = true;
+      const tour = tourRef.current;
+      if (!tour.x && !tour.y) { const w0 = wrap.getBoundingClientRect(); tour.x = w0.width * 0.5; tour.y = w0.height * 0.35; }
+      cursor.x = tour.x; cursor.y = tour.y;
+      let first = !tour.swapped; tour.swapped = false;
       while (ok()) {
-        // 1. the cards
+        const step = TOUR[tour.step % TOUR.length];
         if ((m as Mode) !== 'menu') api.current!.menu();
         setNight(false);
-        await sleep(0.4); showCursor(); await sleep(first ? 1.1 : 0.5); first = false; if (!ok()) return;
-        // 2. the dog walk: the story in the flat, then the four stops on the track
-        await tap('card-dog', () => api.current!.play('dog'), true); if (!ok()) return;
-        await until(() => (m as Mode) === 'walk', 60); if (!ok()) return;
-        await sleep(0.6);
-        if (!listRef.current) await tap('list', () => setListOpen(true));
-        for (const s of STOPS) {
-          if (!ok()) return;
-          if (s.id === 'fetch') { await tap('photo', () => photoRef.current()); await sleep(0.3); await tap('night', () => setNight(true)); await sleep(0.2); }
-          await tap(`go-${s.id}`, () => { cutTo(V(s.pos[0], 0, s.pos[1])); api.current!.goTo(s.id); }); if (!ok()) return;
-          await until(() => nearId === s.id && !queue.length, 9); if (!ok()) return;
-          await tap('act', () => api.current!.act(s.id)); if (!ok()) return;
-          await until(() => doneSet.has(s.id), 8); await sleep(s.id === 'hello' ? 1.2 : s.id === 'cat' ? 1.3 : 0.4);
+        await sleep(0.4); showCursor(); await sleep(first ? 1.1 : 0.6); first = false; if (!ok()) return;
+        // 1. the community: pressing its pill rebuilds the scene, and the tour picks up again in the new one
+        if (step.c !== LY.id) {
+          if (!point(`com-${step.c}`)) { await tap('area-all', () => setArea('All')); await sleep(0.35); if (!ok()) return; } // filtered out by the area chips
+          { // on a phone the communities are one scrolling row: bring the pill into view first
+            const el = wrap.querySelector<HTMLElement>(`[data-pp="com-${step.c}"]`), row = el?.parentElement;
+            if (el && row && row.scrollWidth > row.clientWidth + 2) { row.scrollTo({ left: row.scrollLeft + el.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - el.offsetWidth) / 2, behavior: 'smooth' }); await sleep(0.55); if (!ok()) return; }
+          }
+          await tap(`com-${step.c}`, () => { tour.swapped = true; tour.x = cursor.x; tour.y = cursor.y; api.current!.freeze(); setCommunity(step.c); });
+          return;
         }
-        if (!ok()) return;
-        await tap('end', () => { minutes = Math.max(minutes, 58); setStats({ minutes, km: meters / 1000, photos: photoCount }); setM('ended'); }, true); await sleep(4.3); if (!ok()) return;
-        // 3. the cat visit
-        await tap('back', () => { api.current!.menu(); setNight(false); }); await sleep(0.8); if (!ok()) return;
-        await tap('card-cat', () => api.current!.play('cat'), true); if (!ok()) return;
-        await until(() => (m as Mode) === 'catdone', 60); await sleep(4); if (!ok()) return;
-        // 4. back to the start
-        await tap('back', () => api.current!.menu()); await sleep(0.6);
+        // 2. the service, then Watch
+        await tap(`svc-${step.s}`, () => setService(step.s)); await sleep(0.3); if (!ok()) return;
+        await tap('watch', () => api.current!.play(step.s, true), true); if (!ok()) return;
+        if (step.s === 'dog') { // the story indoors, then one stop on the track, a photo, and the payment
+          await until(() => (m as Mode) === 'walk', 60); if (!ok()) return;
+          await sleep(0.6);
+          if (!listRef.current) await tap('list', () => setListOpen(true));
+          const s0 = STOPS[0];
+          await tap(`go-${s0.id}`, () => { cutTo(V(s0.pos[0], 0, s0.pos[1])); api.current!.goTo(s0.id); }); if (!ok()) return;
+          await until(() => nearId === s0.id && !queue.length, 9); if (!ok()) return;
+          await tap('act', () => api.current!.act(s0.id)); if (!ok()) return;
+          await until(() => doneSet.has(s0.id), 8); await sleep(1.2); if (!ok()) return;
+          await tap('photo', () => photoRef.current()); await sleep(0.9); if (!ok()) return;
+          await tap('end', () => { minutes = Math.max(minutes, 58); setStats({ minutes, km: meters / 1000, photos: photoCount }); setM('ended'); }, true); await sleep(3.4); if (!ok()) return;
+        } else {
+          await until(() => (m as Mode) === (step.s === 'cat' ? 'catdone' : 'boarddone'), 70); await sleep(3.2); if (!ok()) return;
+        }
+        // 3. back to the switch, and on to the next community
+        tour.step = (tour.step + 1) % TOUR.length;
+        await tap('back', () => { api.current!.menu(); setNight(false); }); await sleep(0.7);
       }
     }
-    const startDirector = () => { dirWaits = []; dirOn = true; dirPaused = false; started = true; dirRun++; setDir('play'); void direct(dirRun); };
-    const stopDirector = () => { if (!dirOn) return; dirOn = false; dirPaused = false; dirRun++; dirWaits = []; setDir('off'); setDemo((d) => ({ ...d, on: false })); };
+    const startDirector = () => { dirWaits = []; dirOn = true; dirPaused = false; started = true; tourRef.current.on = true; dirRun++; setDir('play'); void direct(dirRun); };
+    const stopDirector = () => { if (!dirOn) return; dirOn = false; dirPaused = false; tourRef.current.on = false; dirRun++; dirWaits = []; setDir('off'); setDemo((d) => ({ ...d, on: false })); };
     api.current.dirStart = startDirector;
     api.current.dirPause = (p) => { if (!dirOn) return; dirPaused = p; setDir(p ? 'pause' : 'play'); };
     // taking over: a real press, tap, drag or key inside the world stops the director at once
@@ -1205,19 +1365,19 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const realDown = (e: PointerEvent) => {
       if ((e.target as HTMLElement).closest?.('[data-pp-dir]')) return;
       if (e.pointerType === 'touch') { touchDown = e.pointerId; return; } // a touch that turns into a page scroll is cancelled by the browser, and is not a take-over
-      touched = true; stopDirector();
+      touched = tourRef.current.touched = true; stopDirector();
     };
-    const realUp = (e: PointerEvent) => { if (touchDown === e.pointerId) { touchDown = null; touched = true; stopDirector(); } };
+    const realUp = (e: PointerEvent) => { if (touchDown === e.pointerId) { touchDown = null; touched = tourRef.current.touched = true; stopDirector(); } };
     const realCancel = (e: PointerEvent) => { if (touchDown === e.pointerId) touchDown = null; };
     wrap.addEventListener('pointerdown', realDown, true); wrap.addEventListener('pointerup', realUp, true); wrap.addEventListener('pointercancel', realCancel, true);
 
     // test hook, only with #ppdebug in the address: lets a test place the camera and the walker
-    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, story: storyId }) } : null;
+    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ com: LY.id, tour: tourRef.current.step, pos: [Math.round(walker.g.position.x * 10) / 10, Math.round(walker.g.position.z * 10) / 10], geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, story: storyId }) } : null;
     if (dbg) (window as unknown as { __ppw: unknown }).__ppw = dbg;
 
     /* ---- input ---- */
     const onKey = (e: KeyboardEvent) => {
-      if (dirOn) { if (e.type !== 'keydown' || !wrap.contains(document.activeElement)) return; touched = true; stopDirector(); }
+      if (dirOn) { if (e.type !== 'keydown' || !wrap.contains(document.activeElement)) return; touched = tourRef.current.touched = true; stopDirector(); }
       if (m !== 'walk') return;
       const tag = (e.target as HTMLElement)?.tagName; if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const k = e.key.toLowerCase();
@@ -1250,7 +1410,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const onCancel = () => { drag = null; };
     canvas.addEventListener('pointerdown', onDown); canvas.addEventListener('pointermove', onMove); canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onCancel);
 
-    let viewShift = small ? 0.12 : 0.2, sideShift = 0;
+    let viewShift = small ? 0.16 : 0.14, sideShift = 0;
     const applyShift = () => { const w = wrap.clientWidth, h = wrap.clientHeight; if (Math.abs(viewShift) < 0.002 && sideShift < 0.002) camera.clearViewOffset(); else camera.setViewOffset(w, h, sideShift * w, viewShift * h, w, h); };
     const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 64 : 52; camera.updateProjectionMatrix(); applyShift(); };
     resize();
@@ -1265,7 +1425,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       raf = requestAnimationFrame(tick);
       let dt = Math.min(clock.getDelta(), 0.05) * (dbg ? (dbg.speed as number) : 1);
       if (!visible || document.hidden) return; // off screen or in a hidden tab: the picture and the director both wait
-      if (autoplay && !started && !touched && half) startDirector();
+      if (!started && half && (tourRef.current.on || (autoplay && !touched))) startDirector(); // a running tour carries on in the new community
       if (dirOn && dirPaused) dt = 0;
       else if (dirOn) { dirT += dt; for (let i = dirWaits.length - 1; i >= 0; i--) { const w = dirWaits[i]; if (dirT >= w.t || w.cond?.()) { dirWaits.splice(i, 1); w.res(); } } }
       const time = (simT += dt);
@@ -1273,11 +1433,13 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const walking = m === 'walk' || (m === 'story' && !flat.visible);
 
       // story timeline
-      if (m === 'story' && bi >= 0 && bi < beats.length) { bt += dt; beats[bi].update?.(bt, dt); if (bt >= (!dirOn ? beats[bi].dur : storyId === 'dog' && bi === 4 ? 5.5 : beats[bi].dur * 0.86)) nextBeat(); } // the director keeps a slightly brisker pace
+      if (m === 'story' && bi >= 0 && bi < beats.length) { bt += dt; beats[bi].update?.(bt, dt); if (bt >= (!dirOn ? beats[bi].dur : storyId === 'dog' && bi === beats.length - 1 ? 5.5 : beats[bi].dur * 0.86)) nextBeat(); } // the director keeps a slightly brisker pace
       if (inFlat) {
         const dv = stepActor(aVisitor, dt); visitor.phase += dv * AC.stride(0); AC.posePerson(visitor, dt, time, dv > 0);
-        if (storyId === 'dog') { const dd = stepActor(aDog, dt); dog.phase += dd * AC.DOG_STRIDE * 1.5; AC.poseDog(dog, dt, time, dd > 0, { sit: dogSitFlat, walk: true, wag: 1.3 }); AC.posePerson(parent, dt, time, false); }
-        else { const dc = stepActor(aCat, dt); homeCat.phase += dc * AC.CAT_STRIDE; AC.poseCat(homeCat, dt, time, dc > 0, true); }
+        if (storyId !== 'cat') { const dd = stepActor(aDog, dt); dog.phase += dd * AC.DOG_STRIDE * 1.5; AC.poseDog(dog, dt, time, dd > 0, { sit: dogSitFlat && !dogEatFlat, drink: dogEatFlat, walk: true, wag: 1.3 }); }
+        if (storyId === 'dog') AC.posePerson(parent, dt, time, false);
+        else if (storyId === 'cat') { const dc = stepActor(aCat, dt); homeCat.phase += dc * AC.CAT_STRIDE; AC.poseCat(homeCat, dt, time, dc > 0, true); }
+        else { const dov = stepActor(aOwner, dt); vOwner.phase += dov * AC.stride(0); AC.posePerson(vOwner, dt, time, dov > 0); pLabel.position.set(vOwner.g.position.x, 1.72 * vOwner.scale + 0.2, vOwner.g.position.z); }
         doorOpen += (doorTarget - doorOpen) * Math.min(1, dt * 4); door.rotation.y = doorOpen * 1.45;
         fill += (fillTarget - fill) * Math.min(1, dt * 2); food.scale.setScalar(Math.max(0.01, fill)); drink.scale.setScalar(Math.max(0.01, fill));
         vLabel.position.set(visitor.g.position.x, 1.72 * visitor.scale + 0.2 - visitor.k.crouch * 0.3, visitor.g.position.z);
@@ -1312,7 +1474,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         // dog on the leash
         const dp = dog.g.position; const wrot = walker.g.rotation.y; let dogDest: THREE.Vector3;
         if (dogMode === 'go') dogDest = (ballFlight ? ballFlight.to : ball.position).clone().setY(0);
-        else if (dogMode === 'drink') dogDest = V(38, 0, -2.12);
+        else if (dogMode === 'drink') dogDest = V(BX, 0, BZ - 0.52);
         else dogDest = walker.g.position.clone().add(V(Math.cos(wrot), 0, -Math.sin(wrot)).multiplyScalar(-0.8)).add(V(Math.sin(wrot), 0, Math.cos(wrot)).multiplyScalar(0.8));
         tmp.copy(dogDest).sub(dp).setY(0); const dd = tmp.length();
         const dogSpeed = dogMode === 'go' || dogMode === 'back' ? 7.5 : Math.min(6.5, dd * 5);
@@ -1322,7 +1484,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
           let d = Math.atan2(tmp.x, tmp.z) - dog.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); dog.g.rotation.y += d * Math.min(1, dt * 9);
         }
         const drinking = dogMode === 'drink' && dd < 0.6;
-        if (drinking) { let d = Math.atan2(38 - dp.x, -1.6 - dp.z) - dog.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); dog.g.rotation.y += d * Math.min(1, dt * 6); }
+        if (drinking) { let d = Math.atan2(BX - dp.x, BZ - dp.z) - dog.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); dog.g.rotation.y += d * Math.min(1, dt * 6); }
         dp.y = 0;
         AC.poseDog(dog, dt, time, dogMoving && !drinking, { sit: dogMode === 'sit' || (!moving && dogMode === 'follow' && dd < 0.2), drink: drinking, wag: dogMode === 'sit' ? 1.4 : 1 });
         if (dogMode === 'drink' && dd < 0.6) { dogTimer += dt; if (dogTimer > (dirOn ? 1.7 : 2.4)) { dogMode = 'follow'; finish(STOPS.find((s) => s.id === 'water')!.done, 'water'); } }
@@ -1339,23 +1501,25 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const leashOn = inFlat ? leashInFlat : walking || m === 'ended';
       leash.visible = leashOn;
       if (leashOn) {
-        (inFlat ? visitor : walker).arms[0].end.getWorldPosition(lA);
+        (inFlat ? flatHolder : walker).arms[0].end.getWorldPosition(lA);
         if (inFlat || dogMode === 'follow' || dogMode === 'sit' || dogMode === 'drink') dog.ring.getWorldPosition(lB);
         else lB.set(lA.x + Math.sin(time * 2.4) * 0.03, lA.y - 0.5, lA.z); // unclipped for fetch: it hangs looped from the hand
         drawLeash(leash, lA, lB);
       }
 
       // menu / end: slow aerial orbit of the whole community
-      if (m === 'menu' || m === 'catdone') {
-        // a high bird's-eye, like the master plan: all ten towers, with the pool and the track between the two rows
-        const a = Math.PI / 2 + Math.sin(time * 0.06) * 0.32; tmp.set(10 + Math.cos(a) * 100, 395, 2 + Math.sin(a) * 100);
-        if (camSnap) { camPos.copy(tmp); camLook.set(10, 0, 2); camSnap = false; } else { camPos.lerp(tmp, 0.04); camLook.lerp(tmp.set(10, 0, 2), 0.05); }
+      if (m === 'menu' || m === 'catdone' || m === 'boarddone') {
+        // a bird's-eye of the whole community, low enough that it fills the frame, drifting slowly
+        const A = AV, a = A_BEAR + Math.sin(time * 0.06) * A_SWAY; tmp.set(A[0] + Math.cos(a) * A[3] * AK, A[2] * AK, A[1] + Math.sin(a) * A[3] * AK);
+        if (camSnap) { camPos.copy(tmp); camLook.set(A[0], A[4] ?? 0, A[1]); camSnap = false; } else { camPos.lerp(tmp, 0.04); camLook.lerp(tmp.set(A[0], A[4] ?? 0, A[1]), 0.05); }
       }
       if (m === 'ended') followCam();
       if (dbg?.cam) { camPos.set(dbg.cam[0], dbg.cam[1], dbg.cam[2]); camLook.set(dbg.cam[3], dbg.cam[4], dbg.cam[5]); }
       if (dbg?.rel) { const r = walker.g.rotation.y, c = Math.cos(r), sn = Math.sin(r), o = dbg.rel; camPos.set(walker.g.position.x + o[0] * c + o[2] * sn, o[1], walker.g.position.z - o[0] * sn + o[2] * c); camLook.set(walker.g.position.x + (o[3] ?? 0) * c, o[4] ?? 0.85, walker.g.position.z - (o[3] ?? 0) * sn); }
       // behind the story cards the picture slides up, and behind the payment summary it slides aside, so nothing important is covered
-      const wantShift = m === 'menu' ? (small ? 0.12 : 0.2) : m === 'ended' && small ? -0.33 : 0, wantSide = m === 'ended' && !small ? 0.34 : 0;
+      // (the same after a cat visit or a sleepover: otherwise the summary card sits exactly on top of a slim community such as two towers)
+      const sumAir = m === 'catdone' || m === 'boarddone';
+      const wantShift = m === 'menu' ? (small ? 0.16 : 0.14) : (m === 'ended' || sumAir) && small ? -0.33 : 0, wantSide = !small ? (m === 'ended' ? 0.34 : sumAir ? 0.3 : 0) : 0;
       if (Math.abs(wantShift - viewShift) > 0.001 || Math.abs(wantSide - sideShift) > 0.001) { const k = Math.min(1, Math.max(dt, 0.016) * 3); viewShift += (wantShift - viewShift) * k; sideShift += (wantSide - sideShift) * k; applyShift(); }
       camera.position.copy(camPos); camera.lookAt(camLook);
 
@@ -1392,8 +1556,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       if (bubble) { bubbleT -= dt; if (bubbleT <= 0) { scene.remove(bubble); bubble = null; } }
 
       // light follows the action so shadows stay sharp
-      setRange(!inFlat && !walking && m !== 'ended');
-      const focus = inFlat ? F : walking || m === 'ended' ? walker.g.position : tmp.set(12, 0, 2);
+      setRange(!inFlat && !walking && m !== 'ended'); air.visible = !inFlat && !walking && m !== 'ended';
+      const focus = inFlat ? F : walking || m === 'ended' ? walker.g.position : tmp.set(LY.aerial[0], 0, LY.aerial[1]); // the light stays on the community's middle
       sun.target.position.copy(focus); sun.position.copy(focus).add(SUN_OFF);
       nightF += (nightTarget - nightF) * Math.min(1, dt * 2.5);
       skyU.top.value.copy(DAY.top).lerp(NIGHT.top, nightF); skyU.bottom.value.copy(DAY.bottom).lerp(NIGHT.bottom, nightF);
@@ -1403,6 +1567,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       scene.environmentIntensity = 0.35 - nightF * 0.25;
       if (inFlat) { sun.intensity *= 0.28; hemi.intensity *= 0.5; scene.environmentIntensity *= 0.6; }
       renderer.toneMappingExposure = inFlat ? 0.92 : 1.05;
+      roomLight.intensity = 11 * (1 - 0.82 * nightF); // lights down for the sleepover
 
       if (m === 'walk') {
         let n: StopId | null = null;
@@ -1425,24 +1590,40 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         else t.sp.scale.setScalar(1.5 + Math.sin(time * 3 + i) * 0.2);
       });
       renderer.render(scene, camera);
-      if (frames < 3 && ++frames === 3) setReady(true); // textures and shaders are in: let the picture fade up over the poster
+      if (frames < 3 && ++frames === 3) { // textures and shaders are in: let the picture fade up over the poster, or over the community we just left
+        setReady(true);
+        const dc = dissolveRef.current; if (dc && dc.style.opacity === '1') { void dc.offsetWidth; dc.style.transition = 'opacity .8s ease'; dc.style.opacity = '0'; }
+      }
     };
     let frames = 0;
-    camPos.set(10, 395, 102); camLook.set(10, 0, 2);
+    camPos.set(AV[0] + Math.cos(A_BEAR) * AV[3] * AK, AV[2] * AK, AV[1] + Math.sin(A_BEAR) * AV[3] * AK); camLook.set(AV[0], AV[4] ?? 0, AV[1]);
     tick();
 
     return () => {
       cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); dirOn = false; dirWaits = [];
       wrap.removeEventListener('pointerdown', realDown, true); wrap.removeEventListener('pointerup', realUp, true); wrap.removeEventListener('pointercancel', realCancel, true);
       window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); window.removeEventListener('blur', blur);
+      canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerup', onUp); canvas.removeEventListener('pointercancel', onCancel);
+      // Free everything this community put on the GPU. The canvas and renderer live on, and the tour rebuilds a scene every
+      // half minute, so anything missed here would pile up for as long as the page stays open.
+      const isTex = (v: unknown): v is THREE.Texture => !!v && (v as THREE.Texture).isTexture === true;
       scene.traverse((o) => {
         const me = o as THREE.Mesh; if (me.geometry) me.geometry.dispose();
+        if ((o as THREE.InstancedMesh).isInstancedMesh) (o as THREE.InstancedMesh).dispose();
         const mats = Array.isArray(me.material) ? me.material : me.material ? [me.material] : [];
-        mats.forEach((mm) => { const sm = mm as THREE.MeshStandardMaterial; sm.map?.dispose(); sm.emissiveMap?.dispose(); mm.dispose(); });
+        mats.forEach((mm) => {
+          for (const v of Object.values(mm)) if (isTex(v)) v.dispose();
+          const un = (mm as THREE.ShaderMaterial).uniforms; if (un) for (const k in un) { const v = un[k]?.value; if (isTex(v)) v.dispose(); }
+          mm.dispose();
+        });
       });
-      pmrem.dispose(); renderer.dispose(); api.current = null;
+      paintedTex.forEach((t) => t.dispose()); paintedTex.clear();
+      envRT.dispose(); envRoom.dispose(); maskTex.dispose(); sun.shadow.dispose(); pmrem.dispose(); renderer.renderLists.dispose(); api.current = null;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [community]);
+  // the renderer itself lives until the section leaves the page
+  useEffect(() => () => { rendererRef.current?.dispose(); rendererRef.current = null; }, []);
 
   useEffect(() => { api.current?.setNight(night); }, [night]);
   useEffect(() => { api.current?.sync(mode); }, [mode]);
@@ -1451,36 +1632,62 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   photoRef.current = takePhoto;
   const nearStop = STOPS.find((s) => s.id === near);
   const mins = Math.floor(stats.minutes);
-  const share = Math.round(PRICE * 0.7 * 100) / 100;
   const glassBtn: React.CSSProperties = { ...glass, borderRadius: 999, padding: '10px 16px', fontFamily: head, fontWeight: 700, fontSize: 13.5, color: T.ink, cursor: 'pointer', minHeight: 42 };
   const kicker: React.CSSProperties = { fontFamily: body, fontWeight: 700, fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase', color: T.leaf, marginBottom: 8 };
 
-  const CARDS: { id: StoryId | 'free'; k: string; t: string; d: string; cta: string; img: string; pos: string }[] = [
-    { id: 'dog', k: 'Story · 30 seconds', t: 'The dog walk', d: 'Ananya is on calls in her flat. Priya arrives at the door, says hello to Biscuit, clips the leash on and heads down to the track. Then you take over.', cta: 'Watch the dog walk', img: '/real/meet-greet.jpg', pos: '45% 40%' },
-    { id: 'cat', k: 'Story · 35 seconds', t: 'The cat visit', d: 'Meera is travelling. Kabir lets himself in with a one-time code, then feeds Lily, cleans the litter and plays with her at home.', cta: 'Watch the cat visit', img: '/real/cat-visit.jpg', pos: '55% 40%' },
-    { id: 'free', k: 'Free roam', t: 'Explore the community', d: 'Ten towers, the ring road, the jogging track, the pool, the clubhouse and the pet garden. Walk Biscuit wherever you like.', cta: 'Start walking', img: '/real/community.jpg', pos: '50% 60%' },
-  ];
+  const svc = SERVICES.find((x) => x.id === service)!;
+  /** switch community: the last frame stays on screen while the next scene is built, then dissolves into it */
+  const pickCommunity = (id: CommunityId) => { if (id === community) return; api.current?.freeze(); setCommunity(id); };
+  // the area filter: only areas that have a modelled community are offered, and choosing one lands you in a community there
+  const areas = AREAS.filter((a) => COMMUNITY_IDS.some((id) => LAYOUTS[id].area === a));
+  const shown = COMMUNITY_IDS.filter((id) => area === 'All' || LAYOUTS[id].area === area);
+  const pickArea = (a: Area | 'All') => { setArea(a); if (a !== 'All' && LAYOUTS[community].area !== a) { const first = COMMUNITY_IDS.find((id) => LAYOUTS[id].area === a); if (first) pickCommunity(first); } };
+  const DONE: Record<'ended' | 'catdone' | 'boarddone', { k: string; t: string; item: string; price: number; who: string; src: string }> = {
+    ended: { k: 'Walk complete', t: 'The walk is over. Here\'s your payment.', item: '1-hour walk', price: PRICE, who: 'The neighbour', src: '3d-walk' },
+    catdone: { k: 'Visit complete', t: 'Lily is fed, clean and happy.', item: '30-minute cat visit', price: 129, who: 'The neighbour', src: '3d-cat-visit' },
+    boarddone: { k: 'Sleepover complete', t: 'Biscuit slept over, safe and happy.', item: 'One night of dog boarding', price: 549, who: 'The host', src: '3d-boarding' },
+  };
+  const fin = mode === 'ended' || mode === 'catdone' || mode === 'boarddone' ? DONE[mode] : null;
 
   return (
-    <div ref={wrapRef} tabIndex={-1} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', opacity: ready ? 1 : 0, transition: 'opacity .8s ease', touchAction: mode === 'walk' && dir === 'off' ? 'none' : 'pan-y', cursor: mode === 'walk' ? 'grab' : 'default' }} aria-label="3D model of a ten-tower gated community. Watch a story or walk Biscuit the dog through it." />
+    <div ref={wrapRef} tabIndex={-1} data-fin={fin ? '' : undefined} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
+      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', opacity: ready ? 1 : 0, transition: 'opacity .8s ease', touchAction: mode === 'walk' && dir === 'off' ? 'none' : 'pan-y', cursor: mode === 'walk' ? 'grab' : 'default' }} aria-label={`3D model of ${LY.name}, a gated community. Watch a dog walk, a cat visit or an overnight stay, or walk Biscuit the dog through it.`} />
 
       <canvas ref={dissolveRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: 1 }} />
       {!webgl && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: T.leafPale, padding: 24, textAlign: 'center', fontFamily: body, color: T.sub }}>Your browser can't show the 3D community. Try the walk tracker below instead.</div>}
 
-      {/* Story cards */}
+      {/* The switch: community, service, then Watch or Explore */}
       {webgl && mode === 'menu' && (
-        <div className="pp-fade-in pp-world-menu" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'linear-gradient(180deg, rgba(20,48,31,0) 30%, rgba(20,48,31,.45))', padding: 'clamp(12px, 2vw, 22px)', overflowY: 'auto' }}>
-          <div className="pp-world-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'clamp(8px, 1.2vw, 14px)' }}>
-            {CARDS.map((c) => (
-              <div key={c.id} className="pp-world-card" style={{ ...glass, borderRadius: 22, padding: 'clamp(14px, 1.8vw, 20px)', display: 'flex', flexDirection: 'column' }}>
-                <img className="pp-world-card-img" src={c.img} alt="" loading="lazy" style={{ width: '100%', height: 'clamp(84px, 13vh, 132px)', objectFit: 'cover', objectPosition: c.pos, borderRadius: 14, marginBottom: 12, display: 'block' }} />
-                <div style={kicker}>{c.k}</div>
-                <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(18px, 1.8vw, 22px)', letterSpacing: '-0.02em', margin: '0 0 6px', color: T.ink }}>{c.t}</h3>
-                <p className="pp-world-card-d" style={{ fontFamily: body, fontSize: 14, lineHeight: 1.55, color: T.sub, margin: '0 0 14px', flex: 1 }}>{c.d}</p>
-                <button data-pp={`card-${c.id}`} className={`pp-glass-btn${c.id === 'dog' ? ' pp-glass-primary' : ''}`} style={{ fontSize: 14.5, padding: '11px 18px', minHeight: 44 }} onClick={() => (c.id === 'free' ? api.current?.explore() : api.current?.play(c.id))}>{c.cta}</button>
+        <div className="pp-fade-in pp-world-menu" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, display: 'flex', justifyContent: 'center', padding: 'clamp(10px, 1.6vw, 18px)', background: 'linear-gradient(180deg, rgba(20,48,31,0), rgba(20,48,31,.3))', pointerEvents: 'none' }}>
+          <div className="pp-world-panel" style={{ ...glass, background: 'rgba(255,255,255,.82)', borderRadius: 24, padding: 'clamp(12px, 1.6vw, 18px)', width: 'min(960px, 100%)', pointerEvents: 'auto', fontFamily: body }}>
+            {areas.length > 1 && (
+              <div className="pp-world-row">
+                <div className="pp-world-k" style={{ ...kicker, marginBottom: 0 }}>Area</div>
+                <div role="group" aria-label="Area" className="pp-world-pills">
+                  {(['All', ...areas] as (Area | 'All')[]).map((a) => <button key={a} aria-pressed={a === area} data-pp={`area-${slug(a)}`} className="pp-world-chip" onClick={() => pickArea(a)}>{a === 'All' ? 'All areas' : a}</button>)}
+                </div>
               </div>
-            ))}
+            )}
+            <div className="pp-world-row">
+              <div className="pp-world-k" style={{ ...kicker, marginBottom: 0 }}>Community</div>
+              <div role="group" aria-label="Community" className="pp-world-pills">
+                {shown.map((id) => <button key={id} aria-pressed={id === community} data-pp={`com-${id}`} className="pp-world-pill" onClick={() => pickCommunity(id)}>{LAYOUTS[id].name}</button>)}
+              </div>
+            </div>
+            <div className="pp-world-row">
+              <div className="pp-world-k" style={{ ...kicker, marginBottom: 0 }}>Service</div>
+              <div role="group" aria-label="Service" className="pp-world-pills">
+                {SERVICES.map((sv) => <button key={sv.id} aria-pressed={sv.id === service} data-pp={`svc-${sv.id}`} className="pp-world-pill" onClick={() => setService(sv.id)}>{sv.label}</button>)}
+              </div>
+            </div>
+            <div className="pp-world-go" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 230px', minWidth: 0 }}>
+                <div style={{ fontFamily: head, fontWeight: 800, fontSize: 15.5, letterSpacing: '-0.01em', color: T.ink }}>{svc.price}<span className="pp-world-blurb" style={{ fontFamily: body, fontWeight: 500, fontSize: 14, letterSpacing: 0, color: T.sub }}> · {LY.blurb}</span></div>
+                <div className="pp-world-line" style={{ fontSize: 13.5, color: T.sub, lineHeight: 1.45, marginTop: 3 }}>{svc.line}</div>
+              </div>
+              <button data-pp="watch" className="pp-glass-btn pp-glass-primary" style={{ fontSize: 14.5, padding: '11px 20px', minHeight: 44 }} aria-label={`Watch ${svc.label.toLowerCase()}`} onClick={() => api.current?.play(service)}><span>Watch<span className="pp-world-wsvc"> {svc.label.toLowerCase()}</span></span></button>
+              <button data-pp="explore" className="pp-glass-btn" style={{ fontSize: 14.5, padding: '11px 18px', minHeight: 44 }} onClick={() => api.current?.explore()}>Explore on foot</button>
+            </div>
           </div>
         </div>
       )}
@@ -1545,24 +1752,26 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       )}
 
       {/* Summaries */}
-      {(mode === 'ended' || mode === 'catdone') && (
+      {fin && (
         <div className="pp-fade-in" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'rgba(20,48,31,.35)', padding: 14, overflowY: 'auto' }}>
           <div className="pp-modal-in" style={{ ...glass, background: 'rgba(255,255,255,.88)', borderRadius: 26, padding: 'clamp(18px, 3vw, 30px)', width: 'min(460px, 100%)', fontFamily: body }}>
-            <div style={kicker}>{mode === 'ended' ? 'Walk complete' : 'Visit complete'}</div>
-            <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(21px, 2.6vw, 26px)', letterSpacing: '-0.02em', margin: '0 0 6px', color: T.ink }}>{mode === 'ended' ? 'The walk is over. Here\'s your payment.' : 'Lily is fed, clean and happy.'}</h3>
+            <div style={kicker}>{fin.k}</div>
+            <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(21px, 2.6vw, 26px)', letterSpacing: '-0.02em', margin: '0 0 6px', color: T.ink }}>{fin.t}</h3>
             <p style={{ fontSize: 14.5, color: T.sub, margin: '0 0 16px', lineHeight: 1.6 }}>
               {mode === 'ended'
                 ? `${Math.max(1, mins)} min, ${stats.km.toFixed(2)} km, ${done.length} of 4 stops, ${treats} of 8 treats and ${stats.photos} photo${stats.photos === 1 ? '' : 's'} sent. Biscuit is home, towelled and happy.`
-                : 'Food, water, litter, play and photos, all in her own home. Meera saw every step on her phone.'}
+                : mode === 'catdone'
+                  ? 'Food, water, litter, play and photos, all in her own home. Meera saw every step on her phone.'
+                  : 'Dinner as the note said, a night on his own blanket and a morning photo, at a host\'s home in the same community. Ananya saw each update on her phone.'}
             </p>
             <div style={{ background: '#fff', borderRadius: 18, padding: 16, border: `1px solid ${T.line}`, marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: head, fontWeight: 800, fontSize: 18, color: T.ink, marginBottom: 10 }}><span>{mode === 'ended' ? '1-hour walk' : '30-minute cat visit'}</span><span>₹{mode === 'ended' ? PRICE : 129}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontFamily: head, fontWeight: 800, fontSize: 18, color: T.ink, marginBottom: 10 }}><span>{fin.item}</span><span>₹{fin.price}</span></div>
               <div style={{ display: 'flex', height: 10, borderRadius: 99, overflow: 'hidden', marginBottom: 10 }}><div style={{ width: '70%', background: T.leafBright }} /><div style={{ flex: 1, background: T.marigold }} /></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', fontSize: 13, color: T.sub }}><span>The neighbour: ₹{mode === 'ended' ? share.toFixed(2) : '90.30'}</span><span>ProxyPaw: ₹{mode === 'ended' ? (PRICE - share).toFixed(2) : '38.70'}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', fontSize: 13, color: T.sub }}><span>{fin.who}: ₹{(fin.price * 0.7).toFixed(2)}</span><span>ProxyPaw: ₹{(fin.price * 0.3).toFixed(2)}</span></div>
             </div>
             <div style={{ display: 'grid', gap: 10 }}>
-              <button className="pp-glass-btn pp-glass-primary" onClick={() => onJoin(mode === 'ended' ? '3d-walk' : '3d-cat-visit')} style={{ width: '100%' }}>Join the waitlist for the real thing</button>
-              <button data-pp="back" className="pp-glass-btn" style={{ width: '100%' }} onClick={() => api.current?.menu()}>Back to the stories</button>
+              <button className="pp-glass-btn pp-glass-primary" onClick={() => onJoin(fin.src)} style={{ width: '100%' }}>Join the waitlist for the real thing</button>
+              <button data-pp="back" className="pp-glass-btn" style={{ width: '100%' }} onClick={() => api.current?.menu()}>Back to the communities</button>
             </div>
             <div style={{ fontSize: 11.5, color: T.muted2, marginTop: 10, textAlign: 'center' }}>A demo. Nothing is charged.</div>
           </div>
@@ -1591,15 +1800,34 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         .pp-world-rip { animation: pp-world-rip .6s ease-out forwards; }
         @keyframes pp-world-rip { from { transform: translate(-50%,-50%) scale(.25); opacity: .6; } to { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
         .pp-world-stop:not(:disabled):hover { background: rgba(46,125,79,.1) !important; }
+        .pp-world-row { display: flex; align-items: center; gap: 12px; }
+        .pp-world-row + .pp-world-row { margin-top: 8px; }
+        .pp-world-k { flex: 0 0 98px; }
+        .pp-world-pills { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; flex: 1 1 auto; }
+        .pp-world-pill, .pp-world-chip { flex: 0 0 auto; white-space: nowrap; border-radius: 999px; cursor: pointer; font-family: ${head}; letter-spacing: -.01em; transition: background .25s ease, border-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
+        .pp-world-pill { border: 1px solid rgba(46,125,79,.2); background: rgba(255,255,255,.72); color: ${T.sub}; font-weight: 700; font-size: 13.5px; padding: 8px 15px; min-height: 38px; }
+        .pp-world-chip { border: 1px solid transparent; background: transparent; color: ${T.sub}; font-weight: 600; font-size: 12.5px; padding: 5px 11px; min-height: 30px; }
+        .pp-world-pill:hover { transform: translateY(-1px); background: #fff; }
+        .pp-world-chip:hover { background: rgba(46,125,79,.07); }
+        .pp-world-pill[aria-pressed="true"] { background: rgba(46,125,79,.16); border-color: rgba(46,125,79,.42); color: ${T.ink}; box-shadow: 0 0 0 3px rgba(46,125,79,.08); }
+        .pp-world-chip[aria-pressed="true"] { background: rgba(46,125,79,.12); border-color: rgba(46,125,79,.3); color: ${T.ink}; font-weight: 700; }
+        .pp-world-pill:focus-visible, .pp-world-chip:focus-visible { outline: 2px solid ${T.leaf}; outline-offset: 2px; }
+        @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc { display: none; } }
         @media (max-width: 860px) {
-          .pp-world-cards { grid-template-columns: 1fr !important; }
-          .pp-world-card-d { display: none; }
-          .pp-world-card { flex-direction: row !important; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px !important; }
-          .pp-world-card > div, .pp-world-card-img { display: none !important; }
+          .pp-world-k, .pp-world-line { display: none; }
+          /* each group is one row that scrolls sideways and runs to the panel's edge, so a cut-off pill shows there is more */
+          .pp-world-pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; margin: 0 -12px; padding: 3px 12px; }
+          .pp-world-pills::-webkit-scrollbar { display: none; }
+          .pp-world-row + .pp-world-row { margin-top: 4px; }
+          .pp-world-pill { font-size: 12.5px; padding: 7px 12px; min-height: 36px; }
+          .pp-world-chip { padding: 5px 10px; min-height: 32px; }
+          .pp-world-go { margin-top: 8px !important; }
+          .pp-world-go .pp-glass-btn { flex: 1 1 auto; font-size: 13.5px !important; padding: 9px 14px !important; min-height: 40px !important; }
+          .pp-world-go > div:first-child { flex-basis: 100% !important; }
           .pp-world-real { width: 72px !important; height: 56px !important; }
-          .pp-world-card h3 { margin: 0 !important; flex: 1; }
           .pp-world-hint, .pp-world-photos { display: none !important; }
           .pp-world-dir { top: 62px !important; }
+          .pp-world[data-fin] .pp-world-dir { display: none !important; } /* the summary card needs that space on a phone */
           .pp-world-stops { top: 110px !important; left: 10px !important; width: min(262px, calc(100% - 20px)) !important; padding: 9px !important; }
           .pp-world-stats { left: 10px !important; top: 10px !important; gap: 12px !important; padding: 8px 12px !important; }
           .pp-world-toast { bottom: 128px !important; }
