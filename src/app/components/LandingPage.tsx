@@ -1,21 +1,24 @@
 /**
  * ProxyPaw landing page, "Garden Community" redesign (see DESIGN.md).
  *
- * Story order: hero (towers rising, a dog on the lawn) → the communities it is
- * built for → why it exists (founder's cats) → life in the community (photoreal
- * scenes) → how it works → try a walk (interactive demo ending in a receipt) →
- * services → pricing with "where your money goes" → founding perks and the
- * volunteer path → journal → FAQ → close.
+ * The page is a walk with eight stops (see DESIGN.md, "The walk"): hero → the
+ * communities it is built for → 1 why it exists → 2 life in the community →
+ * 3 how it works → 4 the 3D community → 5 the parent's side and the app →
+ * 6 services and pricing → 7 founding perks and the volunteer path → journal →
+ * FAQ → 8 close. `Trail` pins a jogging track to the bottom of the page where a
+ * dog and a cat walk between the stops as the visitor scrolls. Each chapter is
+ * a rounded sheet that slides over the one before.
  *
  * Photos in /public/real are generated photoreal scenes of Hyderabad gated
  * communities (realistic-visuals skill); they are illustrative, never presented
  * as real customers. Sample names only appear inside the walk demo, labelled.
  */
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { Component, lazy, Suspense, useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import CommunityScene from './landing/CommunityScene';
 import WalkSimulator from './landing/WalkSimulator';
 import AppWalkthrough from './landing/AppWalkthrough';
+import Trail, { stopLabel } from './landing/Trail';
 const CommunityWorld = lazy(() => import('./landing/CommunityWorld'));
 import {
   T, head, shell, SECTION, GAP, eyebrow, h2, lead, btnPrimary, btnSecondary, card,
@@ -70,26 +73,66 @@ const SHARE_URL = 'https://wa.me/?text=' + encodeURIComponent(
 
 /* ------------------------------- small parts ------------------------------ */
 
+/**
+ * If the 3D world fails (an old GPU, a lost WebGL context, a chunk that would not
+ * load), the rest of the page carries on and this panel explains what happened.
+ */
+class WorldBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(err: unknown) { console.error('The 3D community failed to load', err); }
+  render() { return this.state.failed ? this.props.fallback : this.props.children; }
+}
+
 /** Mounts the 3D world only once it is near the viewport, so three.js never slows first paint. */
 function WorldMount({ onJoin }: { onJoin: (source: string) => void }) {
   const [ref, seen] = useInView<HTMLDivElement>(0);
-  const placeholder = <div style={{ height: 'clamp(600px, 84vh, 800px)', borderRadius: 30, background: 'linear-gradient(180deg, #cfe7f2, #e7f4e4 60%, #bfe0b0)' }} />;
-  return <div ref={ref}>{seen ? <Suspense fallback={placeholder}><CommunityWorld onJoin={onJoin} /></Suspense> : placeholder}</div>;
+  const frame: CSSProperties = { height: 'clamp(600px, 84vh, 800px)', borderRadius: 30, background: 'linear-gradient(180deg, #d9ecf4, #edf6ea 60%, #d3e9c6)' };
+  const placeholder = <div style={frame} />;
+  const failed = (
+    <div style={{ ...frame, height: 'auto', minHeight: 260, display: 'grid', placeItems: 'center', padding: 28, textAlign: 'center' }}>
+      <div style={{ maxWidth: 460 }}>
+        <div style={{ fontFamily: head, fontWeight: 800, fontSize: 20, color: T.ink, marginBottom: 8 }}>The 3D community could not load on this device.</div>
+        <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.6, color: T.sub }}>The walk tracker just below shows the same walk, start to receipt.</p>
+      </div>
+    </div>
+  );
+  return (
+    <div ref={ref}>
+      {seen ? <WorldBoundary fallback={failed}><Suspense fallback={placeholder}><CommunityWorld onJoin={onJoin} /></Suspense></WorldBoundary> : placeholder}
+    </div>
+  );
 }
 
-function Section({ id, children, style, band }: { id?: string; children: ReactNode; style?: CSSProperties; band?: boolean }) {
+/**
+ * One chapter of the page. Each arrives as a rounded sheet that slides over the
+ * chapter before it, so the bottom padding leaves room for the next overlap.
+ * `quiet` tucks the walk bar away while the visitor is playing inside the chapter.
+ */
+function Section({ id, children, style, band, quiet }: { id?: string; children: ReactNode; style?: CSSProperties; band?: boolean; quiet?: boolean }) {
   return (
-    <section id={id} style={{ padding: `${SECTION} 0`, background: band ? T.band : undefined, scrollMarginTop: 80, ...style }}>
+    <section id={id} className="pp-sheet" data-trail-quiet={quiet ? '' : undefined}
+      style={{ padding: `${SECTION} 0 calc(${SECTION} + var(--pp-r))`, background: band ? T.band : T.canvas, scrollMarginTop: 60, ...style }}>
       <div style={shell}>{children}</div>
     </section>
   );
 }
 
-function Heading({ kicker, title, sub, center, action }: { kicker: string; title: ReactNode; sub?: ReactNode; center?: boolean; action?: ReactNode }) {
+/** Kicker line. With `stop` it carries the "Stop 3 of 8" pill that lights up when the walkers reach it. */
+function Kicker({ children, stop, style }: { children: ReactNode; stop?: string; style?: CSSProperties }) {
+  return (
+    <div style={{ ...eyebrow, display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 8, ...style }}>
+      {stop && <span className="pp-stop">{stopLabel(stop)}</span>}
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function Heading({ kicker, title, sub, center, action, stop }: { kicker: string; title: ReactNode; sub?: ReactNode; center?: boolean; action?: ReactNode; stop?: string }) {
   return (
     <Reveal style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 'clamp(30px, 4vw, 52px)', textAlign: center ? 'center' : undefined }}>
       <div style={{ maxWidth: center ? 760 : 680, margin: center ? '0 auto' : undefined }}>
-        <div style={eyebrow}>{kicker}</div>
+        <Kicker stop={stop} style={center ? { justifyContent: 'center' } : undefined}>{kicker}</Kicker>
         <h2 style={h2}>{title}</h2>
         {sub && <p style={{ ...lead, marginTop: 16 }}>{sub}</p>}
       </div>
@@ -173,7 +216,7 @@ function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
 
   const tabBtn = (id: typeof tab, label: string) => (
     <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="pp-tab"
-      style={{ border: 'none', cursor: 'pointer', fontFamily: head, fontWeight: 700, fontSize: 15, padding: '11px 18px', borderRadius: 999, minHeight: 44, background: tab === id ? T.ink : 'transparent', color: tab === id ? '#fff' : T.sub }}>
+      style={{ border: 'none', cursor: 'pointer', fontFamily: head, fontWeight: 700, fontSize: 15, padding: '11px 18px', borderRadius: 999, minHeight: 44, background: tab === id ? T.leafGlass2 : 'transparent', boxShadow: tab === id ? `inset 0 0 0 1px ${T.leafLine}` : 'none', color: tab === id ? T.ink : T.sub }}>
       {label}
     </button>
   );
@@ -191,7 +234,7 @@ function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
               const on = tab === 'walks' ? pick === i : vpick === i;
               return (
                 <button key={t.label} aria-pressed={on} onClick={() => (tab === 'walks' ? setPick(i) : setVpick(i))} className="pp-lift"
-                  style={{ textAlign: 'left', cursor: 'pointer', background: on ? T.ink : T.surface, color: on ? '#fff' : T.ink, border: `1.5px solid ${on ? T.ink : T.line}`, borderRadius: 20, padding: 18, position: 'relative', minHeight: 120 }}>
+                  style={{ textAlign: 'left', cursor: 'pointer', background: on ? 'linear-gradient(180deg, rgba(46,125,79,.17), rgba(46,125,79,.08)), #fff' : T.surface, color: T.ink, border: `1.5px solid ${on ? T.leafLine : T.line}`, boxShadow: on ? '0 0 0 4px rgba(46,125,79,.09), 0 14px 30px rgba(20,48,31,.08)' : 'none', borderRadius: 20, padding: 18, position: 'relative', minHeight: 120 }}>
                   {'featured' in t && t.featured && (
                     <span style={{ position: 'absolute', top: 12, right: 12, background: T.sun, color: T.ink, fontSize: 11, fontWeight: 800, padding: '3px 9px', borderRadius: 99 }}>Popular</span>
                   )}
@@ -248,7 +291,7 @@ function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: GAP }}>
           {PASSES.map((p) => (
-            <div key={p.label} className="pp-lift" style={{ ...card, padding: 22, position: 'relative', border: `1.5px solid ${p.featured ? T.leaf : T.line}` }}>
+            <div key={p.label} className="pp-lift" style={{ ...card, padding: 22, position: 'relative', border: `1.5px solid ${p.featured ? T.leafLine : T.line}` }}>
               {p.featured && <span style={{ position: 'absolute', top: 14, right: 14, background: T.leafPale, color: T.leaf, fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 99 }}>Best value</span>}
               <div style={{ fontSize: 14, fontWeight: 600, color: T.muted }}>{p.label}</div>
               <div style={{ fontFamily: head, fontWeight: 800, fontSize: 32, letterSpacing: '-.02em', margin: '6px 0' }}>₹{p.price.toLocaleString('en-IN')}</div>
@@ -265,7 +308,7 @@ function PriceExplainer({ onJoin }: { onJoin: JoinFn }) {
           { t: 'New pet parent?', d: 'Add a coaching visit to any booking: a trained volunteer walks you through feeding, grooming and routines, in your own home.' },
           { t: 'Priced below the market.', d: 'Passes undercut every comparable plan we found in Hyderabad, and volunteers still keep their 70%.' },
         ].map((n) => (
-          <div key={n.t} style={{ background: T.leafPale, borderRadius: 20, padding: 18, fontSize: 14.5, color: T.sub, lineHeight: 1.55 }}>
+          <div key={n.t} style={{ background: T.leafGlass, borderRadius: 20, padding: 18, fontSize: 14.5, color: T.sub, lineHeight: 1.55 }}>
             <strong style={{ color: T.ink }}>{n.t}</strong> {n.d}
           </div>
         ))}
@@ -353,13 +396,13 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </section>
 
       {/* ---------------------------- communities ---------------------------- */}
-      <div className="pp-marquee-wrap" style={{ borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, background: T.surface, padding: '18px 0', overflow: 'hidden' }}>
+      <div className="pp-marquee-wrap" style={{ borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, background: T.surface, padding: '18px 0 calc(18px + var(--pp-r))', overflow: 'hidden' }}>
         <div style={{ ...shell, display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, whiteSpace: 'nowrap' }} className="pp-hide-sm">Built for communities like</div>
           <div style={{ overflow: 'hidden', flex: 1, maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}>
             <div className="pp-marquee">
               {[...COMMUNITIES, ...COMMUNITIES].map((c, i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '9px 18px', borderRadius: 999, background: 'linear-gradient(180deg, rgba(255,255,255,.9), rgba(231,244,228,.9))', border: '1px solid #d5e8d0', boxShadow: 'inset 0 1px 0 #fff', color: T.leafDeep, fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '9px 18px', borderRadius: 999, background: 'linear-gradient(180deg, rgba(255,255,255,.9), rgba(46,125,79,.07))', border: `1px solid ${T.leafGlass2}`, boxShadow: 'inset 0 1px 0 #fff', color: T.leafDeep, fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
                   {c}
                 </span>
               ))}
@@ -369,10 +412,10 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </div>
 
       {/* ------------------------------- story ------------------------------- */}
-      <Section>
+      <Section id="why">
         <div className="pp-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(28px, 5vw, 72px)', alignItems: 'center' }}>
-          <Reveal>
-            <div style={eyebrow}>Why ProxyPaw exists</div>
+          <Reveal from="left">
+            <Kicker stop="why">Why ProxyPaw exists</Kicker>
             <h2 style={h2}>It started with two cats and a weekend away.</h2>
             <div style={{ marginTop: 28, display: 'grid', gap: 18 }}>
               {[
@@ -390,7 +433,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               ))}
             </div>
           </Reveal>
-          <Reveal delay={120}>
+          <Reveal delay={120} from="right">
             <figure style={{ margin: 0, position: 'relative' }}>
               <div className="pp-zoom" style={{ borderRadius: 28, boxShadow: '0 30px 70px rgba(28,60,40,.16)' }}>
                 <img src="/founder/pablo-leo.jpg" alt="Pablo and Leo, the founder's two cats" loading="lazy" style={{ width: '100%', aspectRatio: '4 / 3.4', objectFit: 'cover', display: 'block', filter: 'saturate(1.05) contrast(1.03)' }} />
@@ -412,8 +455,9 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* ----------------------------- community ----------------------------- */}
-      <Section band>
+      <Section id="community" band>
         <Heading
+          stop="community"
           kicker="Life in your community"
           title="Your neighbours already know your pet’s name."
           sub="Morning loops on the lawn, the evening dog-park hour, a quiet cat visit while you are at work. ProxyPaw turns the care that already happens between neighbours into something you can book and trust."
@@ -426,7 +470,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
             { src: '/real/cat-visit.jpg', alt: 'A volunteer petting a fluffy grey cat during a home visit', label: 'Cat visits, in your own home', pos: '55% 45%' },
             { src: '/real/walks.jpg', alt: 'A neighbour walking an indie dog down the tree-lined community road', label: 'The tree-lined evening walk', pos: '70% 55%' },
           ].map((p, i) => (
-            <Reveal key={p.src} delay={i * 90} className="pp-zoom" style={{ position: 'relative', borderRadius: 24, minHeight: 200 }}>
+            <Reveal key={p.src} delay={i * 90} from="zoom" className="pp-zoom" style={{ position: 'relative', borderRadius: 24, minHeight: 200 }}>
               <img src={p.src} alt={p.alt} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: p.pos }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(20,48,31,0) 55%, rgba(20,48,31,.55))' }} />
               <span style={{ position: 'absolute', left: 14, bottom: 14, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(6px)', color: T.ink, fontWeight: 700, fontSize: 13.5, padding: '8px 13px', borderRadius: 999 }}>{p.label}</span>
@@ -437,7 +481,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
 
       {/* ------------------------------ how it works ------------------------------ */}
       <Section id="how">
-        <Heading kicker="How it works" title="Three steps between your dog and a great day." />
+        <Heading stop="how" kicker="How it works" title="Three steps between your dog and a great day." />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: GAP }}>
           {[
             { k: 'meet' as const, n: '1', t: 'Meet your neighbours', d: 'Pick your community and see its towers, the pets who live there and the verified neighbours who can care for them. Every profile is Aadhaar-checked and community-rated.' },
@@ -459,18 +503,20 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* ------------------------------ try a walk ------------------------------ */}
-      <Section id="world">
+      <Section id="world" band quiet>
         <Heading
+          stop="world"
           kicker="Step inside"
           title="Step into a ten-tower community."
-          sub="A 3D community laid out like Prestige High Fields: ten towers, the ring road, the walking loop, the pool, the clubhouse and the pet garden. Watch the dog walk or the cat visit as a story that starts inside a flat, then take the leash yourself."
+          sub="A 3D community laid out like Prestige High Fields: ten towers, the ring road, the charcoal jogging track, the pool, the clubhouse and the pet garden. Watch the dog walk or the cat visit as a story that starts inside a flat, then take the leash yourself."
         />
         <WorldMount onJoin={onJoin} />
         <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 14, textAlign: 'center' }}>An illustrative 3D model based on the community's published master plan. ProxyPaw is not affiliated with the developer.</p>
       </Section>
 
-      <Section id="walk" band>
+      <Section id="walk">
         <Heading
+          stop="walk"
           kicker="The parent's side"
           title="Now watch a walk the way Biscuit's parent does."
           sub="Pick a length and press start. An hour plays in 20 seconds: the live route, the updates on your phone, and the receipt at the end. Or switch to a cat visit."
@@ -478,7 +524,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <Reveal><WalkSimulator onJoin={onJoin} /></Reveal>
       </Section>
 
-      <Section id="app">
+      <Section id="app" band>
         <Heading
           kicker="Inside the app"
           title="Book a walk in six steps. Watch it happen."
@@ -489,7 +535,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
 
       {/* ------------------------------- services ------------------------------- */}
       <Section id="services">
-        <Heading kicker="Services" title="Walks by day. Visits at home. Boarding by night." />
+        <Heading stop="services" kicker="Services" title="Walks by day. Visits at home. Boarding by night." />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: GAP }}>
           {[
             { img: '/real/walks.jpg', pos: '70% 55%', alt: 'A neighbour walking an indie dog on the community road', t: 'Dog walks', d: 'A trained neighbour walks your dog, GPS-tracked, with photo updates.', p: 'From ₹149' },
@@ -500,7 +546,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               <button onClick={() => onJoin(`service-${s.t}`)} className="pp-lift pp-zoom" style={{ ...card, padding: 0, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden' }}>
                   <img src={s.img} alt={s.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: s.pos, display: 'block' }} />
-                  {s.badge && <span style={{ position: 'absolute', top: 14, left: 14, background: T.leaf, color: '#fff', fontWeight: 800, fontSize: 12, padding: '5px 12px', borderRadius: 99 }}>{s.badge}</span>}
+                  {s.badge && <span style={{ position: 'absolute', top: 14, left: 14, background: 'rgba(255,255,255,.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: T.leafDeep, fontWeight: 800, fontSize: 12, padding: '5px 12px', borderRadius: 99 }}>{s.badge}</span>}
                 </div>
                 <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
                   <h3 style={{ margin: 0, fontSize: 21, fontWeight: 800, letterSpacing: '-.02em', color: T.ink }}>{s.t}</h3>
@@ -527,9 +573,10 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* ---------------------------- founding + volunteer ---------------------------- */}
-      <Section>
+      <Section id="perks">
+        <Heading stop="perks" kicker="Join early" title="Get in first, as a pet parent or as a volunteer." />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: GAP }}>
-          <Reveal>
+          <Reveal from="left">
             <div style={{ borderRadius: 28, padding: 'clamp(26px, 3.4vw, 40px)', background: `linear-gradient(140deg, ${T.marigold}, #ef8a4a)`, color: '#fff', height: '100%', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' }}>
               <div style={{ ...eyebrow, color: '#fff', opacity: .9 }}>Founding 1,000</div>
               <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(26px, 2.8vw, 36px)', letterSpacing: '-.025em', lineHeight: 1.1, margin: '0 0 12px' }}>
@@ -544,10 +591,10 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
               </div>
             </div>
           </Reveal>
-          <Reveal delay={120}>
+          <Reveal delay={120} from="right">
             <div className="pp-zoom" style={{ borderRadius: 28, position: 'relative', minHeight: 360, height: '100%', color: '#fff' }}>
               <img src="/real/meet-greet.jpg" alt="A volunteer kneeling to greet a golden retriever at a neighbour's door" loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '40% 50%' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(20,48,31,.88) 0%, rgba(20,48,31,.55) 55%, rgba(20,48,31,.1) 100%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(20,48,31,.74) 0%, rgba(20,48,31,.46) 55%, rgba(20,48,31,.06) 100%)' }} />
               <div style={{ position: 'relative', padding: 'clamp(26px, 3.4vw, 40px)', maxWidth: 380 }}>
                 <div style={{ ...eyebrow, color: '#b9d3c0' }}>Love animals?</div>
                 <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(26px, 2.8vw, 36px)', letterSpacing: '-.025em', lineHeight: 1.1, margin: '0 0 12px' }}>
@@ -589,20 +636,20 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* ---------------------------------- FAQ ---------------------------------- */}
-      <Section id="faq">
+      <Section id="faq" style={{ paddingBottom: SECTION }}>
         <div className="pp-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, .8fr) minmax(0, 1.2fr)', gap: 'clamp(24px, 5vw, 72px)' }}>
-          <Reveal>
-            <div style={eyebrow}>Questions</div>
+          <Reveal from="left">
+            <Kicker>Questions</Kicker>
             <h2 style={h2}>What pet parents ask first.</h2>
             <p style={{ ...lead, marginTop: 16 }}>Anything else? The founder reads every waitlist note herself.</p>
           </Reveal>
-          <Reveal delay={100}>
+          <Reveal delay={100} from="right">
             <div style={{ display: 'grid', gap: 10 }}>
               {FAQS.map((f, i) => (
                 <details key={f.q} className="pp-faq" open={i === 0} style={{ ...card, padding: '4px 20px' }}>
                   <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '16px 0', fontFamily: head, fontWeight: 700, fontSize: 17, color: T.ink, minHeight: 44 }}>
                     {f.q}
-                    <span className="pp-faq-plus" aria-hidden="true" style={{ width: 30, height: 30, borderRadius: '50%', background: T.leafPale, display: 'grid', placeItems: 'center', flexShrink: 0, color: T.leaf, fontSize: 20, fontWeight: 600 }}>+</span>
+                    <span className="pp-faq-plus" aria-hidden="true" style={{ width: 30, height: 30, borderRadius: '50%', background: T.leafGlass, display: 'grid', placeItems: 'center', flexShrink: 0, color: T.leaf, fontSize: 20, fontWeight: 600 }}>+</span>
                   </summary>
                   <p style={{ margin: '0 0 18px', fontSize: 15.5, color: T.sub, lineHeight: 1.65 }}>{f.a}</p>
                 </details>
@@ -613,13 +660,14 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
       </Section>
 
       {/* --------------------------------- close --------------------------------- */}
-      <section style={{ padding: `0 0 ${SECTION}` }}>
+      <section id="close" style={{ padding: `0 0 ${SECTION}`, background: T.canvas, scrollMarginTop: 90 }}>
         <div style={shell}>
-          <Reveal>
+          <Reveal from="zoom">
             <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 32, minHeight: 420, display: 'grid', alignItems: 'end' }}>
               <img src="/real/community.jpg" alt="" loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 70%' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(20,48,31,.15) 0%, rgba(20,48,31,.82) 100%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(20,48,31,.08) 0%, rgba(20,48,31,.7) 100%)' }} />
               <div style={{ position: 'relative', padding: 'clamp(28px, 5vw, 64px)', color: '#fff', maxWidth: 720 }}>
+                <Kicker style={{ color: '#fff' }}><span className="pp-stop" style={{ background: 'rgba(255,255,255,.22)', color: '#fff', marginRight: 0 }}>{stopLabel('close')}</span></Kicker>
                 <h2 style={{ ...h2, color: '#fff' }}>Your community’s pack is forming.</h2>
                 <p style={{ ...lead, color: 'rgba(255,255,255,.9)', marginTop: 14 }}>
                   Join in under a minute. Somewhere in your tower, a wagging tail is already waiting.
@@ -636,6 +684,8 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           </p>
         </div>
       </section>
+
+      <Trail onJoin={onJoin} />
     </div>
   );
 }

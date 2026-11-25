@@ -48,7 +48,7 @@ function Tower({ x, w, h, d, i }: { x: number; w: number; h: number; d: number; 
 }
 
 function Tree({ x, s = 1, d = 0, tone = 0 }: { x: number; s?: number; d?: number; tone?: number }) {
-  const greens = [['#3f9b4f', '#2e7d4f'], ['#5fb25a', '#3f9b4f'], ['#2e8b57', '#1f6b3a']][tone];
+  const greens = [['#6db27a', '#4f9566'], ['#8cc788', '#6db27a'], ['#5aa377', '#417f5a']][tone];
   return (
     <g transform={`translate(${x} ${GROUND + 34}) scale(${s})`}>
       <g className="pp-sway" style={{ animationDelay: `${d}s` }}>
@@ -86,8 +86,8 @@ export default function CommunityScene() {
           <stop offset="1" stopColor="#f4f8ef" />
         </linearGradient>
         <linearGradient id="cs-lawn" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#8fd16a" />
-          <stop offset="1" stopColor="#5fae4a" />
+          <stop offset="0" stopColor="#b4dc9c" />
+          <stop offset="1" stopColor="#8cc67a" />
         </linearGradient>
         <radialGradient id="cs-sun" cx=".5" cy=".5" r=".5">
           <stop offset="0" stopColor="#fff2b8" />
@@ -171,9 +171,9 @@ export default function CommunityScene() {
 
         {/* Lawn */}
         <rect x="0" y={GROUND} width="560" height={500 - GROUND} fill="url(#cs-lawn)" />
-        <path d={`M0 ${GROUND + 8} Q140 ${GROUND - 2} 280 ${GROUND + 6} T560 ${GROUND + 4} L560 ${GROUND + 14} L0 ${GROUND + 16}Z`} fill="#2e8b57" opacity=".35" />
+        <path d={`M0 ${GROUND + 8} Q140 ${GROUND - 2} 280 ${GROUND + 6} T560 ${GROUND + 4} L560 ${GROUND + 14} L0 ${GROUND + 16}Z`} fill="#2e8b57" opacity=".2" />
         {/* Hedge along the podium */}
-        <rect x="0" y={GROUND - 6} width="560" height="12" rx="6" fill="#2e7d4f" />
+        <rect x="0" y={GROUND - 6} width="560" height="12" rx="6" fill="#5c9f72" />
 
         {/* Sprinkler */}
         <g transform="translate(470 470)">

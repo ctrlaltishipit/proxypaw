@@ -16,10 +16,14 @@ export const T = {
   line2: '#c9dcc4',
   leaf: '#2e7d4f',
   leafDeep: '#1f6b3a',
-  leafBright: '#49a85a',
-  grass: '#7cc35a',
-  leafPale: '#e7f4e4',
-  band: '#eaf3e4',
+  leafBright: '#6bb47c',
+  grass: '#a3d491',
+  leafPale: '#edf6ea',
+  band: '#eff5eb',
+  /** Greens as tints: use these for fills so green reads as light through glass, never as a solid block. */
+  leafGlass: 'rgba(46,125,79,.10)',
+  leafGlass2: 'rgba(46,125,79,.18)',
+  leafLine: 'rgba(46,125,79,.32)',
   sky: '#dcEff6',
   marigold: '#e0662f',
   marigoldDark: '#c24e1d',
@@ -85,15 +89,17 @@ export function useInView<E extends Element>(threshold = 0.18) {
 }
 
 /** Fades and rises its children into place once, when scrolled into view. */
-export function Reveal({ children, delay = 0, style, as = 'div', className }: {
+export function Reveal({ children, delay = 0, style, as = 'div', className, from }: {
   children: ReactNode; delay?: number; style?: CSSProperties; as?: 'div' | 'section' | 'article' | 'li'; className?: string;
+  /** Where it arrives from. Default rises from below. */
+  from?: 'left' | 'right' | 'zoom';
 }) {
   const [ref, seen] = useInView<HTMLDivElement>();
   const Tag = as as 'div';
   return (
     <Tag
       ref={ref}
-      className={`pp-reveal${seen ? ' is-in' : ''}${className ? ` ${className}` : ''}`}
+      className={`pp-reveal${from ? ` pp-reveal--${from}` : ''}${seen ? ' is-in' : ''}${className ? ` ${className}` : ''}`}
       style={{ transitionDelay: `${delay}ms`, ...style }}
     >
       {children}
@@ -157,10 +163,25 @@ export function CountUp({ to, prefix = '', suffix = '', duration = 1200 }: { to:
 }
 
 export const GLOBAL_CSS = `
-.pp-land { font-family: ${body}; color: ${T.ink}; background: ${T.canvas}; overflow-x: clip; }
+.pp-land { font-family: ${body}; color: ${T.ink}; background: ${T.canvas}; overflow-x: clip; --pp-r: clamp(26px, 4vw, 48px); }
 .pp-land h1, .pp-land h2, .pp-land h3 { font-family: ${head}; }
-.pp-reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
-.pp-reveal.is-in { opacity: 1; transform: none; }
+.pp-reveal { opacity: 0; transform: translateY(26px); filter: blur(6px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1), filter .8s ease; }
+.pp-reveal--left { transform: translateX(-44px); }
+.pp-reveal--right { transform: translateX(44px); }
+.pp-reveal--zoom { transform: scale(.93); }
+.pp-reveal.is-in { opacity: 1; transform: none; filter: none; }
+/* Chapters arrive as sheets that slide over the one before. */
+.pp-sheet { position: relative; border-radius: var(--pp-r) var(--pp-r) 0 0; margin-top: calc(-1 * var(--pp-r)); box-shadow: 0 -24px 60px rgba(20,48,31,.07), inset 0 1px 0 rgba(255,255,255,.95); }
+/* What you have finished reading fades away under the header (where the browser supports scroll timelines). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pp-reveal.is-in { animation: pp-leave linear both; animation-timeline: view(); animation-range: exit calc(100% - 240px) exit 100%; }
+  }
+}
+@keyframes pp-leave { to { opacity: .1; transform: translateY(-16px) scale(.985); } }
+.pp-stop { display: inline-block; margin-right: 10px; padding: 4px 10px; border-radius: 999px; letter-spacing: .1em; background: ${T.leafGlass}; color: ${T.leaf}; transition: background .5s ease, color .5s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
+[data-stop="in"] .pp-stop { background: ${T.marigoldPale}; color: ${T.marigoldDark}; animation: pp-stamp .7s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pp-stamp { 0% { transform: scale(.7) rotate(-6deg); } 60% { transform: scale(1.12) rotate(2deg); } 100% { transform: none; } }
 .pp-enter { opacity: 0; transform: translateY(16px); animation: pp-enter .9s cubic-bezier(.2,.7,.2,1) forwards; }
 @keyframes pp-enter { to { opacity: 1; transform: none; } }
 .pp-rot-word { opacity: 0; transform: translateY(60%); filter: blur(4px); transition: opacity .5s ease, transform .5s cubic-bezier(.2,.7,.2,1), filter .5s ease; }
@@ -183,7 +204,7 @@ export const GLOBAL_CSS = `
 @keyframes pp-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.82); } }
 .pp-float { animation: pp-float 6s ease-in-out infinite; }
 @keyframes pp-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.pp-focus:focus-visible, .pp-land button:focus-visible, .pp-land a:focus-visible { outline: 3px solid ${T.leafBright}; outline-offset: 3px; }
+.pp-focus:focus-visible, .pp-land button:focus-visible, .pp-land a:focus-visible { outline: 3px solid ${T.leaf}; outline-offset: 3px; }
 .pp-tab { transition: background .25s ease, color .25s ease, box-shadow .25s ease; }
 .pp-faq summary { list-style: none; cursor: pointer; }
 .pp-faq summary::-webkit-details-marker { display: none; }
@@ -195,12 +216,15 @@ export const GLOBAL_CSS = `
 @keyframes pp-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 560px) { .pp-hud { left: 8px !important; bottom: 8px !important; gap: 5px !important; transform: scale(.78); transform-origin: 0 100%; } }
 @media (max-width: 860px) {
+  .pp-reveal { filter: none; }
+  .pp-reveal--left, .pp-reveal--right { transform: translateY(26px); }
   .pp-hero-grid, .pp-split { grid-template-columns: 1fr !important; }
   .pp-hide-sm { display: none !important; }
   .pp-hero-ctas > * { flex: 1 1 100%; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pp-reveal, .pp-enter { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
+  .pp-reveal, .pp-enter { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; transition: none !important; }
+  .pp-stop { animation: none !important; }
   .pp-marquee, .pp-pulse, .pp-float, .pp-scene * { animation: none !important; }
   .pp-rot-word { transition: none; }
 }
