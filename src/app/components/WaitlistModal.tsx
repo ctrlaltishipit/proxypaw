@@ -330,14 +330,14 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '74% 50%' }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(20,48,31,0) 40%, rgba(20,48,31,.85) 100%)' }} />
-          <blockquote
+          <p
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, margin: 0, padding: 34,
               fontFamily: sora, fontWeight: 600, fontSize: 22, lineHeight: 1.35, color: '#fff',
             }}
           >
-            “Biscuit gets three walks a week, and Whiskers never misses her 7 PM dinner visit.”
-          </blockquote>
+            Walks for the dog. Dinner visits for the cat. All from neighbours you already know.
+          </p>
         </div>
 
         {/* ---- right: form ---- */}
@@ -543,7 +543,7 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                           />
                           <span style={{ fontSize: 12.5, lineHeight: 1.55, color: C.sub }}>
                             {c.text ?? (
-                              <>I accept ProxyPaw's <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>terms and conditions</a>, <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>privacy policy</a>, and all volunteer rules and regulations, and I'm ready to follow them.</>
+                              <>I accept ProxyPaw's <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>terms and conditions</a>, <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600 }}>privacy note</a>, and all volunteer rules and regulations, and I'm ready to follow them.</>
                             )}
                           </span>
                         </label>
@@ -610,9 +610,10 @@ export default function WaitlistModal({ open, onClose, source = 'site', intent =
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
                   <p style={{ fontSize: 13, lineHeight: 1.6, color: C.muted2, textAlign: 'center', margin: '18px 0 0' }}>
-                    {volunteer
-                      ? "We'll email you about onboarding. By continuing you accept the community walker code of conduct."
-                      : "We'll email you when your community goes live. By continuing you accept the community walker code of conduct."}
+                    {volunteer ? "We'll email you about onboarding." : "We'll email you when your community goes live."}{' '}
+                    By continuing you agree to our{' '}
+                    <a href="/terms" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600, textDecoration: 'none' }}>terms and conditions</a>, which include the community guidelines, and our{' '}
+                    <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: C.orangeDark, fontWeight: 600, textDecoration: 'none' }}>privacy note</a>.
                   </p>
                 </form>
               )}
