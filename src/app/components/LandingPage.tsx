@@ -34,6 +34,8 @@ type JoinFn = (source: string, intent?: 'owner' | 'walker') => void;
 
 /** The marquee shows only the pet-friendly communities (data/communities.ts says why each is there). */
 const COMMUNITIES = PET_FRIENDLY.map((c) => (c.name === 'Myscape Courtyard' ? 'MyScape Courtyard' : c.name));
+/** The five areas, in the order the founder lists them. */
+const AREAS = ['Financial District', 'Nanakramguda', 'Kokapet', 'Puppalaguda', 'Gachibowli'];
 
 const WALK_TIERS = [
   { label: '30 min walk', price: 149, min: 30, note: 'A first trial' },
@@ -341,8 +343,16 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
         <div style={shell}>
           <div className="pp-hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.05fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
             <div>
-              <div className="pp-enter" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.surface, border: `1px solid ${T.line}`, color: T.leaf, padding: '8px 14px', borderRadius: 999, fontSize: 13.5, fontWeight: 600, marginBottom: 22 }}>
-                Waitlist open in Gachibowli and the Financial District
+              {/* Where ProxyPaw is available (the founder's words, 2026-11-26: "We have expanded it to these places"). */}
+              <div className="pp-enter" style={{ marginBottom: 22 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', background: T.surface, border: `1px solid ${T.line}`, color: T.leaf, padding: '8px 14px', borderRadius: 999, fontSize: 13.5, fontWeight: 700 }}>
+                  Now available in five areas of Hyderabad
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                  {AREAS.map((a) => (
+                    <span key={a} style={{ fontSize: 13, fontWeight: 600, color: T.leafDeep, background: T.leafGlass, padding: '5px 11px', borderRadius: 999, whiteSpace: 'nowrap' }}>{a}</span>
+                  ))}
+                </div>
               </div>
               <h1 className="pp-enter" style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(36px, 4.4vw, 60px)', lineHeight: 1.04, letterSpacing: '-0.035em', margin: 0, color: T.ink, animationDelay: '.08s' }}>
                 Trusted neighbours<br />to <RotatingWords color={T.marigold} words={['walk your dog.', 'feed your cat.', 'host sleepovers.', 'send you photos.']} />

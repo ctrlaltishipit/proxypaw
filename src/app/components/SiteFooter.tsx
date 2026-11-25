@@ -140,7 +140,7 @@ export default function SiteFooter({ nav }: { nav: FooterNav }) {
                 <BrandLogo tile={30} />
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: C.sub, margin: 0, maxWidth: 300 }}>
-                Hyderabad, gated communities first: Gachibowli, Financial District, Kokapet, Kondapur and Nallagandla. Your community next?
+                Hyderabad, gated communities first: Financial District, Nanakramguda, Kokapet, Puppalaguda and Gachibowli. Your community next?
               </p>
             </div>
 
