@@ -146,31 +146,33 @@ function Heading({ kicker, title, sub, center, action, stop }: { kicker: string;
 }
 
 /**
- * What each step looks like: two photographs and the real booking screen.
- * (No flat illustrations of places, people or pets: see DESIGN.md, Imagery.)
+ * What each step looks like: the real app screen for that step, in a phone frame.
+ * (She asked for the actual screens here, 2026-11-26.) `skip` is how far down the
+ * 844px screen the crop starts, so each card shows the part that matters.
  */
+const STEP_SCREENS: Record<'meet' | 'book' | 'watch', { screen: string; skip: number; label: string }> = {
+  meet: { screen: 'walkers', skip: 0, label: 'The neighbours screen in the ProxyPaw app' },
+  book: { screen: 'booking', skip: 96, label: 'The booking screen in the ProxyPaw app' },
+  watch: { screen: 'track', skip: 0, label: 'The live walk screen in the ProxyPaw app' },
+};
+
 function StepArt({ kind }: { kind: 'meet' | 'book' | 'watch' }) {
-  const frame: CSSProperties = { position: 'relative', height: 'clamp(150px, 16vw, 190px)', borderRadius: 18, overflow: 'hidden', background: T.leafPale };
-  const chip: CSSProperties = { position: 'absolute', left: 10, bottom: 10, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: T.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 11px', borderRadius: 999 };
-  if (kind === 'book') {
-    const Screen = MOBILE_SCREENS.booking;
-    return (
-      <div style={frame} aria-hidden="true">
-        {/* The live booking screen, cropped to the part where you pick a time */}
-        <div style={{ position: 'absolute', left: '50%', top: -232, width: 390, height: 844, marginLeft: -195, transform: 'scale(.86)', transformOrigin: '50% 0', pointerEvents: 'none' }}>
-          <Screen />
-        </div>
-        <span style={chip}>The real booking screen</span>
-      </div>
-    );
-  }
-  const photo = kind === 'meet'
-    ? { src: '/real/meet-greet.jpg', alt: 'A neighbour kneeling to greet a golden retriever at the door of a flat', pos: '42% 42%', label: 'Meet-and-greet at your door' }
-    : { src: '/real/hero.jpg', alt: 'A neighbour walking a golden retriever across the community lawn at sunrise', pos: '72% 50%', label: 'Live GPS and photo updates' };
+  const { screen, skip, label } = STEP_SCREENS[kind];
+  const Screen = MOBILE_SCREENS[screen];
+  const k = 0.6, w = 390 * k; // the screen is drawn at its real 390px width and scaled down
   return (
-    <div style={frame} className="pp-zoom">
-      <img src={photo.src} alt={photo.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: photo.pos, display: 'block' }} />
-      <span style={chip}>{photo.label}</span>
+    <div role="img" aria-label={label}
+      style={{ position: 'relative', height: 'clamp(280px, 27vw, 340px)', borderRadius: 18, overflow: 'hidden', background: `linear-gradient(180deg, ${T.leafGlass}, rgba(46,125,79,.04))`, display: 'flex', justifyContent: 'center' }}>
+      {/* phone: only its top edge and sides show; the card crops the rest */}
+      <div style={{ marginTop: 22, width: w + 14, height: 844 * k + 14, flexShrink: 0, borderRadius: 34, padding: 7, boxSizing: 'border-box', background: 'linear-gradient(160deg, #2b4a38, #14301f)', boxShadow: '0 24px 50px rgba(20,48,31,.22), inset 0 1px 0 rgba(255,255,255,.2)' }}>
+        <div style={{ position: 'relative', width: w, height: 844 * k, borderRadius: 27, overflow: 'hidden', background: T.canvas }}>
+          <div aria-hidden="true" style={{ position: 'absolute', left: 0, top: -skip * k, width: 390, height: 844, transform: `scale(${k})`, transformOrigin: '0 0', pointerEvents: 'none' }}>
+            <Screen />
+          </div>
+        </div>
+      </div>
+      {/* the screen melts into the card instead of being cut off */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 64, background: 'linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.96))' }} />
     </div>
   );
 }
