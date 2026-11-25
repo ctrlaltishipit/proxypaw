@@ -48,17 +48,9 @@ export const lead: CSSProperties = {
   fontFamily: body, fontSize: 'clamp(16px, 1.4vw, 18px)', lineHeight: 1.65, color: T.sub, margin: 0,
 };
 
-export const btnPrimary: CSSProperties = {
-  border: 'none', background: T.marigold, color: '#fff', fontFamily: head, fontWeight: 700,
-  fontSize: 16, padding: '15px 26px', borderRadius: 999, cursor: 'pointer',
-  boxShadow: '0 12px 28px rgba(224,102,47,.28)', display: 'inline-flex', alignItems: 'center', gap: 10,
-  minHeight: 48,
-};
-export const btnSecondary: CSSProperties = {
-  border: `1.5px solid ${T.line2}`, background: T.surface, color: T.ink, fontFamily: head, fontWeight: 700,
-  fontSize: 16, padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
-  display: 'inline-flex', alignItems: 'center', gap: 10, minHeight: 48,
-};
+/** Layout only: the look comes from the global .pp-glass-btn classes (fonts.css). */
+export const btnPrimary: CSSProperties = { fontSize: 16, padding: '15px 28px', minHeight: 50 };
+export const btnSecondary: CSSProperties = { fontSize: 16, padding: '15px 26px', minHeight: 50 };
 export const card: CSSProperties = {
   background: T.surface, border: `1px solid ${T.line}`, borderRadius: 24,
 };

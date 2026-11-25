@@ -10,7 +10,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import NextStop from './NextStop';
-import { Home, MapPin, Users, Fingerprint, FileSearch, MessagesSquare, GraduationCap, Eye, PawPrint } from 'lucide-react';
 
 const C = {
   cream: '#f4f8ef',
@@ -78,19 +77,16 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
 
 const BELIEFS = [
   {
-    Icon: Home,
     accent: C.orange,
     title: 'The safest place is their own home.',
     body: "Kennels and facilities, however good, are strange rooms full of strange smells. Many pets stop eating there. Some fall sick from stress alone. So we flipped the model: the pet stays where every corner smells like family, and a verified neighbour comes to them. Fed in their own bowl, asleep in their own spot, they simply understand: my human is busy today, and someone kind has come.",
   },
   {
-    Icon: MapPin,
     accent: C.green,
     title: 'Depth in one place beats breadth everywhere.',
     body: "City-wide platforms cover five cities and nine services with contractors who may live an hour away. We cover the communities of Gachibowli and the Financial District with neighbours who live minutes away, people you share a lift with, rated by people you know. We would rather be irreplaceable in fifty communities than forgettable in five cities.",
   },
   {
-    Icon: Users,
     accent: C.gold,
     title: 'A community, not a marketplace.',
     body: "ProxyPaw is also the place your community's pet life happens: see the pets in your towers, know which dog is friendly before you meet it in the lobby, follow where your own pet is on their walk in real time, and talk to the other owners around you. A stranger with a leash is a transaction. A neighbour with a leash is a relationship.",
@@ -103,32 +99,26 @@ const BELIEFS = [
  *  pet-parent requirement on top. */
 const VETTING = [
   {
-    Icon: PawPrint,
     title: 'Pet experience, or no entry',
     body: "Our first filter isn't paperwork: it's love with mileage. Every applicant must be a pet parent or have genuinely cared for pets, and tells us their story in their own words. No pet experience, no exceptions.",
   },
   {
-    Icon: Fingerprint,
     title: 'Government ID + face match',
     body: 'Aadhaar or another government ID, verified against the person in front of us, the same identity standard global platforms like Rover and Wag apply.',
   },
   {
-    Icon: FileSearch,
     title: 'Background & police verification',
     body: 'A criminal-record check and police clearance certificate before a single booking, plus reference checks with people who know them.',
   },
   {
-    Icon: MessagesSquare,
     title: 'A real conversation',
     body: "An in-person interview, because a form can't tell you how someone talks about animals. We can. We're pet parents too.",
   },
   {
-    Icon: GraduationCap,
     title: 'Safety training, then a trial',
     body: 'Lobby leash rules, the hot-pavement test, emergency first steps, then supervised trial bookings before they ever go solo.',
   },
   {
-    Icon: Eye,
     title: 'Watched on every booking, forever',
     body: 'Live GPS, photo updates, ratings from your own neighbours after every booking, and zero-tolerance removal for any mistreatment. Vetting never really ends.',
   },
@@ -186,9 +176,6 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
 
         {/* vision hero */}
         <section style={{ ...shell, padding: `clamp(36px, 5vw, 64px) ${SIDE_PAD} clamp(40px, 5vw, 64px)`, position: 'relative' }}>
-          <span aria-hidden="true" style={{ position: 'absolute', right: '6%', top: 30, transform: 'rotate(16deg)', animation: 'pp-floaty 10s ease-in-out infinite' }}>
-            <PawSvg size={28} color={C.orange} style={{ opacity: 0.1 }} />
-          </span>
           <Reveal>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: C.orange, letterSpacing: '0.13em', marginBottom: 14, fontFamily: sora }}>
               OUR VISION
@@ -316,7 +303,6 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
                     <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                       {cat.facts.map((f) => (
                         <li key={f} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 13.5, lineHeight: 1.5, color: C.muted, marginBottom: 7 }}>
-                          <span style={{ marginTop: 5 }}><PawSvg size={11} color={cat.accent} /></span>
                           {f}
                         </li>
                       ))}
@@ -371,9 +357,6 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
             {BELIEFS.map((b, i) => (
               <Reveal key={b.title} delay={i * 100}>
                 <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 'clamp(18px, 2.2vw, 26px)', height: '100%', boxSizing: 'border-box', transition: '.3s' }}>
-                  <span style={{ width: 40, height: 40, borderRadius: 13, background: b.accent, display: 'grid', placeItems: 'center', marginBottom: 18 }}>
-                    <b.Icon size={19} color="#fff" />
-                  </span>
                   <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 18.5, lineHeight: 1.3, marginBottom: 10 }}>{b.title}</div>
                   <div style={{ fontSize: 15, lineHeight: 1.65, color: C.sub, fontWeight: 400 }}>{b.body}</div>
                 </div>
@@ -402,9 +385,6 @@ export default function AboutUsPage({ onHomeClick, onJoin, onBlogClick, onTourCl
             {VETTING.map((v, i) => (
               <Reveal key={v.title} delay={i * 80}>
                 <div className="pp-belief" style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: 'clamp(16px, 2vw, 22px)', height: '100%', boxSizing: 'border-box', transition: '.3s', display: 'flex', gap: 16 }}>
-                  <span style={{ width: 40, height: 40, borderRadius: 13, background: i === 0 ? C.orange : C.green, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <v.Icon size={19} color="#fff" />
-                  </span>
                   <div>
                     <div style={{ fontFamily: sora, fontWeight: 600, fontSize: 16, lineHeight: 1.3, marginBottom: 7 }}>
                       <span style={{ color: C.muted2, fontSize: 12.5, fontWeight: 600, marginRight: 7 }}>0{i + 1}</span>

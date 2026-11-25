@@ -2,7 +2,7 @@
  * SiteHeader, shared by every page (rendered once in App.tsx).
  *
  * Logo left, nav centre, marigold waitlist pill right. Sticky and translucent
- * over the garden canvas. The current page gets a leaf underline. Below 940px
+ * over the garden canvas. The nav is a glass capsule; the current page gets a leaf-green pill. Below 940px
  * the nav folds into a menu button (aria-expanded) that opens a sheet under
  * the bar, so nothing squeezes or overflows at phone width.
  */
@@ -71,14 +71,12 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
       <style>{`
         .pph-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1200px; margin: 0 auto; padding: 12px clamp(16px, 3vw, 28px); }
         .pph-home { display: flex; align-items: center; background: none; border: none; padding: 0; cursor: pointer; border-radius: 10px; }
-        .pph-nav { display: flex; align-items: center; gap: 2px; }
-        .pph-link { position: relative; background: none; border: none; cursor: pointer; padding: 9px 13px; border-radius: 999px; font-family: ${heading}; font-weight: 600; font-size: 14.5px; color: ${C.sub}; white-space: nowrap; transition: color .2s, background .2s; }
-        .pph-link:hover { color: ${C.ink}; background: rgba(46,125,79,.08); }
-        .pph-link[aria-current="page"] { color: ${C.ink}; }
-        .pph-link::after { content: ''; position: absolute; left: 13px; right: 13px; bottom: 3px; height: 2px; border-radius: 2px; background: ${C.leaf}; transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.16,1,.3,1); }
-        .pph-link[aria-current="page"]::after { transform: scaleX(1); }
-        .pph-cta { border: none; background: ${C.marigold}; color: #fff; font-family: ${heading}; font-weight: 700; font-size: 14.5px; padding: 11px 20px; border-radius: 999px; cursor: pointer; white-space: nowrap; box-shadow: 0 10px 22px rgba(224,102,47,.26); transition: transform .2s, background .2s, box-shadow .2s; }
-        .pph-cta:hover { background: ${C.marigoldDark}; transform: translateY(-1px); box-shadow: 0 14px 28px rgba(224,102,47,.32); }
+        .pph-nav { display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.42)); border: 1px solid rgba(255,255,255,.85); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 0 rgba(46,125,79,.14), 0 8px 22px rgba(20,48,31,.07); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
+        .pph-link { position: relative; background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 999px; font-family: ${heading}; font-weight: 600; font-size: 14.5px; color: ${C.sub}; white-space: nowrap; transition: color .2s, background .25s, box-shadow .25s, transform .35s cubic-bezier(.34,1.56,.64,1); }
+        .pph-link:hover { color: ${C.ink}; background: rgba(255,255,255,.9); box-shadow: 0 4px 12px rgba(20,48,31,.08); transform: translateY(-1px); }
+        .pph-link:active { transform: scale(.96); }
+        .pph-link[aria-current="page"] { color: #fff; background: ${C.leaf}; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 14px rgba(46,125,79,.28); }
+        .pph-cta { font-size: 14.5px !important; padding: 11px 20px !important; min-height: 44px !important; }
         .pph-right { display: flex; align-items: center; gap: 8px; }
         .pph-toggle { display: none; width: 42px; height: 42px; border-radius: 999px; border: 1.5px solid #c9dcc4; background: #fff; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; padding: 0; color: ${C.ink}; }
         .pph-toggle span { display: block; width: 16px; height: 2px; border-radius: 2px; background: currentColor; transition: transform .25s, opacity .2s; }
@@ -103,7 +101,7 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
         @media (max-width: 520px) {
           .pph-name { display: none; }
           .pph-icon { display: block; }
-          .pph-cta { padding: 10px 16px; font-size: 14px; }
+          .pph-cta { padding: 10px 16px !important; font-size: 14px !important; }
           .pph-cta-full { display: none; }
           .pph-cta-short { display: inline; }
         }
@@ -124,7 +122,7 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
         </nav>
 
         <div className="pph-right">
-          <button className="pph-cta" onClick={() => { setOpen(false); nav.onJoin('header-join'); }}>
+          <button className="pph-cta pp-glass-btn pp-glass-primary" onClick={() => { setOpen(false); nav.onJoin('header-join'); }}>
             <span className="pph-cta-full">Join the waitlist</span>
             <span className="pph-cta-short">Join waitlist</span>
           </button>
@@ -151,7 +149,6 @@ export default function SiteHeader({ nav }: { nav: FooterNav }) {
               aria-current={active === it.key ? 'page' : undefined}
             >
               {it.label}
-              <span aria-hidden="true" style={{ color: C.muted }}>&rarr;</span>
             </button>
           ))}
         </nav>
