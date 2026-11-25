@@ -2,7 +2,7 @@
  * Shared tokens and motion helpers for the landing page ("Garden Community", see DESIGN.md).
  */
 import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode, RefObject } from 'react';
 
 export const T = {
   canvas: '#f4f8ef',
@@ -86,6 +86,26 @@ export function useInView<E extends Element>(threshold = 0.18) {
     return () => io.disconnect();
   }, [seen, threshold]);
   return [ref, seen] as const;
+}
+
+/**
+ * True while the element is on screen and the tab is visible; false again when it
+ * leaves. The self-playing demos use it so they only run while someone can see them.
+ */
+export function useOnScreen<E extends Element>(ref: RefObject<E | null>, threshold = 0.4) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { setOn(true); return; }
+    let inView = false;
+    const sync = () => setOn(inView && document.visibilityState !== 'hidden');
+    const io = new IntersectionObserver((es) => { inView = es[es.length - 1].isIntersecting; sync(); }, { threshold });
+    io.observe(el);
+    document.addEventListener('visibilitychange', sync);
+    return () => { io.disconnect(); document.removeEventListener('visibilitychange', sync); };
+  }, [ref, threshold]);
+  return on;
 }
 
 /** Fades and rises its children into place once, when scrolled into view. */
@@ -203,6 +223,9 @@ export const GLOBAL_CSS = `
 .pp-pulse { animation: pp-pulse 1.8s ease-in-out infinite; }
 @keyframes pp-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.82); } }
 .pp-float { animation: pp-float 6s ease-in-out infinite; }
+/* Photographs breathe: a very slow push-in, so a still reads as a living scene. */
+.pp-kenburns { animation: pp-kenburns 22s ease-in-out infinite alternate; transform-origin: 62% 62%; will-change: transform; }
+@keyframes pp-kenburns { from { transform: scale(1); } to { transform: scale(1.09); } }
 @keyframes pp-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 .pp-focus:focus-visible, .pp-land button:focus-visible, .pp-land a:focus-visible { outline: 3px solid ${T.leaf}; outline-offset: 3px; }
 .pp-tab { transition: background .25s ease, color .25s ease, box-shadow .25s ease; }
@@ -225,7 +248,7 @@ export const GLOBAL_CSS = `
 @media (prefers-reduced-motion: reduce) {
   .pp-reveal, .pp-enter { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; transition: none !important; }
   .pp-stop { animation: none !important; }
-  .pp-marquee, .pp-pulse, .pp-float, .pp-scene * { animation: none !important; }
+  .pp-marquee, .pp-pulse, .pp-float, .pp-kenburns { animation: none !important; }
   .pp-rot-word { transition: none; }
 }
 `;

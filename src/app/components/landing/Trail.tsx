@@ -4,9 +4,11 @@
  * A glass bar pinned to the bottom of the page carries a charcoal jogging track
  * with white stripes, the same track that runs through the 3D community. As the
  * visitor scrolls, Biscuit (the dog) and Lily (the cat) walk to the right along
- * it, chasing a marigold ProxyPaw ball, and collect one stop per chapter of the
- * page. Each stop shows a one-line card that says what that chapter teaches, so
- * by the last stop the visitor has been told what ProxyPaw is in eight lines.
+ * it, chasing a marigold ProxyPaw ball, from one stop to the next (one stop per
+ * chapter of the page). The stop number follows them both ways: walking back from
+ * stop 4 shows stop 3 again, walking on shows stop 5. Each stop shows a one-line
+ * card that says what that chapter teaches, so by the last stop the visitor has
+ * been told what ProxyPaw is in eight lines.
  *
  * Positions are written straight to the DOM from one rAF-throttled scroll
  * handler, so scrolling never re-renders React. Only "which stop" is state.
@@ -212,7 +214,7 @@ const CSS = `
   .tr-meta { min-width: 0; order: 3; align-items: flex-end; padding-right: 2px; }
   .tr-eyebrow, .tr-label, .tr-hide span { display: none; }
   .tr-count { font-size: 13.5px; margin: 0; }
-  .tr-count span { display: none; }
+  .tr-count .tr-word { display: none; }
   .tr-road { bottom: 12px; height: 14px; }
   .tr-start { bottom: 12px; height: 14px; left: ${PAD_L - 44}px; }
   .tr-stop { width: 22px; margin-left: -11px; height: 44px; }
@@ -242,9 +244,10 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
   const packRef = useRef<HTMLDivElement>(null);
   const ballRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
-  const [reached, setReached] = useState(0);   // stops behind the walkers right now
-  const [best, setBest] = useState(0);         // stops collected so far (never goes down)
+  const [reached, setReached] = useState(0);   // the stop the walkers are at right now; it follows them both ways
   const [card, setCard] = useState<number | null>(null);
+  const prevReached = useRef(0);
+  const rewarded = useRef(false);
   const [reward, setReward] = useState(false);
   const [quiet, setQuiet] = useState(false);   // tucked away while the visitor plays in the 3D world
   const [min, setMin] = useState(false);       // tucked away by the visitor
@@ -307,12 +310,14 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
     };
   }, [n]);
 
-  // A new stop: collect it, show its card, and at the last one show the reward.
+  // The walkers reached a different stop, forwards or backwards: show that stop's card.
+  // Walking back from 4 shows stop 3; walking on shows stop 5. The last stop shows the reward, once.
   useEffect(() => {
-    if (reached <= best) return;
-    setBest(reached);
-    if (reached === n) { setCard(null); setReward(true); } else setCard(reached - 1);
-  }, [reached, best, n]);
+    if (reached === prevReached.current) return;
+    prevReached.current = reached;
+    if (reached === n && !rewarded.current) { rewarded.current = true; setCard(null); setReward(true); return; }
+    setCard(reached > 0 ? reached - 1 : null);
+  }, [reached, n]);
 
   useEffect(() => {
     if (card === null) return;
@@ -328,10 +333,11 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
     return () => window.clearTimeout(t);
   }, [reward, atEnd]);
 
-  // Let the page react too: collected sections get data-stop="in" (the kicker pill lights up).
+  // Let the page react too: sections the walkers have reached get data-stop="in" (the kicker pill lights up),
+  // and go back to "ahead" when the walkers turn round and leave them.
   useEffect(() => {
-    STOPS.forEach((s, i) => { const el = document.getElementById(s.id); if (el) el.dataset.stop = i < best ? 'in' : 'ahead'; });
-  }, [best]);
+    STOPS.forEach((s, i) => { const el = document.getElementById(s.id); if (el) el.dataset.stop = i < reached ? 'in' : 'ahead'; });
+  }, [reached]);
 
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const next = reached < n ? STOPS[reached] : null;
@@ -345,10 +351,10 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
         <div className="tr-card" data-on={shown && !reward ? '1' : '0'} role="status" aria-live="polite">
           {shown && (
             <>
-              <div className="tr-card-k">Stop {card! + 1} of {n} collected</div>
+              <div className="tr-card-k">Stop {card! + 1} of {n}</div>
               <div className="tr-card-t">{shown.name}</div>
               <p className="tr-card-d">{shown.line}</p>
-              <div className="tr-pips" aria-hidden="true">{STOPS.map((s, i) => <i key={s.id} data-on={i < best ? '1' : '0'} />)}</div>
+              <div className="tr-pips" aria-hidden="true">{STOPS.map((s, i) => <i key={s.id} data-on={i < reached ? '1' : '0'} />)}</div>
             </>
           )}
         </div>
@@ -371,7 +377,7 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
         <nav className="tr-bar" aria-label="The walk: your place on this page" aria-hidden={hidden}>
           <div className="tr-meta">
             <div className="tr-eyebrow">The walk</div>
-            <div className="tr-count"><b key={best} className={best ? 'pop' : undefined}>{best}</b> of {n}<span> stops</span></div>
+            <div className="tr-count"><span className="tr-word">Stop </span><b key={reached} className={reached ? 'pop' : undefined}>{reached}</b> of {n}</div>
           </div>
           <div className="tr-track" ref={trackRef}>
             <div className="tr-road"><div className="tr-fill" ref={fillRef} /></div>
@@ -380,7 +386,7 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
               <button
                 key={s.id}
                 className="tr-stop"
-                data-state={i === reached - 1 ? 'now' : i < best ? 'in' : 'ahead'}
+                data-state={i === reached - 1 ? 'now' : i < reached ? 'in' : 'ahead'}
                 style={{ left: `calc(${PAD_L}px + (100% - ${PAD_L + PAD_R}px) * ${(i + 1) / n})` }}
                 onClick={() => go(s.id)}
                 tabIndex={hidden ? -1 : 0}
@@ -404,7 +410,7 @@ export default function Trail({ onJoin }: { onJoin: (source: string) => void }) 
           </div>
         </nav>
 
-        <button className="tr-tab" tabIndex={min && !atEnd ? 0 : -1} onClick={() => setMin(false)} aria-label="Show the walk bar">The walk · {best} of {n}</button>
+        <button className="tr-tab" tabIndex={min && !atEnd ? 0 : -1} onClick={() => setMin(false)} aria-label="Show the walk bar">The walk · stop {reached} of {n}</button>
       </div>
     </div>
   );
