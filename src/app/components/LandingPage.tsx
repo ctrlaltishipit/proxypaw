@@ -91,8 +91,10 @@ class WorldBoundary extends Component<{ children: ReactNode; fallback: ReactNode
 /** Mounts the 3D world only once it is near the viewport, so three.js never slows first paint. */
 function WorldMount({ onJoin }: { onJoin: (source: string) => void }) {
   const [ref, seen] = useInView<HTMLDivElement>(0);
-  // The poster is a still of the opening view, so the section never shows an empty box while the 3D code loads.
-  const frame: CSSProperties = { height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat' };
+  // While the 3D code loads the section shows a soft, out-of-focus still of the opening view, never an empty box. It is
+  // blurred on purpose: the live view frames itself to the screen, so a sharp still could not line up with it and the
+  // fade between the two would show doubled buildings.
+  const frame: CSSProperties = { height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', background: '#8fb772 url(/real/world-soft.jpg) center / cover no-repeat' };
   const placeholder = <div style={frame} />;
   const failed = (
     <div style={{ ...frame, background: 'linear-gradient(180deg, #d9ecf4, #edf6ea 60%, #d3e9c6)', height: 'auto', minHeight: 260, display: 'grid', placeItems: 'center', padding: 28, textAlign: 'center' }}>

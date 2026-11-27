@@ -7,7 +7,11 @@
  * lawns). Choosing another community freezes the last frame, rebuilds the
  * scene behind it and dissolves into the new one; the renderer is kept.
  *
- * The menu is one glass panel: an area filter, the communities in that area,
+ * The opening view is a steep bird's-eye through a long lens that frames itself
+ * to fill the space the menu leaves, and is at rest from its first frame.
+ *
+ * The menu is one glass panel (a column on the right on wide screens, along the
+ * bottom on narrow ones): an area filter, the communities in that area,
  * the three services (dog walking, cat care, overnight boarding), Watch and
  * Explore on foot. Three stories play inside a flat (the dog walker arriving,
  * a cat home visit, an overnight stay at a host's home); the dog story then
@@ -255,9 +259,13 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     // a narrow screen sees less to either side, so the opening view stands further back (and sways less)
     // A long, low community may give its own opening view for narrow screens (looking along its length).
     const narrowView = small && !!LY.aerialNarrow;
-    const AV = (narrowView && LY.aerialNarrow) || LY.aerial; // orbit centre x, z, camera height, radius, look height, bearing in degrees
-    const AK = narrowView ? 1 : small ? THREE.MathUtils.clamp(0.45 / ((wrap.clientWidth / Math.max(1, wrap.clientHeight)) * 0.625), 1.15, 1.6) : 1;
-    const A_BEAR = ((AV[5] ?? 90) * Math.PI) / 180, A_SWAY = narrowView ? 0.06 : small ? 0.2 : 0.32;
+    const AV0 = (narrowView && LY.aerialNarrow) || LY.aerial; // orbit centre x, z, camera height, radius, look height, bearing in degrees
+    // The opening view looks down steeply, the way a master plan is drawn, so the garden, the pool and the walking track
+    // between the towers can be seen and the community fills the frame. The layout gives the centre, the height looked
+    // at and the bearing; how far back to stand is worked out from what has to fit (see frameView).
+    const A_EL = (58 * Math.PI) / 180, A_D = Math.hypot(AV0[2] - (AV0[4] ?? 0), AV0[3]);
+    const AV: [number, number, number, number, number, number] = [AV0[0], AV0[1], (AV0[4] ?? 0) + A_D * Math.sin(A_EL), A_D * Math.cos(A_EL), AV0[4] ?? 0, AV0[5] ?? 90];
+    const A_BEAR = (AV[5] * Math.PI) / 180, A_SWAY = narrowView ? 0.06 : small ? 0.14 : 0.2;
     if (small) setListOpen(false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
     renderer.shadowMap.enabled = true;
@@ -276,7 +284,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const DAY = { top: new THREE.Color('#6fb4e4'), bottom: new THREE.Color('#e6f2ee'), fog: new THREE.Color('#dcebe8') };
     const NIGHT = { top: new THREE.Color('#0c1a2e'), bottom: new THREE.Color('#2a3d4d'), fog: new THREE.Color('#1c2c38') };
     scene.fog = new THREE.Fog(DAY.fog.clone(), 120, 520);
-    const camera = new THREE.PerspectiveCamera(52, 1, 0.25, 1600);
+    const camera = new THREE.PerspectiveCamera(52, 1, 0.25, 2600);
 
     const skyU = { top: { value: DAY.top.clone() }, bottom: { value: DAY.bottom.clone() } };
     scene.add(new THREE.Mesh(
@@ -300,10 +308,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const r = aerial ? 250 : 80; if (r === shadowR) return; shadowR = r;
       sun.shadow.bias = aerial ? -0.0016 : -0.0004; sun.shadow.normalBias = aerial ? 0.6 : 0.05;
       Object.assign(sun.shadow.camera, { left: -r, right: r, top: r, bottom: -r }); sun.shadow.camera.updateProjectionMatrix();
-      const f = scene.fog as THREE.Fog; f.near = aerial ? 320 : 120; f.far = aerial ? 1100 : 520;
+      const f = scene.fog as THREE.Fog; f.near = aerial ? 620 : 120; f.far = aerial ? 2200 : 520; // the long lens stands further back: the haze starts further out
       // From the air everything is hundreds of metres away. A far near-plane gives the depth buffer the precision to
       // keep lawn, roads, track and paint apart; with the ground-level near-plane they flicker and break into blocks.
-      camera.near = aerial ? 40 : 0.25; camera.updateProjectionMatrix();
+      camera.near = aerial ? 60 : 0.25; camera.updateProjectionMatrix();
     };
 
     /* ---- ground, roads, paths ---- */
@@ -479,9 +487,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     };
     // name tags seen from the air: the same small size on screen however far away, hidden once you are on foot
     const air = new THREE.Group(); scene.add(air);
+    // the aerial view uses a longer lens than the rest (see fovFor), which would magnify these tags: this keeps their size
+    const AIR_TAG = wrap.clientWidth < wrap.clientHeight ? Math.tan((23 * Math.PI) / 180) / Math.tan((32 * Math.PI) / 180) : Math.tan((17 * Math.PI) / 180) / Math.tan((26 * Math.PI) / 180);
     const airLabel = (text: string, x: number, y: number, z: number) => {
       const s = label(text); (s.material as THREE.SpriteMaterial).sizeAttenuation = false; s.material.depthTest = false; // never half hidden behind a tower
-      s.scale.multiplyScalar((small ? 0.034 : 0.029) / 1.6); s.position.set(x, y, z); air.add(s);
+      s.scale.multiplyScalar(((small ? 0.034 : 0.029) / 1.6) * AIR_TAG); s.position.set(x, y, z); air.add(s);
     };
     { // the walk path gets the first name tag, on the side of the loop nearest the opening view
       const ax = AV[0] + Math.cos(A_BEAR) * AV[3], az = AV[1] + Math.sin(A_BEAR) * AV[3]; let bp = loop.getPointAt(0), bd = 1e9;
@@ -1546,7 +1556,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     wrap.addEventListener('pointerdown', realDown, true); wrap.addEventListener('pointerup', realUp, true); wrap.addEventListener('pointercancel', realCancel, true);
 
     // test hook, only with #ppdebug in the address: lets a test place the camera and the walker
-    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ com: LY.id, tour: tourRef.current.step, pos: [Math.round(walker.g.position.x * 10) / 10, Math.round(walker.g.position.z * 10) / 10], geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, bones: BONES, pts, lap: Math.round(lapAcc * 100) / 100, yaw: Math.round(yaw * 100) / 100, len: Math.round(loopLen), d: Math.round(onLoop(walker.g.position.x, walker.g.position.z, hk).d * 10) / 10, story: storyId }) } : null;
+    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ com: LY.id, tour: tourRef.current.step, pos: [Math.round(walker.g.position.x * 10) / 10, Math.round(walker.g.position.z * 10) / 10], geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, bones: BONES, pts, lap: Math.round(lapAcc * 100) / 100, yaw: Math.round(yaw * 100) / 100, len: Math.round(loopLen), k: Math.round(frameK * 100) / 100, shift: [Math.round(viewShift * 100) / 100, Math.round(sideShift * 100) / 100], d: Math.round(onLoop(walker.g.position.x, walker.g.position.z, hk).d * 10) / 10, story: storyId }) } : null;
     if (dbg) (window as unknown as { __ppw: unknown }).__ppw = dbg;
 
     /* ---- input ---- */
@@ -1584,15 +1594,15 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const onCancel = () => { drag = null; };
     canvas.addEventListener('pointerdown', onDown); canvas.addEventListener('pointermove', onMove); canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onCancel);
 
-    let viewShift = small ? 0.16 : 0.14, sideShift = 0, panelFrac = small ? 0.36 : 0.29; // how much of the view the menu panel covers
-    let fit = 1; const fitV = V(); // extra stand-back so tall towers keep their roofs (and name tags) inside the frame
+    let viewShift = small ? 0.16 : 0.14, sideShift = 0; // how far the picture is slid up and sideways, as a share of the view
+    const fitV = V();
     // Tidy name tags: where two would overlap on screen, the one added later steps aside. It is worked out for the
     // resting view (no drift) and only when the framing changes, so tags never blink while the view sways.
     const probe = new THREE.PerspectiveCamera(); let tagKey = '', akpNow = 1;
     const tidyTags = () => {
-      const W = wrap.clientWidth, H = wrap.clientHeight, key = `${akpNow.toFixed(2)}|${viewShift.toFixed(2)}|${W}x${H}`;
+      const W = wrap.clientWidth, H = wrap.clientHeight, key = `${akpNow.toFixed(2)}|${viewShift.toFixed(2)}|${sideShift.toFixed(2)}|${W}x${H}`;
       if (key === tagKey) return; tagKey = key;
-      probe.copy(camera); probe.position.set(AV[0] + Math.cos(A_BEAR) * AV[3] * akpNow, AV[2] * akpNow, AV[1] + Math.sin(A_BEAR) * AV[3] * akpNow);
+      probe.copy(camera); probe.fov = airFov(); probe.updateProjectionMatrix(); probe.position.set(AV[0] + Math.cos(A_BEAR) * AV[3] * akpNow, AV[2] * akpNow, AV[1] + Math.sin(A_BEAR) * AV[3] * akpNow);
       probe.lookAt(AV[0], AV[4] ?? 0, AV[1]); probe.updateMatrixWorld();
       const k = (probe.projectionMatrix.elements[5] * H) / 4, placed: number[][] = [];
       for (const c of air.children) {
@@ -1602,8 +1612,58 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         c.visible = !clash; if (!clash) placed.push([x, y, hw, hh]);
       }
     };
-    const applyShift = () => { const w = wrap.clientWidth, h = wrap.clientHeight; if (Math.abs(viewShift) < 0.002 && sideShift < 0.002) camera.clearViewOffset(); else camera.setViewOffset(w, h, sideShift * w, viewShift * h, w, h); };
-    const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = (w < h ? 64 : 52) + (m === 'walk' || m === 'ended' ? 6 : 0); camera.updateProjectionMatrix(); applyShift(); };
+    /** The lens. From the air it is long, so towers stand nearly straight (a wide lens up close makes them lean outwards);
+     *  indoors it is normal; on foot it is a little wider, to take in more of the towers. */
+    const airFov = () => (camera.aspect < 1 ? 46 : 34);
+    const fovFor = () => m === 'menu' || m === 'catdone' || m === 'boarddone' ? airFov() : (camera.aspect < 1 ? 64 : 52) + (m === 'walk' || m === 'ended' || (m === 'story' && !flat.visible) ? 6 : 0);
+    const applyShift = () => { const w = wrap.clientWidth, h = wrap.clientHeight; if (Math.abs(viewShift) < 0.002 && Math.abs(sideShift) < 0.002) camera.clearViewOffset(); else camera.setViewOffset(w, h, sideShift * w, viewShift * h, w, h); };
+    /* Framing the opening view. Everything that belongs to the community (every building, base and roof, the ring road,
+       the walk path, the pet park, the name tags) must sit inside one window of the picture: under the chip at the top,
+       above the menu panel, a margin at the sides, at both ends of the slow sway. frameView finds the nearest the
+       camera can stand for that, and how far to slide the picture so the community sits in the middle of the window.
+       It is worked out again only when the panel or the view changes size. */
+    const fitPts: THREE.Vector3[] = [];
+    for (const b of blockers) for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      const lx = sx * b.hw, lz = sz * b.hd, x = b.x + lx * b.c + lz * b.s, z = b.z - lx * b.s + lz * b.c;
+      fitPts.push(V(x, 0, z)); if (b.h > 20) fitPts.push(V(x, b.h - 9, z));
+    }
+    ring.getSpacedPoints(48).forEach((q) => fitPts.push(q)); loopPts.forEach((q, i) => { if (i % 6 === 0) fitPts.push(q); });
+    for (const v of LY.villas ?? []) fitPts.push(V(v.x, 8, v.z));
+    if (LY.pet) for (const x of [LY.pet[0], LY.pet[1]]) for (const z of [LY.pet[2], LY.pet[3]]) fitPts.push(V(x, 0, z));
+    for (const c of air.children) fitPts.push(c.position);
+    let frameK = 1, frameY = viewShift, frameX = 0, framedFree = -1, framedW = 0, framedH = 0;
+    /** How much of the view the menu leaves clear, from layout sizes (so the panel's fade-in does not disturb it).
+     *  On wide screens the menu is a column down the right: the answer is then negative, minus the share of the width left clear. */
+    const freeAbove = () => {
+      const mn = wrap.querySelector<HTMLElement>('.pp-world-menu'), pn = wrap.querySelector<HTMLElement>('.pp-world-panel'), W = wrap.clientWidth, H = wrap.clientHeight;
+      if (!mn || !pn || !W || !H) return 0;
+      if (mn.offsetWidth < W * 0.6) return -THREE.MathUtils.clamp(1 - mn.offsetWidth / W, 0.3, 1);
+      return THREE.MathUtils.clamp(1 - (mn.offsetHeight + pn.offsetHeight) / 2 / H, 0.3, 1);
+    };
+    function frameView() {
+      const W = wrap.clientWidth, H = wrap.clientHeight; if (!W || !H) return;
+      const fa = freeAbove(), free = fa !== 0 ? fa : framedFree !== -1 ? framedFree : small ? 0.56 : 0.62;
+      framedFree = free; framedW = W; framedH = H;
+      // the window the community must sit in, in screen units from -1 to 1: under the chip at the top, clear of the menu
+      const top = small ? 0.7 : 0.79, sideMenu = free < 0;
+      const bottom = sideMenu ? -0.9 : 1 - 2 * free + 0.07, left = small ? -0.93 : -0.92, right = sideMenu ? -1 + 2 * -free - 0.03 : -left;
+      probe.copy(camera); probe.clearViewOffset(); probe.fov = airFov(); probe.updateProjectionMatrix();
+      const box = [0, 0, 0, 0];
+      const fits = (k: number) => {
+        let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+        for (const bearing of [A_BEAR, A_BEAR - A_SWAY, A_BEAR + A_SWAY]) {
+          probe.position.set(AV[0] + Math.cos(bearing) * AV[3] * k, AV[2] * k, AV[1] + Math.sin(bearing) * AV[3] * k); probe.lookAt(AV[0], AV[4], AV[1]); probe.updateMatrixWorld();
+          for (const pt of fitPts) { fitV.copy(pt).project(probe); if (!(fitV.z > -1 && fitV.z < 1)) return false; if (fitV.x < x0) x0 = fitV.x; if (fitV.x > x1) x1 = fitV.x; if (fitV.y < y0) y0 = fitV.y; if (fitV.y > y1) y1 = fitV.y; }
+        }
+        box[0] = x0; box[1] = x1; box[2] = y0; box[3] = y1;
+        return x1 - x0 <= right - left && y1 - y0 <= top - bottom;
+      };
+      let lo = 0.2, hi = 3.2;
+      for (let i = 0; i < 16; i++) { const mid = (lo + hi) / 2; if (fits(mid)) hi = mid; else lo = mid; }
+      fits(hi);
+      frameK = hi; frameY = THREE.MathUtils.clamp(((top + bottom) / 2 - (box[2] + box[3]) / 2) / 2, -0.2, 0.45); frameX = THREE.MathUtils.clamp(((box[0] + box[1]) / 2 - (left + right) / 2) / 2, -0.3, 0.3);
+    }
+    const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = fovFor(); camera.updateProjectionMatrix(); applyShift(); };
     resize();
     const ro = new ResizeObserver(resize); ro.observe(wrap);
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; half = e.intersectionRatio >= 0.5; }, { threshold: [0.01, 0.5] }); io.observe(wrap);
@@ -1766,8 +1826,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       if (m === 'menu' || m === 'catdone' || m === 'boarddone') {
         // a bird's-eye of the whole community, low enough that it fills the frame, drifting slowly
         // The menu panel grows when an area lists many communities: the view stands back and sits higher by as much as it covers.
-        if (m === 'menu' && (frames + Math.floor(time * 4)) % 2 === 0) { const pn = wrap.querySelector<HTMLElement>('.pp-world-panel'); if (pn && wrap.clientHeight) panelFrac = pn.offsetHeight / wrap.clientHeight; }
-        const AKP = AK * THREE.MathUtils.clamp((1 - (small ? 0.36 : 0.29)) / (1 - panelFrac), 0.96, 1.32) * fit; akpNow = AKP;
+        if (m === 'menu' && (frames + Math.floor(time * 4)) % 2 === 0) { const fa = freeAbove(); if (fa !== 0 && (Math.abs(fa - framedFree) > 0.012 || wrap.clientWidth !== framedW || wrap.clientHeight !== framedH)) frameView(); }
+        const AKP = frameK * (m === 'menu' ? 1 : small ? 1.25 : 1.6); akpNow = AKP; // behind a summary card it stands further back
         const A = AV, a = A_BEAR + Math.sin(time * 0.06) * A_SWAY; tmp.set(A[0] + Math.cos(a) * A[3] * AKP, A[2] * AKP, A[1] + Math.sin(a) * A[3] * AKP);
         if (camSnap) { camPos.copy(tmp); camLook.set(A[0], A[4] ?? 0, A[1]); camSnap = false; } else { camPos.lerp(tmp, 0.04); camLook.lerp(tmp.set(A[0], A[4] ?? 0, A[1]), 0.05); }
       }
@@ -1777,18 +1837,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       // behind the story cards the picture slides up, and behind the payment summary it slides aside, so nothing important is covered
       // (the same after a cat visit or a sleepover: otherwise the summary card sits exactly on top of a slim community such as two towers)
       const sumAir = m === 'catdone' || m === 'boarddone';
-      const wantShift = m === 'menu' ? THREE.MathUtils.clamp(panelFrac / 2 - (small ? 0.02 : 0.005), 0.1, 0.24) : (m === 'ended' || sumAir) && small ? -0.33 : 0, wantSide = !small ? (m === 'ended' ? 0.34 : sumAir ? 0.3 : 0) : 0;
+      const wantShift = m === 'menu' ? frameY : (m === 'ended' || sumAir) && small ? -0.33 : 0, wantSide = m === 'menu' ? frameX : !small ? (m === 'ended' ? 0.34 : sumAir ? 0.3 : 0) : 0;
       if (Math.abs(wantShift - viewShift) > 0.001 || Math.abs(wantSide - sideShift) > 0.001) { const k = Math.min(1, Math.max(dt, 0.016) * 3); viewShift += (wantShift - viewShift) * k; sideShift += (wantSide - sideShift) * k; applyShift(); }
       camera.position.copy(camPos); camera.lookAt(camLook);
-      // Headroom: the name tags sit on the roofs, so if one would touch the top of the frame (or the chip there),
-      // stand back a little further. It only ever eases outwards, so the view settles and stays put.
-      if (m === 'menu' && fit < 1.5 && air.children.length) {
-        camera.updateMatrixWorld(); let top = -1;
-        for (const c of air.children) { fitV.copy(c.position).project(camera); if (fitV.z < 1 && fitV.y > top) top = fitV.y; }
-        const limit = small ? 0.72 : 0.8;
-        if (top > limit) fit = Math.min(1.5, fit + Math.min(0.01, (top - limit) * 0.06));
-      }
-      if (m === 'menu' && Math.abs(wantShift - viewShift) < 0.004) tidyTags();
+      if (m === 'menu' && Math.abs(wantShift - viewShift) < 0.004 && Math.abs(wantSide - sideShift) < 0.004) tidyTags();
 
       // neighbours and traffic
       const tj = (time * JOG) % 1; const pj = along(loop, tj, 1.3), pj2 = along(loop, (tj + 0.8 / loopLen) % 1, 1.3);
@@ -1824,10 +1876,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
 
       // light follows the action so shadows stay sharp
       const fromAir = !inFlat && !walking && m !== 'ended';
-      setRange(fromAir); air.visible = routeG.visible = fromAir;
+      setRange(fromAir); routeG.visible = fromAir; air.visible = fromAir && m === 'menu'; // name tags belong to the menu view only
+      if (clouds[0].visible === fromAir) clouds.forEach((c) => (c.visible = !fromAir)); // the bird's-eye camera is above the clouds: they would drift across the towers
       if (fromAir) routeTex.offset.y = -time * 0.16; // the dashes flow the way round
       (patches.material as THREE.MeshBasicMaterial).opacity = fromAir ? 0.45 : 1; // seen from above, strong patches read as blotches
-      const wantFov = (camera.aspect < 1 ? 64 : 52) + (walking || m === 'ended' ? 6 : 0); // on foot a wider view takes in more of the towers
+      const wantFov = fovFor();
       if (camera.fov !== wantFov) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
       const focus = inFlat ? F : walking || m === 'ended' ? walker.g.position : tmp.set(LY.aerial[0], 0, LY.aerial[1]); // the light stays on the community's middle
       sun.target.position.copy(focus); sun.position.copy(focus).add(SUN_OFF);
@@ -1876,7 +1929,13 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
     };
     let frames = 0;
-    camPos.set(AV[0] + Math.cos(A_BEAR) * AV[3] * AK, AV[2] * AK, AV[1] + Math.sin(A_BEAR) * AV[3] * AK); camLook.set(AV[0], AV[4] ?? 0, AV[1]);
+    /* The opening view is worked out before anything is shown, and the camera starts exactly there. The first frame the
+       visitor sees is already at rest: it used to zoom and slide into place for a second or two while it faded in over
+       a still of a different view, which read as a glitch. */
+    frameView(); viewShift = frameY; sideShift = frameX; applyShift(); akpNow = frameK;
+    camPos.set(AV[0] + Math.cos(A_BEAR) * AV[3] * frameK, AV[2] * frameK, AV[1] + Math.sin(A_BEAR) * AV[3] * frameK); camLook.set(AV[0], AV[4], AV[1]);
+    camera.position.copy(camPos); camera.lookAt(camLook); camera.updateMatrixWorld();
+    tidyTags(); // name tags that would overlap step aside now, not after the picture is up
     tick();
 
     return () => {
@@ -1933,7 +1992,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   const fin = mode === 'ended' || mode === 'catdone' || mode === 'boarddone' ? DONE[mode] : null;
 
   return (
-    <div ref={wrapRef} tabIndex={-1} data-fin={fin ? '' : undefined} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#9fc39a url(/real/world-poster.jpg) center / cover no-repeat', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
+    <div ref={wrapRef} tabIndex={-1} data-fin={fin ? '' : undefined} data-wide-off={mode === 'menu' ? undefined : ''} className="pp-world" style={{ position: 'relative', height: 'clamp(600px, 84vh, 800px)', borderRadius: 'clamp(20px, 3vw, 30px)', overflow: 'hidden', background: '#8fb772 url(/real/world-soft.jpg) center / cover no-repeat', outline: 'none', boxShadow: '0 30px 80px rgba(20,48,31,.18)' }}>
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', opacity: ready ? 1 : 0, transition: 'opacity .8s ease', touchAction: mode === 'walk' && dir === 'off' ? 'none' : 'pan-y', cursor: mode === 'walk' ? 'grab' : 'default' }} aria-label={`3D model of ${LY.name}, a gated community. Watch a dog walk, a cat visit or an overnight stay, or walk Biscuit the dog through it.`} />
 
       <canvas ref={dissolveRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: 1 }} />
@@ -2117,6 +2176,21 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         .pp-world-pill[aria-pressed="true"] { background: rgba(46,125,79,.16); border-color: rgba(46,125,79,.42); color: ${T.ink}; box-shadow: 0 0 0 3px rgba(46,125,79,.08); }
         .pp-world-chip[aria-pressed="true"] { background: rgba(46,125,79,.12); border-color: rgba(46,125,79,.3); color: ${T.ink}; font-weight: 700; }
         .pp-world-pill:focus-visible, .pp-world-chip:focus-visible { outline: 2px solid ${T.leaf}; outline-offset: 2px; }
+        /* Wide screens: the menu is a column down the right, so the map has the whole height and the community fills it. */
+        @media (min-width: 960px) {
+          .pp-world-menu { left: auto !important; top: 0; width: 414px; padding: 14px !important; align-items: center; background: linear-gradient(90deg, rgba(20,48,31,0), rgba(20,48,31,.2)) !important; }
+          .pp-world-panel { width: 100% !important; padding: 14px 16px !important; max-height: 100%; overflow-y: auto; }
+          .pp-world-row { flex-direction: column; align-items: stretch; gap: 6px; }
+          .pp-world-row + .pp-world-row { margin-top: 10px; }
+          .pp-world-k { flex: none; }
+          .pp-world-pill { font-size: 12.5px; padding: 5px 12px; min-height: 31px; }
+          .pp-world-chip { font-size: 12px; padding: 4px 10px; min-height: 27px; }
+          .pp-world-go { margin-top: 12px !important; }
+          .pp-world-go .pp-glass-btn { flex: 1 1 0; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap; }
+          .pp-world-dir { left: calc((100% - 414px) / 2) !important; }
+          .pp-world[data-wide-off] .pp-world-dir { left: 50% !important; }
+        }
+        @media (min-width: 960px) and (max-height: 830px) { .pp-world-line { display: none; } } /* a short laptop screen: the column drops one line of text to fit */
         @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc { display: none; } }
         @media (max-width: 520px) { .pp-world-min { display: none; } } /* a phone keeps the two numbers of the game: points and bones */
         @media (max-width: 860px) {
