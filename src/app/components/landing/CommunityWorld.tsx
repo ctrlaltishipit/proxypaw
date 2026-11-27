@@ -36,6 +36,20 @@ import type { Area, CommunityId, StopId } from './worldLayouts';
 
 const PRICE = 249;
 
+/* ---------- ProxyPaw points: a game inside the walk ---------- */
+/** what each thing is worth while you walk a community on foot */
+const PTS = { bone: 10, gold: 50, stop: 25, allStops: 50, allBones: 100, lap: 100, photo: 5 };
+const BANK_KEY = 'pp-points-v1';
+/** best score per community, kept on this device only (no account, nothing sent anywhere) */
+function loadBank(): Record<string, number> {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(BANK_KEY) || '{}'), out: Record<string, number> = {};
+    if (v && typeof v === 'object') for (const [k, n] of Object.entries(v as Record<string, unknown>)) if (typeof n === 'number' && n > 0 && n < 100000) out[k] = Math.round(n);
+    return out;
+  } catch { return {}; }
+}
+function saveBank(b: Record<string, number>) { try { localStorage.setItem(BANK_KEY, JSON.stringify(b)); } catch { /* private mode: the points simply last for this visit */ } }
+
 const glass: React.CSSProperties = {
   background: 'rgba(255,255,255,.62)', border: '1px solid rgba(255,255,255,.75)',
   backdropFilter: 'blur(16px) saturate(1.6)', WebkitBackdropFilter: 'blur(16px) saturate(1.6)',
@@ -134,12 +148,13 @@ function heartTex() {
 }
 
 /** Ribbon mesh along a curve (paths). */
-function ribbon(curve: THREE.Curve<THREE.Vector3>, width: number, segs: number, y: number, mat: THREE.Material) {
+function ribbon(curve: THREE.Curve<THREE.Vector3>, width: number, segs: number, y: number, mat: THREE.Material, off = 0) {
   const pos: number[] = [], uv: number[] = [], idx: number[] = [];
   const len = curve.getLength();
   for (let i = 0; i <= segs; i++) {
     const t = i / segs, p = curve.getPointAt(t), tan = curve.getTangentAt(t);
-    const n = V(-tan.z, 0, tan.x).normalize().multiplyScalar(width / 2);
+    const n = V(-tan.z, 0, tan.x).normalize();
+    p.addScaledVector(n, off); n.multiplyScalar(width / 2); // `off` slides the whole ribbon sideways (a kerb beside a track)
     pos.push(p.x + n.x, y, p.z + n.z, p.x - n.x, y, p.z - n.z);
     uv.push(0, (t * len) / width, 1, (t * len) / width);
     if (i < segs) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
@@ -191,7 +206,12 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   const [near, setNear] = useState<StopId | null>(null);
   const [done, setDone] = useState<StopId[]>([]);
   const [stats, setStats] = useState<Stats>({ minutes: 0, km: 0, photos: 0 });
-  const [treats, setTreats] = useState(0);
+  // the game inside the walk: bones along the track are worth ProxyPaw points
+  const [bones, setBones] = useState({ got: 0, of: 0 });
+  // the score carries the community it was earned in, so a switch of community can never bank it under the wrong name
+  const [score, setScore] = useState<{ c: CommunityId; n: number }>({ c: 'prestige', n: 0 });
+  const [bank, setBank] = useState<Record<string, number>>(loadBank); // best score per community, on this device
+  const mapRef = useRef<HTMLCanvasElement>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [night, setNight] = useState(false);
@@ -206,6 +226,13 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   const photoRef = useRef<() => void>(() => {});
   const toastTimer = useRef(0);
 
+  // a walk you played yourself counts: the best score in each community is kept (the self-playing tour's points are not)
+  useEffect(() => {
+    if (dir !== 'off' || score.n <= 0) return;
+    setBank((b) => { if ((b[score.c] ?? 0) >= score.n) return b; const nb = { ...b, [score.c]: score.n }; saveBank(nb); return nb; });
+  }, [score, dir]);
+  const points = score.c === community ? score.n : 0;
+
   const say = (t: string) => {
     setToast(t);
     window.clearTimeout(toastTimer.current);
@@ -219,8 +246,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       renderer = rendererRef.current ?? (rendererRef.current = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));
     } catch { setWebgl(false); return; }
     // every community starts on its own menu
-    setMode('menu'); setStory(null); setCaption(null); setNear(null); setDone([]); setStats({ minutes: 0, km: 0, photos: 0 }); setTreats(0); setPhotos([]); setToast(null); setNight(false);
-    const small = wrap.clientWidth < 700;
+    setMode('menu'); setStory(null); setCaption(null); setNear(null); setDone([]); setStats({ minutes: 0, km: 0, photos: 0 }); setBones({ got: 0, of: 0 }); setScore({ c: community, n: 0 }); setPhotos([]); setToast(null); setNight(false);
+    const small = wrap.clientWidth < 700, coarse = !!window.matchMedia?.('(pointer: coarse)').matches;
     // a narrow screen sees less to either side, so the opening view stands further back (and sways less)
     // A long, low community may give its own opening view for narrow screens (looking along its length).
     const narrowView = small && !!LY.aerialNarrow;
@@ -355,6 +382,46 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const line = mesh(new THREE.PlaneGeometry(TRACK_W - 0.5, 0.32), new THREE.MeshStandardMaterial({ color: '#f6f5ef', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), p.x, 0.06, p.z, false);
       line.rotation.order = 'YXZ'; line.rotation.y = Math.atan2(tan.x, tan.z); line.rotation.x = -Math.PI / 2; scene.add(line);
     }
+    // A pale kerb on both sides, so the walk path reads as one defined band against the lawn, on foot and from the air.
+    const LOOP_W = isPath ? 3.6 : TRACK_W, loopSegs = Math.max(400, Math.round(loopLen / 1.5));
+    const kerbM = new THREE.MeshStandardMaterial({ color: '#dedbd0', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    for (const sd of [-1, 1]) scene.add(ribbon(loop, 0.3, loopSegs, 0.058, kerbM, sd * (LOOP_W / 2 + 0.1)));
+    // painted arrows in the middle lane every 24 m: the way round
+    if (!isPath) {
+      const chevTex = canvasTex(64, 64, (g) => { g.strokeStyle = '#f6f5ef'; g.lineWidth = 9; g.beginPath(); g.moveTo(11, 46); g.lineTo(32, 22); g.lineTo(53, 46); g.stroke(); });
+      const chevM = new THREE.MeshStandardMaterial({ map: chevTex, alphaTest: 0.45, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), chevGeo = new THREE.PlaneGeometry(1.05, 1.05);
+      for (let k = 0; k * 24 + 12 < loopLen - 8; k++) {
+        const tt = (tStart + (k * 24 + 12) / loopLen) % 1, p = loop.getPointAt(tt), tan = loop.getTangentAt(tt);
+        const c = mesh(chevGeo, chevM, p.x, 0.062, p.z, false); c.rotation.order = 'YXZ'; c.rotation.y = Math.atan2(tan.x, tan.z) + Math.PI; c.rotation.x = -Math.PI / 2; scene.add(c);
+      }
+    }
+    { // a start arch over the line: where the walk on foot begins, and where a full lap is counted
+      const p = loop.getPointAt(tStart), tan = loop.getTangentAt(tStart), half = LOOP_W / 2 + 0.34;
+      const arch = new THREE.Group(); arch.position.set(p.x, 0, p.z); arch.rotation.y = Math.atan2(tan.x, tan.z);
+      const postM = std('#f4f1ea', 0.6);
+      for (const sd of [-1, 1]) arch.add(mesh(new THREE.CylinderGeometry(0.07, 0.085, 4.1, 10), postM, sd * half, 2.05, 0));
+      const banT = canvasTex(512, 80, (g) => {
+        g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, 512, 80); g.fillStyle = '#e0662f'; g.fillRect(0, 0, 14, 80); g.fillRect(498, 0, 14, 80);
+        g.font = '800 46px Plus Jakarta Sans, Inter, sans-serif'; g.fillStyle = '#14301f'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('Start', 256, 43);
+      });
+      const banM = new THREE.MeshStandardMaterial({ map: banT, roughness: 0.7 });
+      arch.add(new THREE.Mesh(new THREE.BoxGeometry(half * 2 + 0.3, 0.68, 0.07), [postM, postM, postM, postM, banM, banM]).translateY(3.82));
+      arch.traverse((o) => { o.castShadow = true; }); scene.add(arch);
+    }
+    // From the air the walk path is drawn as a route: marigold dashes that flow the way round, and that still show
+    // (fainter) where a tower stands in front of the track. On foot it is hidden: the real track is under your feet.
+    const routeTex = canvasTex(32, 128, (g) => { g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(4, 14, 24, 74, 12); g.fill(); });
+    routeTex.wrapS = routeTex.wrapT = THREE.RepeatWrapping; routeTex.repeat.set(1, 0.34);
+    const routeG = new THREE.Group(); scene.add(routeG);
+    {
+      // drawn wider than the real track, the way a route is drawn on a map: from 300 m up a 4 m path is only a few pixels
+      const band = ribbon(loop, LOOP_W + 7, loopSegs, 0.3, new THREE.MeshBasicMaterial({ color: '#ffb23f', transparent: true, opacity: 0.34, depthWrite: false }));
+      const dash = ribbon(loop, 6.4, loopSegs, 0.34, new THREE.MeshBasicMaterial({ map: routeTex, color: '#ffc24d', transparent: true, opacity: 1, depthWrite: false }));
+      const ghost = ribbon(loop, 6.4, loopSegs, 0.34, new THREE.MeshBasicMaterial({ map: routeTex, color: '#ffc24d', transparent: true, opacity: 0.74, depthWrite: false, depthFunc: THREE.GreaterDepth }));
+      const ghostBand = ribbon(loop, LOOP_W + 7, loopSegs, 0.3, new THREE.MeshBasicMaterial({ color: '#ffb23f', transparent: true, opacity: 0.24, depthWrite: false, depthFunc: THREE.GreaterDepth }));
+      band.renderOrder = 5; dash.renderOrder = 6; ghostBand.renderOrder = 7; ghost.renderOrder = 8;
+      for (const r of [band, dash, ghostBand, ghost]) { r.receiveShadow = false; routeG.add(r); }
+    }
     const linkCurves = LY.links.map((l) => curve(l.p, false));
     // link 0 is the entrance road, `road` links are streets, the rest are garden paths
     const linkW = LY.links.map((l, i) => (i === 0 ? 7 : l.road ? 6 : 3.6));
@@ -412,6 +479,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const s = label(text); (s.material as THREE.SpriteMaterial).sizeAttenuation = false; s.material.depthTest = false; // never half hidden behind a tower
       s.scale.multiplyScalar((small ? 0.034 : 0.029) / 1.6); s.position.set(x, y, z); air.add(s);
     };
+    { // the walk path gets the first name tag, on the side of the loop nearest the opening view
+      const ax = AV[0] + Math.cos(A_BEAR) * AV[3], az = AV[1] + Math.sin(A_BEAR) * AV[3]; let bp = loop.getPointAt(0), bd = 1e9;
+      for (let i = 0; i < 120; i++) { const q = loop.getPointAt(i / 120), d = Math.hypot(q.x - ax, q.z - az); if (d < bd) { bd = d; bp = q; } }
+      airLabel(isPath ? 'Walking path' : 'Walking track', bp.x, 5, bp.z);
+    }
     if (LY.towers) {
     const FL = Math.max(...LY.towers.map((t) => t[4])), TH = FL * 3;
     const WD = LY.towerDepth ?? 18; // how deep a block is, front to back
@@ -700,7 +772,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const trees: THREE.Group[] = [];
     function tree(x: number, z: number, s: number, kind: number, detail = true) {
       if (!free(x, z, 1) || nearLoop(x, z, 3.9)) return;
-      const t = new THREE.Group(); t.position.set(x, 0, z); t.rotation.y = tr() * 6.3;
+      const t = new THREE.Group(); t.position.set(x, 0, z); t.rotation.y = tr() * 6.3; t.userData.c0 = cardN;
       const h = (2.6 + tr() * 1.2) * s;
       const tk = mesh(trunkGeo, trunkM, 0, h / 2, 0); tk.scale.set(s, h, s); t.add(tk);
       const blossom = kind === 9, gold = kind === 8, lm = gold ? goldMs[Math.floor(tr() * 3)] : blossom ? blossomMs[Math.floor(tr() * 3)] : leafMs[kind % leafMs.length];
@@ -713,7 +785,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         if (i > 0) { const b = mesh(branchGeo, trunkM, bx * 0.5, h * 0.9 + (by - h) * 0.3, bz * 0.5); b.scale.set(s, Math.hypot(rad, by - h * 0.8), s); b.lookAt(bx, by * 3, bz); b.rotateX(Math.PI / 2 - Math.atan2(by - h * 0.8, rad)); t.add(b); }
         if (detail) addCards(x + (bx * Math.cos(t.rotation.y) + bz * Math.sin(t.rotation.y)), by, z + (-bx * Math.sin(t.rotation.y) + bz * Math.cos(t.rotation.y)), br, small ? 5 : 9, tint);
       }
-      scene.add(t); trees.push(t); if (gold) goldSpots.push([x, z, s]);
+      t.userData.c1 = cardN; scene.add(t); trees.push(t); if (gold) goldSpots.push([x, z, s]);
     }
     for (let i = 0, n = byLen(34, loopLen, 200); i < n; i++) { const p = along(loop, i / n + tr() * 0.01, (i % 2 ? 5 : -5) + (tr() - 0.5) * 2); tree(p.x, p.z, 0.75 + tr() * 0.4, i % 6 === 0 ? 9 : i % 4 === 1 ? 8 : i % 5); }
     for (let i = 0, n = byLen(72, ringLen, 700); i < n; i++) { const p = along(ring, i / n + tr() * 0.006, (i % 2 ? 7.5 : -7.5) + (tr() - 0.5) * 2.5); tree(p.x, p.z, 0.9 + tr() * 0.5, i % 8 === 0 ? 9 : i % 7 === 3 ? 8 : i % 5); }
@@ -768,6 +840,17 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
       for (let i = 0; i < 3; i++) shrub(x + (tr() - 0.5) * rx, z + (tr() - 0.5) * rz, 0.3 + tr() * 0.2, null);
     };
+    { // Keep the approach to the start arch open: no trunk or canopy between the walk camera and the banner.
+      // (Done after planting, so every other plant stays exactly where it was.)
+      const lane: THREE.Vector3[] = []; for (let d = -16; d <= 6; d += 2) lane.push(loop.getPointAt((((tStart + d / loopLen) % 1) + 1) % 1));
+      const inLane = (x: number, z: number) => lane.some((q) => Math.hypot(q.x - x, q.z - z) < 7.5);
+      for (const t of trees) {
+        if (!inLane(t.position.x, t.position.z)) continue;
+        t.visible = false;
+        for (let i = t.userData.c0 as number; i < (t.userData.c1 as number); i++) { cards.getMatrixAt(i, mtx); mtx.elements[13] -= 300; cards.setMatrixAt(i, mtx); } // its loose leaves go with it
+      }
+      for (const c of palms) if (c.parent && inLane(c.parent.position.x, c.parent.position.z)) c.parent.visible = false;
+    }
     // layered planting along the walking loop, like a real landscaped path
     for (let i = 0, n = byLen(120, loopLen, 200); i < n; i++) {
       const t = i / n, side = i % 2 ? 1 : -1;
@@ -816,6 +899,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const hedgeM = std('#2f7a3d', 1);
     const HEDGE = isPath ? 2 : Math.min(2000, 2 * Math.ceil(loopLen / 1.05)); // one box a metre on each side, however long the track
     const hedge = new THREE.InstancedMesh(new THREE.BoxGeometry(1.25, 0.8, 0.85, 2, 2, 2), hedgeM, HEDGE);
+    const hedgeGap: boolean[] = []; // true where the hedge is left out (a path joins, a bench, a stop): the way through
     for (let i = 0; i < HEDGE; i++) {
       const t = (i >> 1) / (HEDGE / 2), side = i % 2 ? 2.55 : -2.55; const p = along(loop, t, side), tan = loop.getTangentAt(t);
       q.setFromAxisAngle(V(0, 1, 0), Math.atan2(-tan.z, tan.x));
@@ -823,6 +907,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const hide = isPath || [...LY.hedgeGaps, STOPS[2].pos].some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3.6) || inBlock(p.x, p.z, 0.4)
         || BENCHES.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 2.1)
         || (hasPool && Math.abs(rx) < PW / 2 + 2.3 && rz > -PD / 2 - 3.4 && rz < PD / 2 + 2.2) || (!!LY.lagoon && ((p.x - LY.lagoon[0]) / 9.5) ** 2 + ((p.z - LY.lagoon[1]) / 7.3) ** 2 < 1);
+      hedgeGap.push(hide);
       mtx.compose(V(p.x, hide ? -3 : 0.4, p.z), q, V(1, 0.92 + ((i * 7) % 5) * 0.03, 1)); hedge.setMatrixAt(i, mtx);
     }
     hedge.castShadow = hedge.receiveShadow = true; scene.add(hedge);
@@ -1044,22 +1129,52 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const marker = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.5, 28), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9, depthWrite: false }));
     marker.rotation.x = -Math.PI / 2; marker.visible = false; scene.add(marker);
 
-    // treats to collect along the track: glowing marigold dog biscuits
-    const TREATS = 8;
+    /* ---- bones to collect: every one is worth ProxyPaw points ---- */
     const boneGeo = merge([xf(new THREE.CylinderGeometry(0.05, 0.05, 0.24, 8), 1, 1, 1, 0, 0, 0, 0, 0, Math.PI / 2), ...[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([a, b]) => new THREE.SphereGeometry(0.07, 10, 8).translate(a * 0.13, b * 0.05, 0))]);
-    const treatM = new THREE.MeshStandardMaterial({ color: '#f5b03c', emissive: '#e0662f', emissiveIntensity: 0.55, roughness: 0.35 });
+    const boneM = new THREE.MeshStandardMaterial({ color: '#fff3d9', emissive: '#f0a23a', emissiveIntensity: 0.55, roughness: 0.4 });
+    const goldM = new THREE.MeshStandardMaterial({ color: '#ffd04a', emissive: '#e98a1c', emissiveIntensity: 0.95, roughness: 0.25, metalness: 0.45 });
     const glowTex = canvasTex(64, 64, (g) => { const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32); grd.addColorStop(0, 'rgba(255,196,96,.85)'); grd.addColorStop(1, 'rgba(255,196,96,0)'); g.fillStyle = grd; g.fillRect(0, 0, 64, 64); });
-    const tOf = (x: number, z: number) => { let bt2 = 0, bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - x, p.z - z); if (d < bd) { bd = d; bt2 = i / 300; } } return bt2; };
-    const treatT = [tOf(STOPS[0].pos[0], STOPS[0].pos[1]) + 5.5 / loopLen, tOf(STOPS[2].pos[0], STOPS[2].pos[1]) - 5.5 / loopLen, tOf(LY.story.to[0], LY.story.to[1]) - 6 / loopLen];
-    for (const gap of [0.075, 0.04, 0]) for (let i = 0; i < 16 && treatT.length < TREATS; i++) { const t = (tStart + (i * 5 + 0.55) / 16) % 1; if (treatT.every((u) => Math.min(Math.abs(u - t), 1 - Math.abs(u - t)) > gap)) treatT.push(t); }
-    const treats = Array.from({ length: treatT.length }, (_, i) => {
-      const p = along(loop, treatT[i], i < 3 ? 0 : [-1.25, 0, 1.25][i % 3]);
-      const g = new THREE.Group(); g.position.set(p.x, 0.62, p.z);
-      const b = mesh(boneGeo, treatM); b.scale.setScalar(1.25); g.add(b);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(1.5); g.add(sp);
-      scene.add(g); return { g, b, sp, got: 0, done: false };
+    // a soft column of light above each bone, so the next one can be seen from a long way down the track
+    const beamTex = canvasTex(32, 128, (g) => {
+      const up = g.createLinearGradient(0, 128, 0, 0); up.addColorStop(0, 'rgba(255,214,130,.8)'); up.addColorStop(0.5, 'rgba(255,214,130,.26)'); up.addColorStop(1, 'rgba(255,214,130,0)');
+      g.fillStyle = up; g.fillRect(0, 0, 32, 128);
+      g.globalCompositeOperation = 'destination-in'; const side = g.createLinearGradient(0, 0, 32, 0); side.addColorStop(0, 'rgba(0,0,0,0)'); side.addColorStop(0.5, 'rgba(0,0,0,1)'); side.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = side; g.fillRect(0, 0, 32, 128);
     });
-    let treatN = 0;
+    const tOf = (x: number, z: number) => { let bt2 = 0, bd = 1e9; for (let i = 0; i < 300; i++) { const p = loop.getPointAt(i / 300), d = Math.hypot(p.x - x, p.z - z); if (d < bd) { bd = d; bt2 = i / 300; } } return bt2; };
+    // About one bone every 16 m, spread over the three lanes. The first few sit in the middle lane beside the stops
+    // (one either side of the first stop), so the self-playing walk always collects one on its way in.
+    const N_BONES = THREE.MathUtils.clamp(Math.round(loopLen / 16), 10, 26), LANE = isPath ? 0.9 : 1.25;
+    const t0 = tOf(STOPS[0].pos[0], STOPS[0].pos[1]);
+    const boneT = [t0 + 5 / loopLen, t0 - 5 / loopLen, tOf(STOPS[2].pos[0], STOPS[2].pos[1]) - 5.5 / loopLen, tOf(LY.story.to[0], LY.story.to[1]) - 6 / loopLen].map((t) => ((t % 1) + 1) % 1);
+    const fixedBones = boneT.length;
+    for (let i = 0; i < N_BONES; i++) { const t = (tStart + (i + 0.5) / N_BONES) % 1; if (boneT.every((u) => Math.min(Math.abs(u - t), 1 - Math.abs(u - t)) > 0.45 / N_BONES)) boneT.push(t); }
+    interface Bone { g: THREE.Group; b: THREE.Mesh; sp: THREE.Sprite; beam: THREE.Sprite; got: number; done: boolean; v: number; gold: boolean; y: number }
+    const mkBone = (x: number, z: number, gold: boolean): Bone => {
+      const y = gold ? 0.95 : 0.78, g = new THREE.Group(); g.position.set(x, y, z);
+      const b = mesh(boneGeo, gold ? goldM : boneM); b.scale.setScalar(gold ? 3 : 2); b.rotation.z = 0.35; g.add(b);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(gold ? 3 : 2); g.add(sp);
+      const beam = new THREE.Sprite(new THREE.SpriteMaterial({ map: beamTex, transparent: true, depthWrite: false, opacity: gold ? 0.75 : 0.5 })); beam.center.set(0.5, 0); beam.scale.set(gold ? 1.5 : 0.95, gold ? 7.5 : 4.6, 1); beam.position.y = 0.1; g.add(beam);
+      scene.add(g); return { g, b, sp, beam, got: 0, done: false, v: gold ? PTS.gold : PTS.bone, gold, y };
+    };
+    const treats: Bone[] = [];
+    boneT.forEach((t, i) => { const p = along(loop, t, i < fixedBones ? 0 : [-LANE, 0, LANE][i % 3]); if (!inBlock(p.x, p.z, 0.3)) treats.push(mkBone(p.x, p.z, false)); });
+    { // one golden bone waits on the pet lawn, off the track: worth five ordinary ones
+      let gx = THREE.MathUtils.clamp(FX + 3, LY.fetch[0] + 0.8, LY.fetch[1] - 0.8), gz = THREE.MathUtils.clamp(FZ + 2, LY.fetch[2] + 0.8, LY.fetch[3] - 0.8);
+      if (inBlock(gx, gz, 0.3)) { gx = FX; gz = FZ; }
+      treats.push(mkBone(gx, gz, true));
+    }
+    const BONES = treats.length; setBones({ got: 0, of: BONES });
+    let treatN = 0, pts = 0, lapAcc = 0, lapLast = -1, lapDone = false;
+    // "+10" rises from whatever earned the points
+    const popMats = new Map<string, { m: THREE.SpriteMaterial; r: number }>();
+    function popup(at: THREE.Vector3, text: string) {
+      let pm = popMats.get(text);
+      if (!pm) { const l = label(text, { bg: 'rgba(224,102,47,.96)', fg: '#ffffff' }); pm = { m: l.material as THREE.SpriteMaterial, r: l.scale.x / l.scale.y }; popMats.set(text, pm); }
+      const mat = pm.m.clone(); mat.sizeAttenuation = false; mat.depthTest = false;
+      const s = new THREE.Sprite(mat), h = small ? 0.05 : 0.04; s.scale.set(pm.r * h, h, 1); s.position.copy(at); s.renderOrder = 12;
+      scene.add(s); fx.push({ s, t: 0, v: V(0, 1.15, 0) });
+    }
+    const award = (n: number, at?: THREE.Vector3) => { pts += n; setScore({ c: LY.id, n: pts }); if (at) popup(at, `+${n}`); };
 
     const hTex = heartTex();
     const fx: { s: THREE.Sprite; t: number; v: THREE.Vector3 }[] = [];
@@ -1073,9 +1188,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     let bubble: THREE.Sprite | null = null; let bubbleT = 0;
 
     /* ---- state ---- */
+    const WALK_PITCH = 0.2; // the walk camera sits low behind the walker and looks over their head, so the towers fill the frame
     const keys = new Set<string>();
     let queue: THREE.Vector3[] = [];
-    let yaw = Math.PI * 0.5, pitch = 0.38; const dist = 8.4, SPEED = 3.7, PACE = 0.8;
+    let yaw = Math.PI * 0.5, pitch = WALK_PITCH; const dist = 8.4, SPEED = 3.7, PACE = 0.8;
     let m: Mode = 'menu';
     let minutes = 0, meters = 0, photoCount = 0;
     const doneSet = new Set<StopId>();
@@ -1089,14 +1205,36 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const camPos = V(), camLook = V(); let camDist = dist, camSnap = false;
     const camHit = (x: number, y: number, z: number) => blockers.some((b) => { if (y > b.h) return false; const dx = x - b.x, dz = z - b.z; return Math.abs(dx * b.c - dz * b.s) < b.hw - 0.6 && Math.abs(dx * b.s + dz * b.c) < b.hd - 0.6; });
     function followCam(snap = false) {
-      const tgt = walker.g.position.clone().add(V(0, 1.2, 0));
-      const dv = V(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+      const tgt = walker.g.position.clone().add(V(0, 1.35, 0));
+      const pc = Math.max(pitch, 0.07); // dragging further down than this looks up at the towers instead of sinking the camera into the ground
+      const dv = V(Math.sin(yaw) * Math.cos(pc), Math.sin(pc), Math.cos(yaw) * Math.cos(pc));
       let d = dist;
       for (let i = 1; i <= 12; i++) { const dd = (dist * i) / 12; if (camHit(tgt.x + dv.x * dd, tgt.y + dv.y * dd, tgt.z + dv.z * dd)) { d = Math.max(2.4, (dist * (i - 1)) / 12 - 0.3); break; } }
       camDist = d < camDist || snap ? d : camDist + (d - camDist) * 0.08;
       const want = tgt.clone().add(dv.multiplyScalar(camDist));
+      tgt.y += (1.2 + Math.max(0, 0.07 - pitch) * 15) * (camDist / dist); // aim above the walker's head: walker low in the frame, skyline above
       if (snap) { camPos.copy(want); camLook.copy(tgt); } else { camPos.lerp(want, 0.14); camLook.lerp(tgt, 0.2); }
     }
+    /* Where a point is relative to the walking loop: the nearest sample, the distance to it, the signed distance from
+       the centre line (the side it is on) and the way the track runs there. */
+    const LN = loopPts.length - 1; // the last sample repeats the first
+    interface OnLoop { j: number; d: number; off: number; tx: number; tz: number }
+    const trk: OnLoop = { j: 0, d: 1e9, off: 0, tx: 0, tz: 1 }, hk: OnLoop = { j: 0, d: 1e9, off: 0, tx: 0, tz: 1 };
+    const onLoop = (x: number, z: number, o: OnLoop) => {
+      let bj = 0, bd = 1e18; for (let i = 0; i < LN; i++) { const q = loopPts[i], d = (q.x - x) ** 2 + (q.z - z) ** 2; if (d < bd) { bd = d; bj = i; } }
+      const a = loopPts[(bj + LN - 1) % LN], b = loopPts[(bj + 1) % LN], q = loopPts[bj]; let tx = b.x - a.x, tz = b.z - a.z; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
+      o.j = bj; o.d = Math.sqrt(bd); o.tx = tx; o.tz = tz; o.off = (x - q.x) * -tz + (z - q.z) * tx; return o;
+    };
+    /* The clipped hedge either side of the track is solid when you walk by keys: you slide along it and leave through
+       the gaps. (Tapping a place or pressing Go still walks you straight there.) `from` is the side you were on. */
+    const HEDGE_IN = 1.72, HEDGE_OUT = 3.32, HN = HEDGE / 2;
+    const hedgeStop = (p: THREE.Vector3, from: number) => {
+      if (isPath) return; onLoop(p.x, p.z, hk); const a = Math.abs(hk.off);
+      if (hk.d > HEDGE_OUT + 0.8 || a <= HEDGE_IN || a >= HEDGE_OUT) return;
+      const k = Math.round((hk.j / LN) * HN) % HN; if (hedgeGap[2 * k + (hk.off > 0 ? 1 : 0)]) return;
+      const want = Math.sign(hk.off) * (Math.abs(from) < 2.55 ? HEDGE_IN : HEDGE_OUT);
+      p.x += -hk.tz * (want - hk.off); p.z += hk.tx * (want - hk.off);
+    };
     function collide(p: THREE.Vector3) {
       p.x = THREE.MathUtils.clamp(p.x, LY.bounds[0], LY.bounds[1]); p.z = THREE.MathUtils.clamp(p.z, LY.bounds[2], LY.bounds[3]);
       for (const b of blockers) {
@@ -1109,7 +1247,10 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     }
     const clearLine = (a: THREE.Vector3, b: THREE.Vector3) => { const n = Math.ceil(a.distanceTo(b) / 2); for (let i = 1; i < n; i++) { const p = a.clone().lerp(b, i / n); if (inBlock(p.x, p.z, 0)) return false; } return true; };
     function finish(msg: string, id: StopId) {
-      if (!doneSet.has(id)) { doneSet.add(id); setDone(Array.from(doneSet)); rings.get(id)!.visible = false; if (doneSet.size === 4) msg += ' All four stops done. End the walk when you are ready.'; }
+      if (!doneSet.has(id)) {
+        doneSet.add(id); setDone(Array.from(doneSet)); rings.get(id)!.visible = false; award(PTS.stop, walker.g.position.clone().add(V(0, 2.2, 0)));
+        if (doneSet.size === 4) { award(PTS.allStops); msg += ` All four stops done: ${PTS.allStops} bonus points. End the walk when you are ready.`; }
+      }
       say(msg);
     }
     const goToPoint = (p: THREE.Vector3) => {
@@ -1213,20 +1354,26 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     function toWorld(fromFlat = true) {
       dissolve();
       flat.visible = false; scene.add(dog.g); leashInFlat = false; dogMode = 'follow';
-      const at = fromFlat ? LY.story.at : LY.start, r = at[2];
+      let at: number[] = LY.story.at;
+      if (!fromFlat) { // exploring on foot begins on the track itself, a few steps before the start arch, facing the way round
+        const ts = (((tStart - 3.5 / loopLen) % 1) + 1) % 1, sp = loop.getPointAt(ts), st = loop.getTangentAt(ts), hr = Math.atan2(st.x, st.z);
+        at = [sp.x, sp.z, hr, hr + Math.PI];
+      }
+      const r = at[2];
       walker.g.position.set(at[0], 0, at[1]); walker.g.rotation.y = r;
-      dog.g.position.set(at[0] - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, at[1] + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.set(0, r, 0); yaw = at[3]; pitch = 0.3;
+      dog.g.position.set(at[0] - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, at[1] + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.set(0, r, 0); yaw = at[3]; pitch = WALK_PITCH;
       followCam(true);
     }
     function resetWalk() {
       minutes = 0; meters = 0; photoCount = 0; doneSet.clear(); setDone([]); rings.forEach((r) => (r.visible = true)); setPhotos([]);
       ballFlight = null; ballHeld = false; ball.position.set(FX - 2, 0.075, FZ - 1); queue = []; marker.visible = false; autoWalk = false;
-      treatN = 0; setTreats(0); treats.forEach((t) => { t.got = 0; t.done = false; t.g.visible = true; t.b.scale.setScalar(1.25); (t.sp.material as THREE.SpriteMaterial).opacity = 1; });
+      treatN = 0; pts = 0; lapAcc = 0; lapLast = -1; lapDone = false; setScore({ c: LY.id, n: 0 }); setBones({ got: 0, of: BONES });
+      treats.forEach((t) => { t.got = 0; t.done = false; t.g.visible = true; t.b.scale.setScalar(t.gold ? 3 : 2); (t.sp.material as THREE.SpriteMaterial).opacity = 1; t.beam.visible = true; });
     }
     function nextBeat() {
       bi++; bt = 0;
       if (bi >= beats.length) {
-        if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? `Now the walk: four stops along the ${isPath ? 'path' : 'track'}.` : 'Your turn. Walk Biscuit to the four stops.'); }
+        if (storyId === 'dog') { autoWalk = false; m = 'walk'; setMode('walk'); setCaption(null); say(dirOn ? `Now the walk: four stops along the ${isPath ? 'path' : 'track'}.` : 'Your turn. Collect the bones and walk Biscuit to the four stops.'); }
         else {
           dissolve(); nightTarget = 0; const dm: Mode = storyId === 'cat' ? 'catdone' : 'boarddone'; m = dm; setMode(dm); setCaption(null); flat.visible = false; camSnap = true;
           if (dog.g.parent !== scene) { scene.add(dog.g); dog.g.position.set(LY.start[0] - 0.5, 0, LY.start[1] - 0.8); }
@@ -1253,7 +1400,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         renderer.render(scene, camera); dc.width = canvas.width; dc.height = canvas.height; g2.drawImage(canvas, 0, 0); dc.style.transition = 'none'; dc.style.opacity = '1';
       },
       skip: () => { if (storyId === 'dog') { if (flat.visible) toWorld(); bi = beats.length; nextBeat(); } else { bi = beats.length; nextBeat(); } },
-      explore: () => { resetWalk(); storyId = 'dog'; setStory('dog'); toWorld(false); setCaption(null); setM('walk'); wrap.focus({ preventScroll: true }); },
+      explore: () => { resetWalk(); storyId = 'dog'; setStory('dog'); toWorld(false); setCaption(null); setM('walk'); wrap.focus({ preventScroll: true }); say(coarse ? `Tap the ${isPath ? 'path' : 'track'} ahead to walk. Every bone is ${PTS.bone} ProxyPaw points.` : `Hold the up arrow to walk the ${isPath ? 'path' : 'track'}. Every bone is ${PTS.bone} ProxyPaw points.`); },
       menu: () => { dissolve(); nightTarget = 0; flat.visible = false; if (dog.g.parent !== scene) scene.add(dog.g); beats = []; setCaption(null); camSnap = true; setM('menu'); },
       goTo: (id) => { const s = STOPS.find((x) => x.id === id)!; goToPoint(V(s.pos[0], 0, s.pos[1])); },
       act: (id) => {
@@ -1279,7 +1426,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         const g = c.getContext('2d')!; const src = renderer.domElement;
         const ar = 240 / 160, sw = Math.min(src.width, src.height * ar), sh = sw / ar;
         g.drawImage(src, (src.width - sw) / 2, (src.height - sh) / 2, sw, sh, 0, 0, 240, 160);
-        photoCount++; hearts(dog.g.position.clone().add(V(0, 0.95, 0)), 3);
+        photoCount++; hearts(dog.g.position.clone().add(V(0, 0.95, 0)), 3); if (photoCount <= 3) award(PTS.photo, dog.g.position.clone().add(V(0, 1.5, 0)));
         return c.toDataURL('image/jpeg', 0.8);
       },
     };
@@ -1333,7 +1480,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       const r = Math.atan2(d.x, d.z);
       walker.g.position.set(p.x, 0, p.z); walker.g.rotation.y = r;
       dog.g.position.set(p.x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, p.z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; dogMode = 'follow';
-      yaw = r + Math.PI; pitch = 0.3; followCam(true); cutN++; showCursor();
+      yaw = r + Math.PI; pitch = WALK_PITCH; followCam(true); cutN++; showCursor();
     }
     /** The tour: pick a community, pick a service, watch a short cut of it, move on. It resumes after each community is rebuilt. */
     async function direct(run: number) {
@@ -1395,7 +1542,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     wrap.addEventListener('pointerdown', realDown, true); wrap.addEventListener('pointerup', realUp, true); wrap.addEventListener('pointercancel', realCancel, true);
 
     // test hook, only with #ppdebug in the address: lets a test place the camera and the walker
-    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ com: LY.id, tour: tourRef.current.step, pos: [Math.round(walker.g.position.x * 10) / 10, Math.round(walker.g.position.z * 10) / 10], geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, story: storyId }) } : null;
+    const dbg: { cam: number[] | null; rel: number[] | null; [k: string]: unknown } | null = location.hash.includes('ppdebug') ? { cam: null, rel: null, speed: 1, tp: (x: number, z: number, r = 0) => { walker.g.position.set(x, 0, z); walker.g.rotation.y = r; dog.g.position.set(x - Math.cos(r) * 0.8 + Math.sin(r) * 0.8, 0, z + Math.sin(r) * 0.8 + Math.cos(r) * 0.8); dog.g.rotation.y = r; yaw = r + Math.PI; followCam(true); }, look: (y: number, p: number) => { yaw = y; pitch = p; }, night: (n: number) => { nightTarget = n; }, flat: F, keys, state: () => ({ com: LY.id, tour: tourRef.current.step, pos: [Math.round(walker.g.position.x * 10) / 10, Math.round(walker.g.position.z * 10) / 10], geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, m, bi, dirOn, dirT: Math.round(dirT * 10) / 10, near: nearId, done: Array.from(doneSet), treats: treatN, bones: BONES, pts, lap: Math.round(lapAcc * 100) / 100, yaw: Math.round(yaw * 100) / 100, len: Math.round(loopLen), d: Math.round(onLoop(walker.g.position.x, walker.g.position.z, hk).d * 10) / 10, story: storyId }) } : null;
     if (dbg) (window as unknown as { __ppw: unknown }).__ppw = dbg;
 
     /* ---- input ---- */
@@ -1420,7 +1567,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
     const onMove = (e: PointerEvent) => {
       if (!drag) return;
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
-      yaw -= dx * 0.006; pitch = THREE.MathUtils.clamp(pitch + dy * 0.004, 0.1, 1.2);
+      yaw -= dx * 0.006; pitch = THREE.MathUtils.clamp(pitch + dy * 0.004, -0.5, 1.2);
     };
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(V(0, 1, 0), 0);
     const onUp = (e: PointerEvent) => {
@@ -1452,11 +1599,55 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       }
     };
     const applyShift = () => { const w = wrap.clientWidth, h = wrap.clientHeight; if (Math.abs(viewShift) < 0.002 && sideShift < 0.002) camera.clearViewOffset(); else camera.setViewOffset(w, h, sideShift * w, viewShift * h, w, h); };
-    const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 64 : 52; camera.updateProjectionMatrix(); applyShift(); };
+    const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = (w < h ? 64 : 52) + (m === 'walk' || m === 'ended' ? 6 : 0); camera.updateProjectionMatrix(); applyShift(); };
     resize();
     const ro = new ResizeObserver(resize); ro.observe(wrap);
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; half = e.intersectionRatio >= 0.5; }, { threshold: [0.01, 0.5] }); io.observe(wrap);
     const autoplay = !reducedMotion && (!dbg || location.hash.includes('ppauto'));
+
+    /* ---- the minimap: the walk path, the buildings, the stops, the bones still to collect, and you ---- */
+    // It keeps you in the middle and shows about 110 m across, north up. Everything that never moves is painted once.
+    const MAP_PX = small ? 208 : 328, mu = MAP_PX / 328, mk = MAP_PX / 110; // canvas pixels per metre
+    let mx0 = LY.bounds[0], mx1 = LY.bounds[1], mz0 = LY.bounds[2], mz1 = LY.bounds[3];
+    const grow = (x: number, z: number) => { mx0 = Math.min(mx0, x); mx1 = Math.max(mx1, x); mz0 = Math.min(mz0, z); mz1 = Math.max(mz1, z); };
+    loopPts.forEach((q) => grow(q.x, q.z)); STOPS.forEach((st) => grow(st.pos[0], st.pos[1])); treats.forEach((t) => grow(t.g.position.x, t.g.position.z));
+    mx0 -= 12; mz0 -= 12; mx1 += 12; mz1 += 12;
+    const mapStatic = document.createElement('canvas'); mapStatic.width = Math.ceil((mx1 - mx0) * mk); mapStatic.height = Math.ceil((mz1 - mz0) * mk);
+    const MX = (x: number) => (x - mx0) * mk, MZ = (z: number) => (z - mz0) * mk;
+    {
+      const g = mapStatic.getContext('2d')!; g.lineCap = g.lineJoin = 'round';
+      const stroke = (c: THREE.Curve<THREE.Vector3>, w: number, col: string) => { const pts = c.getSpacedPoints(Math.max(40, Math.round(c.getLength() / 2))); g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach((q, i) => (i ? g.lineTo(MX(q.x), MZ(q.z)) : g.moveTo(MX(q.x), MZ(q.z)))); g.stroke(); };
+      stroke(ring, 7 * mk, '#cfd4cc'); linkCurves.forEach((c, i) => stroke(c, linkW[i] * mk, i === 0 || LY.links[i].road ? '#cfd4cc' : '#dfe2da'));
+      blockers.forEach((b) => { g.fillStyle = b.h > 20 ? '#d2b99f' : '#e2d9c9'; g.save(); g.translate(MX(b.x), MZ(b.z)); g.rotate(-Math.atan2(b.s, b.c)); g.fillRect(-b.hw * mk, -b.hd * mk, b.hw * 2 * mk, b.hd * 2 * mk); g.restore(); });
+      if (hasPool) { g.fillStyle = '#6fc3e0'; g.save(); g.translate(MX(POOL.x), MZ(POOL.z)); g.rotate(-POOL.rot); g.fillRect((-PW / 2) * mk, (-PD / 2) * mk, PW * mk, PD * mk); g.restore(); }
+      // the walk path: one bold band with a dashed centre line, so it is the first thing the eye finds
+      stroke(loop, (LOOP_W + 1.6) * mk, '#ffffff'); stroke(loop, LOOP_W * mk, isPath ? '#727972' : '#2a2c2e');
+      g.setLineDash([5 * mu, 7 * mu]); stroke(loop, 1.6 * mu, 'rgba(255,255,255,.9)'); g.setLineDash([]);
+      { const q = loop.getPointAt(tStart), tn = loop.getTangentAt(tStart); g.strokeStyle = '#ffffff'; g.lineWidth = 3 * mu; g.lineCap = 'butt'; g.beginPath(); g.moveTo(MX(q.x - tn.z * LOOP_W * 0.5), MZ(q.z + tn.x * LOOP_W * 0.5)); g.lineTo(MX(q.x + tn.z * LOOP_W * 0.5), MZ(q.z - tn.x * LOOP_W * 0.5)); g.stroke(); }
+    }
+    let mapTick = 0;
+    const drawMap = () => {
+      const mc = mapRef.current; if (!mc) return;
+      if (mc.width !== MAP_PX) mc.width = mc.height = MAP_PX;
+      const g = mc.getContext('2d')!, H = MAP_PX / 2, wx = walker.g.position.x, wz = walker.g.position.z, ox = H - MX(wx), oz = H - MZ(wz);
+      g.clearRect(0, 0, MAP_PX, MAP_PX); g.drawImage(mapStatic, Math.round(ox), Math.round(oz));
+      for (const t of treats) {
+        if (t.done || t.got > 0) continue; const x = MX(t.g.position.x) + ox, y = MZ(t.g.position.z) + oz; if (x < -10 || y < -10 || x > MAP_PX + 10 || y > MAP_PX + 10) continue;
+        g.fillStyle = t.gold ? '#f0a020' : '#ffb23f'; g.beginPath(); g.arc(x, y, (t.gold ? 8 : 5) * mu, 0, 6.3); g.fill(); g.strokeStyle = '#ffffff'; g.lineWidth = (t.gold ? 2.8 : 1.8) * mu; g.stroke();
+      }
+      // stops still to do: on the map where they are, or pinned to the edge in their direction when they are further away
+      STOPS.forEach((st, i) => {
+        if (doneSet.has(st.id)) return;
+        let x = MX(st.pos[0]) + ox, y = MZ(st.pos[1]) + oz; const lim = H - 15 * mu, dx = x - H, dy = y - H, far = Math.max(Math.abs(dx), Math.abs(dy));
+        if (far > lim) { x = H + (dx / far) * lim; y = H + (dy / far) * lim; }
+        g.fillStyle = far > lim ? '#fdebdd' : '#ffffff'; g.beginPath(); g.arc(x, y, 11.5 * mu, 0, 6.3); g.fill(); g.strokeStyle = '#e0662f'; g.lineWidth = 3 * mu; g.stroke();
+        g.fillStyle = '#c24e1d'; g.font = `800 ${Math.round(14 * mu)}px Plus Jakarta Sans, Inter, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(i + 1), x, y + mu);
+      });
+      // you: a green dot in the middle, with a soft wedge for the way the view is looking
+      const ang = Math.atan2(-Math.cos(yaw), -Math.sin(yaw));
+      g.fillStyle = 'rgba(46,125,79,.28)'; g.beginPath(); g.moveTo(H, H); g.arc(H, H, 46 * mu, ang - 0.5, ang + 0.5); g.closePath(); g.fill();
+      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(H, H, 10.5 * mu, 0, 6.3); g.fill(); g.fillStyle = '#2e7d4f'; g.beginPath(); g.arc(H, H, 7.5 * mu, 0, 6.3); g.fill();
+    };
 
     /* ---- loop ---- */
     const clock = new THREE.Clock(); let raf = 0;
@@ -1496,17 +1687,37 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       if (walking) {
         fwd.set(-Math.sin(yaw), 0, -Math.cos(yaw)); right.set(-fwd.z, 0, fwd.x); tmp.set(0, 0, 0);
         if (m === 'walk') { if (keys.has('w')) tmp.add(fwd); if (keys.has('s')) tmp.sub(fwd); if (keys.has('d')) tmp.add(right); if (keys.has('a')) tmp.sub(right); }
+        const byKeys = tmp.lengthSq() > 0;
         let reach = 1e9; // never step past the point we are walking to, however slow the frame was
-        if (tmp.lengthSq() === 0 && queue.length) {
+        if (!byKeys && queue.length) {
           tmp.copy(queue[0]).sub(walker.g.position).setY(0); reach = tmp.length();
           if (reach < (queue.length > 1 ? 1.2 : 0.35)) { queue.shift(); if (!queue.length) marker.visible = false; tmp.set(0, 0, 0); }
         }
         if (tmp.lengthSq() > 0 && dogMode !== 'drink') {
           tmp.normalize(); const before = walker.g.position.clone();
+          if (byKeys) onLoop(before.x, before.z, trk);
           walker.g.position.addScaledVector(tmp, Math.min(SPEED * dt, reach)); collide(walker.g.position);
+          if (byKeys) hedgeStop(walker.g.position, trk.off);
           const moved = walker.g.position.distanceTo(before); meters += moved; walker.phase += moved * AC.stride(PACE); moving = moved > 0.001;
           let d = Math.atan2(tmp.x, tmp.z) - walker.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); walker.g.rotation.y += d * Math.min(1, dt * 10);
           if (autoWalk || (queue.length && !drag)) { let yd = walker.g.rotation.y + Math.PI - yaw; yd = Math.atan2(Math.sin(yd), Math.cos(yd)); yaw += yd * Math.min(1, dt * 1.2); }
+          else if (byKeys && !drag && !keys.has('s')) {
+            // The view settles behind the way you are heading, so left and right steer.
+            let yd = Math.atan2(tmp.x, tmp.z) + Math.PI - yaw; yd = Math.atan2(Math.sin(yd), Math.cos(yd)); yaw += yd * Math.min(1, dt * 0.9);
+            // On the track it also leans into the bends: holding the up arrow walks you the whole way round.
+            if (keys.has('w') && trk.d < 2.7) {
+              const along2 = fwd.x * trk.tx + fwd.z * trk.tz;
+              if (Math.abs(along2) > 0.4) {
+                // aim along the track a step ahead (so a bend is met, not chased), and ease back in from the outer edge;
+                // inside the three lanes it never pulls sideways, so you choose your own lane for the bones
+                const sg = Math.sign(along2), j2 = (trk.j + sg + LN) % LN, a = loopPts[(j2 + LN - 1) % LN], b = loopPts[(j2 + 1) % LN];
+                let ax = (b.x - a.x) * sg, az = (b.z - a.z) * sg; const al = Math.hypot(ax, az) || 1; ax /= al; az /= al;
+                const pull = Math.sign(trk.off) * Math.min(0.6, Math.max(0, Math.abs(trk.off) - 1.3) * 0.7);
+                ax -= -trk.tz * pull; az -= trk.tx * pull;
+                let td = Math.atan2(ax, az) + Math.PI - yaw; td = Math.atan2(Math.sin(td), Math.cos(td)); yaw += td * Math.min(1, dt * 4);
+              }
+            }
+          }
         }
         if (m === 'walk') { minutes += dt / 3; if (minutes >= 60) setM('ended'); }
         AC.posePerson(walker, dt, time, moving, PACE);
@@ -1515,7 +1726,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         const dp = dog.g.position; const wrot = walker.g.rotation.y; let dogDest: THREE.Vector3;
         if (dogMode === 'go') dogDest = (ballFlight ? ballFlight.to : ball.position).clone().setY(0);
         else if (dogMode === 'drink') dogDest = V(BX, 0, BZ - 0.52);
-        else dogDest = walker.g.position.clone().add(V(Math.cos(wrot), 0, -Math.sin(wrot)).multiplyScalar(-0.8)).add(V(Math.sin(wrot), 0, Math.cos(wrot)).multiplyScalar(0.8));
+        else { dogDest = walker.g.position.clone().add(V(Math.cos(wrot), 0, -Math.sin(wrot)).multiplyScalar(-0.8)).add(V(Math.sin(wrot), 0, Math.cos(wrot)).multiplyScalar(0.8)); if (byKeys || !queue.length) hedgeStop(dogDest, onLoop(dp.x, dp.z, trk).off); }
         tmp.copy(dogDest).sub(dp).setY(0); const dd = tmp.length();
         const dogSpeed = dogMode === 'go' || dogMode === 'back' ? 7.5 : Math.min(6.5, dd * 5);
         let dogMoving = false;
@@ -1608,7 +1819,12 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       if (bubble) { bubbleT -= dt; if (bubbleT <= 0) { scene.remove(bubble); bubble = null; } }
 
       // light follows the action so shadows stay sharp
-      setRange(!inFlat && !walking && m !== 'ended'); air.visible = !inFlat && !walking && m !== 'ended';
+      const fromAir = !inFlat && !walking && m !== 'ended';
+      setRange(fromAir); air.visible = routeG.visible = fromAir;
+      if (fromAir) routeTex.offset.y = -time * 0.16; // the dashes flow the way round
+      (patches.material as THREE.MeshBasicMaterial).opacity = fromAir ? 0.45 : 1; // seen from above, strong patches read as blotches
+      const wantFov = (camera.aspect < 1 ? 64 : 52) + (walking || m === 'ended' ? 6 : 0); // on foot a wider view takes in more of the towers
+      if (camera.fov !== wantFov) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
       const focus = inFlat ? F : walking || m === 'ended' ? walker.g.position : tmp.set(LY.aerial[0], 0, LY.aerial[1]); // the light stays on the community's middle
       sun.target.position.copy(focus); sun.position.copy(focus).add(SUN_OFF);
       nightF += (nightTarget - nightF) * Math.min(1, dt * 2.5);
@@ -1629,17 +1845,25 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         for (const t of treats) {
           if (t.done || t.got > 0) continue;
           const g = t.g.position;
-          if (Math.hypot(g.x - dog.g.position.x, g.z - dog.g.position.z) < 1.2 || Math.hypot(g.x - walker.g.position.x, g.z - walker.g.position.z) < 1.25) {
-            t.got = 0.001; treatN++; setTreats(treatN); hearts(V(g.x, 0.9, g.z), 2, 0.24);
-            if (treatN === 1) say(`Biscuit found a treat. Seven more are waiting along the ${isPath ? 'path' : 'track'}.`); else if (treatN === treats.length) say('All eight treats found. Biscuit is thrilled.');
+          if (Math.hypot(g.x - dog.g.position.x, g.z - dog.g.position.z) < 1.3 || Math.hypot(g.x - walker.g.position.x, g.z - walker.g.position.z) < 1.4) {
+            t.got = 0.001; treatN++; setBones({ got: treatN, of: BONES }); hearts(V(g.x, 0.9, g.z), t.gold ? 5 : 2, 0.24); award(t.v, V(g.x, 1.9, g.z));
+            if (treatN === BONES) { award(PTS.allBones); say(`Every bone collected: ${PTS.allBones} bonus points. Biscuit is thrilled.`); }
+            else if (t.gold) say(`The golden bone: ${PTS.gold} ProxyPaw points.`);
+            else if (treatN === 1) say(`Bone collected: ${PTS.bone} ProxyPaw points. ${BONES - 1} more are waiting.`);
           }
         }
+        // a full lap of the track, in either direction, is worth a bonus once
+        onLoop(walker.g.position.x, walker.g.position.z, trk);
+        if (trk.d < 3.4) { const tn = trk.j / LN; if (lapLast >= 0) { let dT = tn - lapLast; dT -= Math.round(dT); if (Math.abs(dT) < 0.04) lapAcc += dT; } lapLast = tn; } else lapLast = -1;
+        if (!lapDone && Math.abs(lapAcc) > 0.96) { lapDone = true; award(PTS.lap, walker.g.position.clone().add(V(0, 2.4, 0))); say(`A full lap of the ${isPath ? 'path' : 'track'}: ${PTS.lap} bonus points.`); }
+        if (frames >= 3 && ++mapTick % 3 === 0) drawMap();
       }
       treats.forEach((t, i) => {
         if (t.done) return;
-        t.b.rotation.y = time * 1.8 + i; t.g.position.y = 0.62 + Math.sin(time * 2.2 + i) * 0.07 + t.got * 2;
-        if (t.got > 0) { t.got += dt; const k = t.got / 0.4; t.b.scale.setScalar(1.25 * (k < 0.5 ? 1 + k * 1.6 : Math.max(0.01, 3.6 * (1 - k)))); (t.sp.material as THREE.SpriteMaterial).opacity = Math.max(0, 1 - k); if (k >= 1) { t.done = true; t.g.visible = false; } }
-        else t.sp.scale.setScalar(1.5 + Math.sin(time * 3 + i) * 0.2);
+        const base = t.gold ? 3 : 2;
+        t.b.rotation.y = time * 1.8 + i; t.g.position.y = t.y + Math.sin(time * 2.2 + i) * 0.08 + t.got * 2.4;
+        if (t.got > 0) { t.got += dt; const k = t.got / 0.4; t.b.scale.setScalar(base * (k < 0.5 ? 1 + k * 1.2 : Math.max(0.01, 3.2 * (1 - k)))); (t.sp.material as THREE.SpriteMaterial).opacity = Math.max(0, 1 - k); t.beam.visible = false; if (k >= 1) { t.done = true; t.g.visible = false; } }
+        else t.sp.scale.setScalar(base * (0.95 + Math.sin(time * 3 + i) * 0.12));
       });
       renderer.render(scene, camera);
       if (frames < 3 && ++frames === 3) { // textures and shaders are in: let the picture fade up over the poster, or over the community we just left
@@ -1688,6 +1912,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
   const kicker: React.CSSProperties = { fontFamily: body, fontWeight: 700, fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase', color: T.leaf, marginBottom: 8 };
 
   const svc = SERVICES.find((x) => x.id === service)!;
+  // ProxyPaw points: the best walk in each community, added up
+  const walked = COMMUNITY_IDS.filter((id) => (bank[id] ?? 0) > 0), walkedN = walked.length, bankTotal = walked.reduce((n, id) => n + bank[id], 0);
   /** switch community: the last frame stays on screen while the next scene is built, then dissolves into it */
   const pickCommunity = (id: CommunityId) => { if (id === community) return; api.current?.freeze(); setCommunity(id); };
   // the area filter: only areas that have a modelled community are offered, and choosing one lands you in a community there
@@ -1737,6 +1963,11 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
               <div style={{ flex: '1 1 230px', minWidth: 0 }}>
                 <div style={{ fontFamily: head, fontWeight: 800, fontSize: 15.5, letterSpacing: '-0.01em', color: T.ink }}>{svc.price}<span className="pp-world-blurb" style={{ fontFamily: body, fontWeight: 500, fontSize: 14, letterSpacing: 0, color: T.sub }}> · {LY.blurb}</span></div>
                 <div className="pp-world-line" style={{ fontSize: 13.5, color: T.sub, lineHeight: 1.45, marginTop: 3 }}>{LY.loopIsPath ? svc.line.replace('community track', 'community paths') : svc.line}</div>
+                <div data-pp="bank" className="pp-world-pts" style={{ fontSize: 13, color: T.sub, lineHeight: 1.45, marginTop: 5 }}>
+                  {bankTotal > 0
+                    ? <><b style={{ fontFamily: head, fontWeight: 800, color: T.marigoldDark }}>{bankTotal} ProxyPaw points</b> from {walkedN} of {COMMUNITY_IDS.length} communities{bank[community] ? `, ${bank[community]} of them here` : ''}.</>
+                    : <>Explore on foot to collect bones along the {LY.loopIsPath ? 'path' : 'track'} and earn <b style={{ fontFamily: head, fontWeight: 800, color: T.ink }}>ProxyPaw points</b>.</>}
+                </div>
               </div>
               <button data-pp="watch" className="pp-glass-btn pp-glass-primary" style={{ fontSize: 14.5, padding: '11px 20px', minHeight: 44 }} aria-label={`Watch ${svc.label.toLowerCase()}`} onClick={() => api.current?.play(service)}><span>Watch<span className="pp-world-wsvc"> {svc.label.toLowerCase()}</span></span></button>
               <button data-pp="explore" className="pp-glass-btn" style={{ fontSize: 14.5, padding: '11px 18px', minHeight: 44 }} onClick={() => api.current?.explore()}>Explore on foot</button>
@@ -1762,11 +1993,16 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
       {/* Walk HUD */}
       {mode === 'walk' && (
         <>
-          <div className="pp-world-stats" style={{ ...glass, position: 'absolute', left: 12, top: 12, padding: '10px 14px', display: 'flex', gap: 16, fontFamily: body }}>
-            {[[`${mins} min`, 'of 60'], [`${stats.km.toFixed(2)} km`, 'walked'], [`${stats.photos}`, 'photos'], [`${treats} of 8`, 'treats']].map(([v, l]) => (
-              <div key={l}><div style={{ fontFamily: head, fontWeight: 800, fontSize: 17, color: T.ink, letterSpacing: '-0.02em' }}>{v}</div><div style={{ fontSize: 11, color: T.muted }}>{l}</div></div>
+          <div className="pp-world-stats" style={{ ...glass, position: 'absolute', left: 12, top: 12, padding: '10px 14px', display: 'flex', gap: 16, alignItems: 'flex-end', fontFamily: body }}>
+            <div data-pp="points" aria-live="polite">
+              <div key={points} className={points ? 'pp-world-bump' : undefined} style={{ fontFamily: head, fontWeight: 800, fontSize: 22, lineHeight: '22px', color: T.marigoldDark, letterSpacing: '-0.02em', transformOrigin: 'left bottom' }}>{points}</div>
+              <div style={{ fontSize: 11, color: T.muted, whiteSpace: 'nowrap' }}>ProxyPaw points</div>
+            </div>
+            {[[`${bones.got} of ${bones.of}`, 'bones', ''], [`${stats.km.toFixed(2)} km`, 'walked', ''], [`${mins} min`, 'of 60', 'pp-world-min']].map(([v, l, c]) => (
+              <div key={l} className={c || undefined}><div style={{ fontFamily: head, fontWeight: 800, fontSize: 17, color: T.ink, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{v}</div><div style={{ fontSize: 11, color: T.muted }}>{l}</div></div>
             ))}
           </div>
+          <canvas ref={mapRef} role="img" aria-label="Map of the walk path, the bones left to collect and where you are" className="pp-world-map" style={{ ...glass, position: 'absolute', left: 12, bottom: 14, width: 164, height: 164, borderRadius: 20, background: 'rgba(240,247,236,.8)' }} />
           <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '50%' }}>
             <button data-pp="night" className="pp-glass-btn" style={glassBtn} onClick={() => setNight((n) => !n)}>{night ? 'Morning' : 'Evening'}</button>
             <button data-pp="end" className="pp-glass-btn" style={glassBtn} onClick={() => setMode('ended')}>End walk</button>
@@ -1800,7 +2036,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
             <button data-pp="photo" className="pp-glass-btn" style={{ ...glassBtn, fontSize: 14.5 }} onClick={takePhoto}>Send a photo update</button>
           </div>
           {toast && <div className="pp-fade-in pp-world-toast" style={{ ...glass, position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 76, padding: '10px 18px', fontFamily: body, fontSize: 14, color: T.ink, width: 'max-content', maxWidth: 'calc(100% - 24px)', textAlign: 'center' }}>{toast}</div>}
-          <div className="pp-world-hint" style={{ position: 'absolute', right: 14, bottom: 18, fontFamily: body, fontSize: 12, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}>Arrow keys or WASD · drag to look · tap the ground to walk there</div>
+          <div className="pp-world-hint" style={{ position: 'absolute', right: 14, bottom: 18, fontFamily: body, fontSize: 12, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}>Arrow keys or WASD to walk · drag to look · tap to walk there</div>
         </>
       )}
 
@@ -1812,11 +2048,20 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
             <h3 style={{ fontFamily: head, fontWeight: 800, fontSize: 'clamp(21px, 2.6vw, 26px)', letterSpacing: '-0.02em', margin: '0 0 6px', color: T.ink }}>{fin.t}</h3>
             <p style={{ fontSize: 14.5, color: T.sub, margin: '0 0 16px', lineHeight: 1.6 }}>
               {mode === 'ended'
-                ? `${Math.max(1, mins)} min, ${stats.km.toFixed(2)} km, ${done.length} of 4 stops, ${treats} of 8 treats and ${stats.photos} photo${stats.photos === 1 ? '' : 's'} sent. Biscuit is home, towelled and happy.`
+                ? `${Math.max(1, mins)} min, ${stats.km.toFixed(2)} km, ${done.length} of 4 stops, ${bones.got} of ${bones.of} bones and ${stats.photos} photo${stats.photos === 1 ? '' : 's'} sent. Biscuit is home, towelled and happy.`
                 : mode === 'catdone'
                   ? 'Food, water, litter, play and photos, all in her own home. Meera saw every step on her phone.'
                   : 'Dinner as the note said, a night on his own blanket and a morning photo, at a host\'s home in the same community. Ananya saw each update on her phone.'}
             </p>
+            {mode === 'ended' && (
+              <div data-pp="sum-points" style={{ background: T.marigoldPale, borderRadius: 18, padding: '12px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <div style={{ fontFamily: head, fontWeight: 800, fontSize: 15, color: T.ink }}>ProxyPaw points</div>
+                  <div style={{ fontSize: 12.5, color: T.sub, lineHeight: 1.45, marginTop: 2 }}>{dir !== 'off' ? 'Walk it yourself to keep the points you collect.' : walkedN > 1 ? `${bankTotal} across the ${walkedN} communities you have walked.` : `Your best here is kept on this device. ${COMMUNITY_IDS.length - 1} more communities to walk.`}</div>
+                </div>
+                <div style={{ fontFamily: head, fontWeight: 800, fontSize: 30, letterSpacing: '-0.03em', color: T.marigoldDark }}>{points}</div>
+              </div>
+            )}
             <div style={{ background: '#fff', borderRadius: 18, padding: 16, border: `1px solid ${T.line}`, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontFamily: head, fontWeight: 800, fontSize: 18, color: T.ink, marginBottom: 10 }}><span>{fin.item}</span><span>₹{fin.price}</span></div>
               <div style={{ display: 'flex', height: 10, borderRadius: 99, overflow: 'hidden', marginBottom: 10 }}><div style={{ width: '70%', background: T.leafBright }} /><div style={{ flex: 1, background: T.marigold }} /></div>
@@ -1853,6 +2098,9 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         .pp-world-rip { animation: pp-world-rip .6s ease-out forwards; }
         @keyframes pp-world-rip { from { transform: translate(-50%,-50%) scale(.25); opacity: .6; } to { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
         .pp-world-stop:not(:disabled):hover { background: rgba(46,125,79,.1) !important; }
+        .pp-world-bump { animation: pp-world-bump .5s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes pp-world-bump { 0% { transform: scale(1); } 35% { transform: scale(1.38); } 100% { transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { .pp-world-bump { animation: none; } }
         .pp-world-row { display: flex; align-items: center; gap: 12px; }
         .pp-world-row + .pp-world-row { margin-top: 8px; }
         .pp-world-k { flex: 0 0 98px; }
@@ -1865,7 +2113,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         .pp-world-pill[aria-pressed="true"] { background: rgba(46,125,79,.16); border-color: rgba(46,125,79,.42); color: ${T.ink}; box-shadow: 0 0 0 3px rgba(46,125,79,.08); }
         .pp-world-chip[aria-pressed="true"] { background: rgba(46,125,79,.12); border-color: rgba(46,125,79,.3); color: ${T.ink}; font-weight: 700; }
         .pp-world-pill:focus-visible, .pp-world-chip:focus-visible { outline: 2px solid ${T.leaf}; outline-offset: 2px; }
-        @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc { display: none; } }
+        @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc, .pp-world-min { display: none; } }
         @media (max-width: 860px) {
           .pp-world-k, .pp-world-line { display: none; }
           /* each group is one row that scrolls sideways and runs to the panel's edge, so a cut-off pill shows there is more */
@@ -1881,7 +2129,9 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
           .pp-world-hint, .pp-world-photos { display: none !important; }
           .pp-world-dir { top: 62px !important; }
           .pp-world[data-fin] .pp-world-dir { display: none !important; } /* the summary card needs that space on a phone */
-          .pp-world-stops { top: 110px !important; left: 10px !important; width: min(262px, calc(100% - 20px)) !important; padding: 9px !important; }
+          .pp-world-stops { top: 110px !important; left: 10px !important; width: min(262px, calc(100% - 132px)) !important; padding: 9px !important; }
+          .pp-world-map { left: auto !important; bottom: auto !important; right: 10px !important; top: 110px !important; width: 104px !important; height: 104px !important; border-radius: 16px !important; }
+          .pp-world-pts { font-size: 12px !important; margin-top: 2px !important; }
           .pp-world-stats { left: 10px !important; top: 10px !important; gap: 12px !important; padding: 8px 12px !important; }
           .pp-world-toast { bottom: 128px !important; }
         }
