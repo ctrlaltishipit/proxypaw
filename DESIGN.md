@@ -148,6 +148,13 @@ turn round when the visitor scrolls back.
   and you. The best score per community is kept on the visitor's device only (`pp-points-v1`); the page never
   says points can be redeemed for anything until the founder decides what they are worth. Points from the
   self-playing tour are shown but not kept.
+- **The opening view of the 3D explorer is a steep bird's-eye that fills the map.** It looks down at about 60
+  degrees through a long lens, so the garden, pool and track between the towers are visible and towers stand
+  nearly straight. The camera works out its own distance from what must fit (`frameView` in
+  `CommunityWorld.tsx`) and is at rest on the first frame: nothing zooms or slides into place. On screens 960 px
+  and wider the menu is a column on the right, so the map has the full height; below that it sits along the
+  bottom. The loading still (`public/real/world-soft.jpg`) is deliberately out of focus: a sharp still cannot
+  line up with a view that frames itself, and the fade would show doubled buildings. No clouds from the air.
 - **The walk path must always read.** On foot: charcoal track, white lanes, pale kerbs, painted arrows. From
   the air: a marigold dashed route that also shows, fainter, where a tower stands in front of it.
 - Everything respects `prefers-reduced-motion` (no autoplay) and works by touch at phone width.
