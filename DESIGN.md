@@ -142,6 +142,14 @@ turn round when the visitor scrolls back.
   walk tracker, the app screens on the home page, the scroll tour on `/tour`, the 3D stories). A real tap,
   click, scroll or key hands control to the visitor; a words-only "Pause" / "Play" control is always there.
   Self-playing runs never open pop-ups (the walk tracker shows its receipt on the map instead).
+- **The 3D walk is a small game.** Exploring on foot starts on the track under a start arch. Bones along
+  the track are worth ProxyPaw points (bone 10, golden bone 50, stop 25, photo 5, full lap 100, every bone
+  100); the count sits top-left, "+10" rises from each pick-up, and a minimap shows the path, the bones left
+  and you. The best score per community is kept on the visitor's device only (`pp-points-v1`); the page never
+  says points can be redeemed for anything until the founder decides what they are worth. Points from the
+  self-playing tour are shown but not kept.
+- **The walk path must always read.** On foot: charcoal track, white lanes, pale kerbs, painted arrows. From
+  the air: a marigold dashed route that also shows, fainter, where a tower stands in front of it.
 - Everything respects `prefers-reduced-motion` (no autoplay) and works by touch at phone width.
 
 ## Imagery

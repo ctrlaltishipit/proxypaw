@@ -13,7 +13,11 @@
  * a cat home visit, an overnight stay at a host's home); the dog story then
  * hands over the leash: WASD or arrow keys walk, dragging looks around,
  * tapping the ground walks there along the paths, the checklist can auto-walk
- * you to each stop, and there are treats to collect along the track.
+ * you to each stop. On foot it is a small game: you start under a start arch on
+ * the track, holding the up arrow follows the track round, bones along it are
+ * worth ProxyPaw points (so are the stops, photos and a full lap), a minimap
+ * shows the path, the bones left and you, and the best score in each community
+ * is kept on this device. From the air the walk path is drawn as a route.
  *
  * Left alone, it plays by itself like a video: a "director" moves a demo
  * cursor over the real controls (community pill, service pill, Watch, the

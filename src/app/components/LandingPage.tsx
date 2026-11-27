@@ -516,7 +516,7 @@ export default function LandingPage({ onJoin, onBlogClick, onTourClick, onAboutC
           stop="world"
           kicker="Step inside"
           title="Pick your community. Watch a walk, a cat visit or a sleepover."
-          sub="Choose your area and community, then a service: dog walking, cat care or overnight boarding. Each one plays by itself in a 3D model of that community, and you can take the leash any time."
+          sub="Choose your area and community, then a service: dog walking, cat care or overnight boarding. Each one plays by itself in a 3D model of that community. Or explore on foot: walk the track, collect the bones and earn ProxyPaw points."
         />
         <WorldMount onJoin={onJoin} />
         <p style={{ fontSize: 12.5, color: T.muted2, marginTop: 14, textAlign: 'center' }}>Illustrative 3D models based on each community's published master plan. ProxyPaw is not affiliated with any developer.</p>
