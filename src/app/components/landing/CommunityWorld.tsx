@@ -1998,7 +1998,7 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
               <div key={points} className={points ? 'pp-world-bump' : undefined} style={{ fontFamily: head, fontWeight: 800, fontSize: 22, lineHeight: '22px', color: T.marigoldDark, letterSpacing: '-0.02em', transformOrigin: 'left bottom' }}>{points}</div>
               <div style={{ fontSize: 11, color: T.muted, whiteSpace: 'nowrap' }}>ProxyPaw points</div>
             </div>
-            {[[`${bones.got} of ${bones.of}`, 'bones', ''], [`${stats.km.toFixed(2)} km`, 'walked', ''], [`${mins} min`, 'of 60', 'pp-world-min']].map(([v, l, c]) => (
+            {[[`${bones.got} of ${bones.of}`, 'bones', ''], [`${stats.km.toFixed(2)} km`, 'walked', 'pp-world-min'], [`${mins} min`, 'of 60', 'pp-world-min']].map(([v, l, c]) => (
               <div key={l} className={c || undefined}><div style={{ fontFamily: head, fontWeight: 800, fontSize: 17, color: T.ink, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{v}</div><div style={{ fontSize: 11, color: T.muted }}>{l}</div></div>
             ))}
           </div>
@@ -2113,7 +2113,8 @@ export default function CommunityWorld({ onJoin }: { onJoin: (source: string) =>
         .pp-world-pill[aria-pressed="true"] { background: rgba(46,125,79,.16); border-color: rgba(46,125,79,.42); color: ${T.ink}; box-shadow: 0 0 0 3px rgba(46,125,79,.08); }
         .pp-world-chip[aria-pressed="true"] { background: rgba(46,125,79,.12); border-color: rgba(46,125,79,.3); color: ${T.ink}; font-weight: 700; }
         .pp-world-pill:focus-visible, .pp-world-chip:focus-visible { outline: 2px solid ${T.leaf}; outline-offset: 2px; }
-        @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc, .pp-world-min { display: none; } }
+        @media (max-width: 420px) { .pp-world-blurb, .pp-world-wsvc { display: none; } }
+        @media (max-width: 520px) { .pp-world-min { display: none; } } /* a phone keeps the two numbers of the game: points and bones */
         @media (max-width: 860px) {
           .pp-world-k, .pp-world-line { display: none; }
           /* each group is one row that scrolls sideways and runs to the panel's edge, so a cut-off pill shows there is more */
